@@ -61,11 +61,11 @@ if (workbox) {
     },
     {
         "url": "index.html",
-        "revision": "663b4434ff30b03f2594ea318180f5fc"
+        "revision": "4b9830867c4831153e9182b636c82a3c"
     },
     {
         "url": "index.php",
-        "revision": "5e9c6d668c1927b3a137d668af4f2c0f"
+        "revision": "326feb18e923b7ae6d894e752021f7a9"
     },
     {
         "url": "manifest.json",
@@ -77,15 +77,23 @@ if (workbox) {
     },
     {
         "url": "offline.html",
-        "revision": "9fb934bd1ca82461e56951a76c8612f1"
+        "revision": "4cf019df5b9b0c3b94e1f7931d60afa3"
     },
     {
         "url": "pwa-register.js",
         "revision": "30562e4c2a2a3e07efc7cf94128baa1e"
     },
     {
+        "url": "readme.md",
+        "revision": "660cdc44bc566a764dd56dec0f80e2f7"
+    },
+    {
+        "url": "readme.pdf",
+        "revision": "aaeb311995e4a7daac4904bd87c94296"
+    },
+    {
         "url": "sw.js",
-        "revision": "9af12d3c3a09c011cd9fedc9dca94e61"
+        "revision": "cc0cddf979acafef99af282b9f91fa93"
     }
 ]);
 

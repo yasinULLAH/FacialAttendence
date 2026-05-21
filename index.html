@@ -11,6 +11,17 @@
     <title>Aura Facial Recognition Attendance Suite</title>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.6/css/buttons.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.colVis.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -732,6 +743,24 @@
             gap: 8px;
         }
 
+        div.dt-container .dt-buttons {
+            margin-bottom: 8px;
+        }
+
+        div.dt-container .dt-button {
+            border: 1px solid var(--border) !important;
+            background: var(--panel) !important;
+            color: var(--text) !important;
+            border-radius: 6px !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            padding: 6px 10px !important;
+        }
+
+        div.dt-container .dt-button:hover {
+            background: var(--bg) !important;
+        }
+
         .sub-nav {
             display: flex;
             border-bottom: 1px solid var(--border);
@@ -919,6 +948,10 @@
             }
         }
     </style>
+
+    
+
+    
 
     
 
@@ -1239,7 +1272,7 @@
                     <div class="card">
                         <h2>Attendance Records Datatable</h2>
                         <div class="table-responsive">
-                            <table>
+                            <table id="attendance-records-table" class="display nowrap" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th>Timestamp</th>
@@ -1425,7 +1458,7 @@
                                 </div>
                             </div>
                             <div class="table-responsive">
-                                <table>
+                                <table id="employee-directory-table" class="display nowrap" style="width:100%">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -1923,10 +1956,76 @@
         let reportsPage = 1;
         const reportsRowsPerPage = 10;
         let filteredReportsList = [];
+        let reportsDataTable = null;
 
         let empPage = 1;
         const empRowsPerPage = 10;
         let filteredEmpList = [];
+        let directoryDataTable = null;
+
+        if (window.DataTable && DataTable.ext) {
+            DataTable.ext.errMode = "none";
+        }
+        if (window.jQuery) {
+            if (jQuery.fn && jQuery.fn.dataTable && jQuery.fn.dataTable.ext) {
+                jQuery.fn.dataTable.ext.errMode = "none";
+            }
+            jQuery(document).on("error.dt", function () {
+                return false;
+            });
+        }
+
+        function initializeDataTableWithButtons(tableSelector, exportTitle) {
+            if (!window.jQuery || !jQuery.fn || !jQuery.fn.dataTable) return null;
+            const tableEl = document.querySelector(tableSelector);
+            if (!tableEl) return null;
+            const tbodyEl = tableEl.querySelector("tbody");
+            if (!tbodyEl) return null;
+
+            if (window.DataTable && DataTable.Buttons) {
+                if (window.JSZip && typeof DataTable.Buttons.jszip === "function") {
+                    DataTable.Buttons.jszip(window.JSZip);
+                }
+                if (window.pdfMake && typeof DataTable.Buttons.pdfMake === "function") {
+                    DataTable.Buttons.pdfMake(window.pdfMake);
+                }
+            }
+
+            const $table = jQuery(tableSelector);
+            if (jQuery.fn.DataTable.isDataTable(tableSelector)) {
+                $table.DataTable().destroy();
+            }
+
+            if (tbodyEl.querySelector("td[colspan]")) {
+                return null;
+            }
+
+            return $table.DataTable({
+                order: [],
+                paging: false,
+                searching: false,
+                info: false,
+                autoWidth: false,
+                scrollX: true,
+                layout: {
+                    topStart: {
+                        buttons: [
+                            { extend: "colvis", text: "Column visibility" },
+                            { extend: "copyHtml5", text: "Copy", title: exportTitle, exportOptions: { columns: ":visible:not(:last-child)" } },
+                            { extend: "excelHtml5", text: "Excel", title: exportTitle, exportOptions: { columns: ":visible:not(:last-child)" } },
+                            { extend: "pdfHtml5", text: "PDF", title: exportTitle, exportOptions: { columns: ":visible:not(:last-child)" } },
+                            { extend: "csvHtml5", text: "CSV", title: exportTitle, exportOptions: { columns: ":visible:not(:last-child)" } },
+                            { extend: "print", text: "Print", title: exportTitle, exportOptions: { columns: ":visible:not(:last-child)" } }
+                        ]
+                    }
+                }
+            });
+        }
+
+        function refreshDataTablesButtons() {
+            reportsDataTable = initializeDataTableWithButtons("#attendance-records-table", "Attendance Records");
+            directoryDataTable = initializeDataTableWithButtons("#employee-directory-table", "Employee Directory");
+        }
 
         function initializeDatabaseCoreSubsystems() {
             return new Promise((resolve, reject) => {
@@ -3179,6 +3278,7 @@
                 document.getElementById('emp-paging-info').innerText = "Showing 0 to 0 of 0 profiles";
                 document.getElementById('btn-emp-prev').disabled = true;
                 document.getElementById('btn-emp-next').disabled = true;
+                refreshDataTablesButtons();
                 return;
             }
 
@@ -3213,6 +3313,7 @@
             document.getElementById('emp-paging-info').innerText = `Showing ${startIndex + 1} to ${endIndex} of ${totalRecords} profiles`;
             document.getElementById('btn-emp-prev').disabled = empPage === 1;
             document.getElementById('btn-emp-next').disabled = empPage === totalPages;
+            refreshDataTablesButtons();
         }
 
         async function removeProfileTemplateRecord(nameId) {
@@ -4286,6 +4387,7 @@
                 document.getElementById('reports-paging-info').innerText = "Showing 0 to 0 of 0 logs";
                 document.getElementById('btn-report-prev').disabled = true;
                 document.getElementById('btn-report-next').disabled = true;
+                refreshDataTablesButtons();
                 return;
             }
 
@@ -4314,6 +4416,7 @@
             document.getElementById('reports-paging-info').innerText = `Showing ${startIndex + 1} to ${endIndex} of ${totalRecords} logs`;
             document.getElementById('btn-report-prev').disabled = reportsPage === 1;
             document.getElementById('btn-report-next').disabled = reportsPage === totalPages;
+            refreshDataTablesButtons();
         }
 
         function changeReportsPage(dir) {
@@ -4731,6 +4834,8 @@
 
         
     </script>
+
+
 
 
 
