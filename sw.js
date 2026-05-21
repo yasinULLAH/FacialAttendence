@@ -56,16 +56,32 @@ if (workbox) {
         "revision": "4ba91ac00766609d96565c83e63436d8"
     },
     {
+        "url": "client readme.md",
+        "revision": "26f4d8aebdf8afdb9b61cb84d2fc02f9"
+    },
+    {
+        "url": "client readmeD.md",
+        "revision": "f94aae4214044beffc48c89433d55bb9"
+    },
+    {
+        "url": "features and functionalities.md",
+        "revision": "660cdc44bc566a764dd56dec0f80e2f7"
+    },
+    {
+        "url": "features and functionalities.pdf",
+        "revision": "aaeb311995e4a7daac4904bd87c94296"
+    },
+    {
         "url": "icon.svg",
         "revision": "b516c54370c62f167c950366e2262d70"
     },
     {
         "url": "index.html",
-        "revision": "515af8ab4d7fee99f7eeec3d28169b44"
+        "revision": "c65a2709903002db83564059790a4430"
     },
     {
         "url": "index.php",
-        "revision": "5f70ef68c4e75a42e9d76951b904b3b4"
+        "revision": "36002ab2b468d7cb532ec6a714719adb"
     },
     {
         "url": "manifest.json",
@@ -77,7 +93,7 @@ if (workbox) {
     },
     {
         "url": "offline.html",
-        "revision": "79a1bac4483bb984ad92a7d7eb0c5e15"
+        "revision": "38ddce2db9b016d64aea8ffccfe8b290"
     },
     {
         "url": "pwa-register.js",
@@ -85,15 +101,15 @@ if (workbox) {
     },
     {
         "url": "readme.md",
-        "revision": "660cdc44bc566a764dd56dec0f80e2f7"
+        "revision": "6b39d90f66d0ebf71d4a78276ff3b3b4"
     },
     {
-        "url": "readme.pdf",
-        "revision": "aaeb311995e4a7daac4904bd87c94296"
+        "url": "readmeD.md",
+        "revision": "2211661ed2c30099cce8e45da40d83cb"
     },
     {
         "url": "sw.js",
-        "revision": "ae6924c4c6b13d39942af72945298ad9"
+        "revision": "a2b98b0e210dc2cb5580a495ad0b9746"
     }
 ]);
 

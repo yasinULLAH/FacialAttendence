@@ -3048,6 +3048,8 @@
     
 
     
+
+    
 <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head><body>${summaryHtml}</body></html>`);
@@ -4151,54 +4153,64 @@
             ui.captureBtn.disabled = true;
             const captureBtnEdit = document.getElementById('btn-trigger-capture-edit');
             if (captureBtnEdit) captureBtnEdit.disabled = true;
-            const result = await faceapi.detectSingleFace(ui.videoEnroll, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
-                .withFaceLandmarks()
-                .withFaceDescriptor();
-            if (!result) {
-                triggerToast("Face not found or lighting weak", "error");
-                ui.captureBtn.disabled = false;
-                if (captureBtnEdit) captureBtnEdit.disabled = false;
+            try {
+                const result = await faceapi.detectSingleFace(ui.videoEnroll, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+                    .withFaceLandmarks()
+                    .withFaceDescriptor();
+                if (!result) {
+                    triggerToast("Face not found or lighting weak", "error");
+                    ui.captureBtn.disabled = false;
+                    if (captureBtnEdit) captureBtnEdit.disabled = false;
+                    ui.banner.innerText = "Ready.";
+                    return;
+                }
+                const standardArrayPayload = Array.from(result.descriptor);
+                const targetStatusString = document.getElementById('reg-employee-status').value;
+                const originalRecord = existing.find(e => e.id === currentEditingEmployeeId);
+                await saveEmployeeRecordAndVerify({
+                    id: targetIdString,
+                    name: targetLabelString,
+                    descriptor: standardArrayPayload,
+                    department: targetDeptString,
+                    role: targetRoleString || "Staff Member",
+                    email: targetEmailString || `${targetLabelString.toLowerCase().replace(/\s+/g, '')}@company.com`,
+                    phone: targetPhoneString || "+1000000000",
+                    status: targetStatusString,
+                    shiftStartTime: personalShiftStart || null,
+                    shiftGraceMinutes: personalShiftGrace,
+                    joined: originalRecord ? (originalRecord.joined || Date.now()) : Date.now()
+                });
+                await rebuildComputationalMatchingGraph();
+                empPage = 1;
+                await renderAdministrativeEmployeeDirectoryTable();
+                populateManualOverrideDropdown();
+                populateLeaveRequestDropdown();
+                suggestNextEmployeeId();
+                stopEnrollmentCamera();
+                const isEditing = !!currentEditingEmployeeId;
+                if (isEditing) {
+                    cancelEditEmployeeMode();
+                } else {
+                    ui.regName.value = "";
+                    document.getElementById('reg-employee-role').value = "";
+                    document.getElementById('reg-employee-email').value = "";
+                    document.getElementById('reg-employee-phone').value = "";
+                    document.getElementById('reg-employee-shift-start').value = "";
+                    document.getElementById('reg-employee-shift-grace').value = "";
+                }
+                await logAuditEvent(isEditing ? "employee_profile_updated" : "employee_profile_created", { id: targetIdString, name: targetLabelString });
+                triggerToast(isEditing ? "Profile Updated Successfully" : "Employee Enrolled Successfully", "success");
+                AudioEngine.play('success');
                 ui.banner.innerText = "Ready.";
-                return;
+            } catch (err) {
+                console.error(err);
+                triggerToast("Employee save failed. Please try again.", "error");
+                ui.banner.innerText = "Employee save failed.";
+                if (isEnrollCameraActive) {
+                    ui.captureBtn.disabled = false;
+                    if (captureBtnEdit) captureBtnEdit.disabled = false;
+                }
             }
-            const standardArrayPayload = Array.from(result.descriptor);
-            const targetStatusString = document.getElementById('reg-employee-status').value;
-            const originalRecord = existing.find(e => e.id === currentEditingEmployeeId);
-            await saveEmployeeRecordAndVerify({
-                id: targetIdString,
-                name: targetLabelString,
-                descriptor: standardArrayPayload,
-                department: targetDeptString,
-                role: targetRoleString || "Staff Member",
-                email: targetEmailString || `${targetLabelString.toLowerCase().replace(/\s+/g, '')}@company.com`,
-                phone: targetPhoneString || "+1000000000",
-                status: targetStatusString,
-                shiftStartTime: personalShiftStart || null,
-                shiftGraceMinutes: personalShiftGrace,
-                joined: originalRecord ? (originalRecord.joined || Date.now()) : Date.now()
-            });
-            await rebuildComputationalMatchingGraph();
-            empPage = 1;
-            await renderAdministrativeEmployeeDirectoryTable();
-            populateManualOverrideDropdown();
-            populateLeaveRequestDropdown();
-            suggestNextEmployeeId();
-            stopEnrollmentCamera();
-            const isEditing = !!currentEditingEmployeeId;
-            if (isEditing) {
-                cancelEditEmployeeMode();
-            } else {
-                ui.regName.value = "";
-                document.getElementById('reg-employee-role').value = "";
-                document.getElementById('reg-employee-email').value = "";
-                document.getElementById('reg-employee-phone').value = "";
-                document.getElementById('reg-employee-shift-start').value = "";
-                document.getElementById('reg-employee-shift-grace').value = "";
-            }
-            await logAuditEvent(isEditing ? "employee_profile_updated" : "employee_profile_created", { id: targetIdString, name: targetLabelString });
-            triggerToast(isEditing ? "Profile Updated Successfully" : "Employee Enrolled Successfully", "success");
-            AudioEngine.play('success');
-            ui.banner.innerText = "Ready.";
         }
         async function renderAdministrativeEmployeeDirectoryTable() {
             if (!isDashboardAuthenticatedState) return;
@@ -5730,6 +5742,7 @@
         window.onload = compileApplicationCoreSubsystems;
     </script>
     
+
 
 
 
