@@ -3,7 +3,7 @@ session_start();
 header("Access-Control-Allow-Origin: *");
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_PASS', 'root');
 define('DB_NAME', 'facial_attendance_db');
 
 try {
@@ -69,12 +69,39 @@ if ($stmt->fetchColumn() == 0) {
     $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('theme_mode', 'light')")->execute();
     $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('shift_start_time', '09:00')")->execute();
     $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('shift_grace_minutes', '15')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('checkout_gap_hours', '2')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('logout_cutoff_enabled', '0')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('logout_cutoff_time', '15:00')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('motion_tracking_enabled', '0')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('motion_aggressiveness', '3')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('motion_auto_download', '0')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('motion_idle_seconds', '2')")->execute();
     $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('weekend_days', '[0, 6]')")->execute();
 
     $defaults = ["Administration", "Engineering", "Sales", "Marketing", "Human Resources", "Finance", "Operations"];
     foreach ($defaults as $d) {
         $db->prepare("INSERT IGNORE INTO departments (name) VALUES (?)")->execute([$d]);
     }
+}
+
+$requiredConfigDefaults = [
+    'liveness_level' => 'none',
+    'theme_color' => 'indigo',
+    'theme_mode' => 'light',
+    'shift_start_time' => '09:00',
+    'shift_grace_minutes' => '15',
+    'checkout_gap_hours' => '2',
+    'logout_cutoff_enabled' => '0',
+    'logout_cutoff_time' => '15:00',
+    'motion_tracking_enabled' => '0',
+    'motion_aggressiveness' => '3',
+    'motion_auto_download' => '0',
+    'motion_idle_seconds' => '2',
+    'weekend_days' => '[0, 6]'
+];
+$cfgInsertStmt = $db->prepare("INSERT IGNORE INTO system_config (cfg_key, cfg_val) VALUES (?, ?)");
+foreach ($requiredConfigDefaults as $cfgKey => $cfgVal) {
+    $cfgInsertStmt->execute([$cfgKey, $cfgVal]);
 }
 
 if (isset($_GET['action'])) {
@@ -303,6 +330,7 @@ if (isset($_GET['action'])) {
     <link rel="apple-touch-icon" href="icon.svg">
     <title>Aura Facial Recognition Attendance Suite</title>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -1219,6 +1247,8 @@ if (isset($_GET['action'])) {
     
 
     
+
+    
 <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
@@ -1248,6 +1278,12 @@ if (isset($_GET['action'])) {
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
                 Admin Terminal
+            </button>
+            <button id="nav-monitor" class="tab-btn" onclick="switchView('monitor')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12h3l3 8 4-16 3 8h5"></path>
+                </svg>
+                Security Monitor
             </button>
         </nav>
         <div class="status-container">
@@ -1305,6 +1341,53 @@ if (isset($_GET['action'])) {
                 <div class="card">
                     <h2>Live Check-in Ticker</h2>
                     <div id="kiosk-ledger" class="ledger-box"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-monitor" class="view-section">
+            <div class="grid-2">
+                <div class="card">
+                    <h2>Motion Tracking & Recording</h2>
+                    <div style="font-size:11px; color:var(--muted); margin-bottom:8px;">
+                        Public monitor controls are available here. Any state change requires admin password.
+                    </div>
+                    <div style="display:flex; gap: 8px; align-items:center;">
+                        <input type="checkbox" id="settings-motion-enabled" style="width:auto;">
+                        <label for="settings-motion-enabled" style="text-transform:none; letter-spacing:0; font-size:12px; margin:0;">
+                            Keep camera active and detect movement clips automatically
+                        </label>
+                    </div>
+                    <div style="display:flex; gap: 8px; align-items:center; margin-top:4px;">
+                        <input type="checkbox" id="settings-motion-auto-download" style="width:auto;">
+                        <label for="settings-motion-auto-download" style="text-transform:none; letter-spacing:0; font-size:12px; margin:0;">
+                            Auto-download motion clips when capture ends
+                        </label>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top:8px;">
+                        <div class="input-group">
+                            <label>Motion Aggressiveness (%)</label>
+                            <input type="number" id="settings-motion-aggressiveness" value="3" min="0.5" max="30" step="0.5">
+                        </div>
+                        <div class="input-group">
+                            <label>Motion Stop Delay (Sec)</label>
+                            <input type="number" id="settings-motion-idle-seconds" value="2" min="1" max="30">
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                        <button class="btn btn-secondary" id="btn-manual-record-start" onclick="startManualContinuousRecording()">Start Continuous Recording</button>
+                        <button class="btn btn-danger" id="btn-manual-record-stop" onclick="stopManualContinuousRecording()" disabled>Stop Continuous Recording</button>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:8px;">
+                        <button class="btn btn-secondary" id="btn-wakelock-toggle" onclick="toggleSleepPrevention()">Enable No-Sleep Mode</button>
+                        <button class="btn btn-secondary" onclick="saveMotionTrackingSettings()">Save Motion Settings</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Movement Clips</h2>
+                    <div id="movement-clip-list" style="display:flex; flex-direction:column; gap:6px; max-height:340px; overflow-y:auto; border:1px solid var(--border); border-radius:6px; padding:8px; background:var(--bg); font-size:12px;">
+                        <span style="color:var(--muted);">No movement clips captured yet.</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1434,6 +1517,7 @@ if (isset($_GET['action'])) {
                                             <option value="Late">Late</option>
                                             <option value="Exempt">Exempt</option>
                                             <option value="-">Check-Out (-)</option>
+                                            <option value="Before-Cutoff">Before Cutoff Logout</option>
                                         </select>
                                     </div>
                                 </div>
@@ -1646,6 +1730,22 @@ if (isset($_GET['action'])) {
                                     <input type="number" id="settings-grace-minutes" value="15" min="0">
                                 </div>
                             </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <div class="input-group">
+                                    <label>Auto Check-Out Gap (Hours)</label>
+                                    <input type="number" id="settings-checkout-gap-hours" value="2" min="0.25" step="0.25">
+                                </div>
+                                <div class="input-group">
+                                    <label>Logout Cutoff Time</label>
+                                    <input type="time" id="settings-logout-cutoff-time" value="15:00">
+                                </div>
+                            </div>
+                            <div style="display:flex; gap: 8px; align-items:center; margin:4px 0 8px;">
+                                <input type="checkbox" id="settings-logout-cutoff-enabled" style="width:auto;">
+                                <label for="settings-logout-cutoff-enabled" style="text-transform:none; letter-spacing:0; font-size:12px; margin:0;">
+                                    Enforce logout cutoff rule (after this time, second scan logs Check-Out)
+                                </label>
+                            </div>
                             <div class="input-group">
                                 <label>Weekend Days Selection</label>
                                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
@@ -1749,6 +1849,7 @@ if (isset($_GET['action'])) {
                         <option value="Late">Late</option>
                         <option value="Exempt">Exempt</option>
                         <option value="-">Check-Out (-)</option>
+                        <option value="Before-Cutoff">Before Cutoff Logout</option>
                     </select>
                 </div>
             </div>
@@ -1899,6 +2000,82 @@ if (isset($_GET['action'])) {
             }, 3000);
         }
 
+        function getTimeFromDate(dateObj) {
+            return dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function parseTimeToDate(baseDate, timeString) {
+            const [h, m] = timeString.split(':').map(Number);
+            const dt = new Date(baseDate);
+            dt.setHours(h || 0, m || 0, 0, 0);
+            return dt;
+        }
+
+        async function showConfirmDialog(options) {
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+                const result = await window.Swal.fire({
+                    title: options.title || 'Confirm action',
+                    text: options.text || '',
+                    icon: options.icon || 'warning',
+                    confirmButtonText: options.confirmButtonText || 'Confirm',
+                    cancelButtonText: options.cancelButtonText || 'Cancel',
+                    showCancelButton: true,
+                    reverseButtons: true
+                });
+                return result.isConfirmed;
+            }
+            return confirm(options.text || 'Are you sure?');
+        }
+
+        async function requireAdminPassword(actionLabel = "this action") {
+            const realPass = await readConfigKey("master_password");
+            if (!realPass) {
+                triggerToast("Admin password not configured", "error");
+                return false;
+            }
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+                const result = await window.Swal.fire({
+                    title: "Admin Password Required",
+                    text: `Enter admin password to ${actionLabel}.`,
+                    input: "password",
+                    inputPlaceholder: "Master passcode",
+                    inputAttributes: { autocapitalize: "off", autocomplete: "off" },
+                    showCancelButton: true,
+                    confirmButtonText: "Verify",
+                    cancelButtonText: "Cancel",
+                    reverseButtons: true
+                });
+                if (!result.isConfirmed) return false;
+                if ((result.value || "") !== String(realPass)) {
+                    triggerToast("Invalid admin password", "error");
+                    AudioEngine.play('error');
+                    return false;
+                }
+                return true;
+            }
+            const entered = prompt(`Admin password required to ${actionLabel}:`) || "";
+            if (entered !== String(realPass)) {
+                triggerToast("Invalid admin password", "error");
+                AudioEngine.play('error');
+                return false;
+            }
+            return true;
+        }
+
+        function getPreferredVideoMimeType() {
+            const candidates = [
+                'video/webm;codecs=vp9,opus',
+                'video/webm;codecs=vp8,opus',
+                'video/webm'
+            ];
+            for (const mimeType of candidates) {
+                if (window.MediaRecorder && MediaRecorder.isTypeSupported(mimeType)) {
+                    return mimeType;
+                }
+            }
+            return '';
+        }
+
         const ui = {
             video: document.getElementById('webcam-stream'),
             videoEnroll: document.getElementById('webcam-enroll-stream'),
@@ -1916,7 +2093,11 @@ if (isset($_GET['action'])) {
             placeholder: document.getElementById('camera-placeholder'),
             btnStart: document.getElementById('btn-cam-start'),
             btnPause: document.getElementById('btn-cam-pause'),
-            btnStop: document.getElementById('btn-cam-stop')
+            btnStop: document.getElementById('btn-cam-stop'),
+            movementClipList: document.getElementById('movement-clip-list'),
+            manualRecordStartBtn: document.getElementById('btn-manual-record-start'),
+            manualRecordStopBtn: document.getElementById('btn-manual-record-stop'),
+            wakeLockToggleBtn: document.getElementById('btn-wakelock-toggle')
         };
 
         let applicationFaceMatcherRuntime = null;
@@ -1942,6 +2123,30 @@ if (isset($_GET['action'])) {
         let shiftStartTime = "09:00";
         let shiftGraceMinutes = 15;
         let weekendDays = [0, 6];
+        let checkoutGapHours = 2;
+        let logoutCutoffEnabled = false;
+        let logoutCutoffTime = "15:00";
+
+        let motionTrackingEnabled = false;
+        let motionAggressiveness = 3;
+        let motionAutoDownload = false;
+        let motionIdleSeconds = 2;
+        let motionDetectionIntervalId = null;
+        let motionPrevFrameData = null;
+        let motionSampleCanvas = null;
+        let motionSampleCtx = null;
+        let motionRecordingInstance = null;
+        let motionRecordingChunks = [];
+        let motionRecordingStartAt = null;
+        let motionLastDetectedAt = 0;
+        let motionClipRecords = [];
+
+        let manualRecordingInstance = null;
+        let manualRecordingChunks = [];
+        let manualRecordingStartAt = null;
+
+        let wakeLockHandle = null;
+        let wakeLockEnabled = false;
 
         let reportsPage = 1;
         const reportsRowsPerPage = 10;
@@ -2033,6 +2238,10 @@ if (isset($_GET['action'])) {
                     ui.video.play();
                     isCameraPaused = false;
                     initiateContinuousInferenceEngineLoop();
+                    startMotionTrackingLoop();
+                    if (wakeLockEnabled) {
+                        await requestWakeLock();
+                    }
                     updateCameraControlsUI();
                     ui.banner.innerText = "Scanner online. Position face in scanner.";
                 }
@@ -2046,13 +2255,17 @@ if (isset($_GET['action'])) {
                 });
                 ui.video.srcObject = captureStream;
                 ui.video.onloadedmetadata = () => {
-                    ui.video.play().then(() => {
+                    ui.video.play().then(async () => {
                         isCameraActive = true;
                         isCameraPaused = false;
                         executeCanvasBoundingSynchronization();
                         ui.banner.innerText = "Scanner online. Position face in scanner.";
                         initiateContinuousInferenceEngineLoop();
+                        startMotionTrackingLoop();
                         updateCameraControlsUI();
+                        if (wakeLockEnabled) {
+                            await requestWakeLock();
+                        }
                     });
                 };
             } catch (err) {
@@ -2070,6 +2283,8 @@ if (isset($_GET['action'])) {
                     clearInterval(inferenceIntervalId);
                     inferenceIntervalId = null;
                 }
+                stopMotionTrackingLoop();
+                stopMotionRecordingSession(true);
                 latestFaceDetections = [];
                 updateCameraControlsUI();
                 ui.banner.innerText = "Camera scan stream suspended.";
@@ -2088,12 +2303,286 @@ if (isset($_GET['action'])) {
                     stream.getTracks().forEach(track => track.stop());
                 }
                 ui.video.srcObject = null;
+                stopMotionTrackingLoop();
+                stopMotionRecordingSession(true);
+                stopManualContinuousRecording(true, false);
                 isCameraActive = false;
                 isCameraPaused = false;
                 latestFaceDetections = [];
                 updateCameraControlsUI();
                 ui.banner.innerText = "Scanning framework offline.";
             }
+        }
+
+        function startMotionTrackingLoop() {
+            if (motionDetectionIntervalId || !motionTrackingEnabled) return;
+            motionPrevFrameData = null;
+            if (!motionSampleCanvas) {
+                motionSampleCanvas = document.createElement('canvas');
+                motionSampleCanvas.width = 160;
+                motionSampleCanvas.height = 120;
+                motionSampleCtx = motionSampleCanvas.getContext('2d', { willReadFrequently: true });
+            }
+            motionDetectionIntervalId = setInterval(async () => {
+                if (!motionTrackingEnabled || !isCameraActive || isCameraPaused || !ui.video.srcObject || ui.video.readyState < 2) {
+                    return;
+                }
+                if (!motionSampleCtx) return;
+                if (manualRecordingInstance) {
+                    return;
+                }
+
+                motionSampleCtx.drawImage(ui.video, 0, 0, motionSampleCanvas.width, motionSampleCanvas.height);
+                const currentFrame = motionSampleCtx.getImageData(0, 0, motionSampleCanvas.width, motionSampleCanvas.height).data;
+
+                if (!motionPrevFrameData) {
+                    motionPrevFrameData = currentFrame;
+                    return;
+                }
+
+                let changed = 0;
+                let compared = 0;
+                for (let i = 0; i < currentFrame.length; i += 16) {
+                    const diffR = Math.abs(currentFrame[i] - motionPrevFrameData[i]);
+                    const diffG = Math.abs(currentFrame[i + 1] - motionPrevFrameData[i + 1]);
+                    const diffB = Math.abs(currentFrame[i + 2] - motionPrevFrameData[i + 2]);
+                    const avg = (diffR + diffG + diffB) / 3;
+                    if (avg > 26) changed++;
+                    compared++;
+                }
+                motionPrevFrameData = currentFrame;
+                const motionPercent = compared ? (changed / compared) * 100 : 0;
+                const threshold = Math.max(0.5, Number(motionAggressiveness) || 3);
+                const nowTs = Date.now();
+
+                if (motionPercent >= threshold) {
+                    motionLastDetectedAt = nowTs;
+                    if (!motionRecordingInstance) {
+                        await startMotionRecordingSession();
+                    }
+                } else if (motionRecordingInstance) {
+                    const idleMs = Math.max(1, Number(motionIdleSeconds) || 2) * 1000;
+                    if (nowTs - motionLastDetectedAt >= idleMs) {
+                        stopMotionRecordingSession();
+                    }
+                }
+            }, 350);
+        }
+
+        function stopMotionTrackingLoop() {
+            if (motionDetectionIntervalId) {
+                clearInterval(motionDetectionIntervalId);
+                motionDetectionIntervalId = null;
+            }
+            motionPrevFrameData = null;
+        }
+
+        async function startMotionRecordingSession() {
+            if (motionRecordingInstance || !ui.video.srcObject || !window.MediaRecorder) return;
+            const sourceStream = ui.video.srcObject;
+            const clonedStream = sourceStream.clone();
+            const mimeType = getPreferredVideoMimeType();
+            const recorder = mimeType ? new MediaRecorder(clonedStream, { mimeType }) : new MediaRecorder(clonedStream);
+            motionRecordingChunks = [];
+            motionRecordingStartAt = Date.now();
+            motionRecordingInstance = recorder;
+            recorder.ondataavailable = ev => {
+                if (ev.data && ev.data.size > 0) motionRecordingChunks.push(ev.data);
+            };
+            recorder.onstop = () => {
+                const endedAt = Date.now();
+                const blob = new Blob(motionRecordingChunks, { type: mimeType || 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const clip = {
+                    id: `motion_${endedAt}`,
+                    mode: 'Motion',
+                    startedAt: motionRecordingStartAt,
+                    endedAt: endedAt,
+                    durationSec: ((endedAt - motionRecordingStartAt) / 1000).toFixed(1),
+                    blob: blob,
+                    url: url
+                };
+                motionClipRecords.unshift(clip);
+                renderMovementClipsList();
+                if (motionAutoDownload) {
+                    downloadMovementClipById(clip.id);
+                } else {
+                    triggerToast("Motion clip saved in memory", "success");
+                }
+                clonedStream.getTracks().forEach(track => track.stop());
+                motionRecordingChunks = [];
+                motionRecordingStartAt = null;
+            };
+            recorder.start(500);
+            triggerToast("Motion detected: recording started", "warning");
+        }
+
+        function stopMotionRecordingSession(silent = false) {
+            if (!motionRecordingInstance) return;
+            const rec = motionRecordingInstance;
+            motionRecordingInstance = null;
+            if (rec.state !== 'inactive') {
+                rec.stop();
+            }
+            if (!silent) {
+                triggerToast("Motion recording ended", "success");
+            }
+        }
+
+        function renderMovementClipsList() {
+            if (!ui.movementClipList) return;
+            if (!motionClipRecords.length) {
+                ui.movementClipList.innerHTML = '<span style="color:var(--muted);">No movement clips captured yet.</span>';
+                return;
+            }
+            ui.movementClipList.innerHTML = '';
+            motionClipRecords.forEach(clip => {
+                const row = document.createElement('div');
+                row.style = 'display:flex; justify-content:space-between; align-items:center; gap:6px; border:1px solid var(--border); border-radius:6px; padding:6px; background:var(--panel);';
+                const startTime = getTimeFromDate(new Date(clip.startedAt));
+                row.innerHTML = `
+                    <div style="display:flex; flex-direction:column;">
+                        <strong>${clip.mode} Clip</strong>
+                        <span style="color:var(--muted); font-size:11px;">${startTime} - ${clip.durationSec}s</span>
+                    </div>
+                    <button class="btn btn-secondary" style="padding:4px 8px; font-size:10px; border-radius:4px;" onclick="downloadMovementClipById('${clip.id}')">Download</button>
+                `;
+                ui.movementClipList.appendChild(row);
+            });
+        }
+
+        function downloadMovementClipById(clipId) {
+            const clip = motionClipRecords.find(item => item.id === clipId);
+            if (!clip) return;
+            const a = document.createElement('a');
+            a.href = clip.url;
+            a.download = `${clip.mode.toLowerCase()}_${clip.id}.webm`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        async function startManualContinuousRecording(enforcePassword = true) {
+            if (enforcePassword) {
+                const ok = await requireAdminPassword("start continuous recording");
+                if (!ok) return;
+            }
+            if (!ui.video.srcObject) {
+                await startCameraStream();
+            }
+            if (manualRecordingInstance || !ui.video.srcObject || !window.MediaRecorder) {
+                return;
+            }
+            const clonedStream = ui.video.srcObject.clone();
+            const mimeType = getPreferredVideoMimeType();
+            const recorder = mimeType ? new MediaRecorder(clonedStream, { mimeType }) : new MediaRecorder(clonedStream);
+            manualRecordingChunks = [];
+            manualRecordingStartAt = Date.now();
+            manualRecordingInstance = recorder;
+            recorder.ondataavailable = ev => {
+                if (ev.data && ev.data.size > 0) manualRecordingChunks.push(ev.data);
+            };
+            recorder.onstop = () => {
+                const endedAt = Date.now();
+                const blob = new Blob(manualRecordingChunks, { type: mimeType || 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const clip = {
+                    id: `manual_${endedAt}`,
+                    mode: 'Manual',
+                    startedAt: manualRecordingStartAt,
+                    endedAt: endedAt,
+                    durationSec: ((endedAt - manualRecordingStartAt) / 1000).toFixed(1),
+                    blob: blob,
+                    url: url
+                };
+                motionClipRecords.unshift(clip);
+                renderMovementClipsList();
+                if (motionAutoDownload) {
+                    downloadMovementClipById(clip.id);
+                } else {
+                    triggerToast("Continuous recording saved", "success");
+                }
+                clonedStream.getTracks().forEach(track => track.stop());
+                manualRecordingChunks = [];
+                manualRecordingStartAt = null;
+                updateManualRecordingButtons();
+            };
+            recorder.start(1000);
+            updateManualRecordingButtons();
+            triggerToast("Continuous recording started", "warning");
+        }
+
+        async function stopManualContinuousRecording(silent = false, enforcePassword = true) {
+            if (enforcePassword) {
+                const ok = await requireAdminPassword("stop continuous recording");
+                if (!ok) return;
+            }
+            if (!manualRecordingInstance) return;
+            const rec = manualRecordingInstance;
+            manualRecordingInstance = null;
+            if (rec.state !== 'inactive') {
+                rec.stop();
+            }
+            updateManualRecordingButtons();
+            if (!silent) {
+                triggerToast("Continuous recording stopped", "success");
+            }
+        }
+
+        function updateManualRecordingButtons() {
+            if (ui.manualRecordStartBtn) ui.manualRecordStartBtn.disabled = !!manualRecordingInstance;
+            if (ui.manualRecordStopBtn) ui.manualRecordStopBtn.disabled = !manualRecordingInstance;
+        }
+
+        async function requestWakeLock() {
+            if (!('wakeLock' in navigator) || wakeLockHandle) return;
+            try {
+                wakeLockHandle = await navigator.wakeLock.request('screen');
+                wakeLockHandle.addEventListener('release', () => {
+                    wakeLockHandle = null;
+                });
+                updateWakeLockButton();
+                triggerToast("No-sleep mode active", "success");
+            } catch (err) {
+                triggerToast("No-sleep mode not available", "warning");
+                wakeLockEnabled = false;
+                updateWakeLockButton();
+            }
+        }
+
+        async function releaseWakeLock() {
+            if (!wakeLockHandle) return;
+            try {
+                await wakeLockHandle.release();
+            } catch (err) {
+                // ignore release issues
+            }
+            wakeLockHandle = null;
+            updateWakeLockButton();
+        }
+
+        function updateWakeLockButton() {
+            if (!ui.wakeLockToggleBtn) return;
+            if (wakeLockEnabled) {
+                ui.wakeLockToggleBtn.textContent = "Disable No-Sleep Mode";
+            } else {
+                ui.wakeLockToggleBtn.textContent = "Enable No-Sleep Mode";
+            }
+        }
+
+        async function toggleSleepPrevention(enforcePassword = true) {
+            if (enforcePassword) {
+                const ok = await requireAdminPassword("change no-sleep mode");
+                if (!ok) return;
+            }
+            wakeLockEnabled = !wakeLockEnabled;
+            if (wakeLockEnabled) {
+                await requestWakeLock();
+            } else {
+                await releaseWakeLock();
+                triggerToast("No-sleep mode disabled", "warning");
+            }
+            updateWakeLockButton();
         }
 
         async function startEnrollmentCamera() {
@@ -2258,6 +2747,40 @@ if (isset($_GET['action'])) {
                         document.getElementById(`wk-${i}`).checked = savedWk.includes(i);
                     }
                 }
+                const savedGapHours = await readConfigKey("checkout_gap_hours");
+                if (savedGapHours) {
+                    checkoutGapHours = parseFloat(savedGapHours);
+                    document.getElementById('settings-checkout-gap-hours').value = checkoutGapHours;
+                }
+                const savedCutoffEnabled = await readConfigKey("logout_cutoff_enabled");
+                logoutCutoffEnabled = String(savedCutoffEnabled) === "1";
+                document.getElementById('settings-logout-cutoff-enabled').checked = logoutCutoffEnabled;
+
+                const savedCutoffTime = await readConfigKey("logout_cutoff_time");
+                if (savedCutoffTime) {
+                    logoutCutoffTime = savedCutoffTime;
+                    document.getElementById('settings-logout-cutoff-time').value = savedCutoffTime;
+                }
+
+                const savedMotionEnabled = await readConfigKey("motion_tracking_enabled");
+                motionTrackingEnabled = String(savedMotionEnabled) === "1";
+                document.getElementById('settings-motion-enabled').checked = motionTrackingEnabled;
+
+                const savedMotionAgg = await readConfigKey("motion_aggressiveness");
+                if (savedMotionAgg) {
+                    motionAggressiveness = parseFloat(savedMotionAgg);
+                    document.getElementById('settings-motion-aggressiveness').value = motionAggressiveness;
+                }
+
+                const savedMotionAuto = await readConfigKey("motion_auto_download");
+                motionAutoDownload = String(savedMotionAuto) === "1";
+                document.getElementById('settings-motion-auto-download').checked = motionAutoDownload;
+
+                const savedMotionIdle = await readConfigKey("motion_idle_seconds");
+                if (savedMotionIdle) {
+                    motionIdleSeconds = parseInt(savedMotionIdle, 10);
+                    document.getElementById('settings-motion-idle-seconds').value = motionIdleSeconds;
+                }
 
                 ui.banner.innerText = "Downloading core weight libraries (approx. 5MB)...";
                 if (faceapi.tf && faceapi.tf.setBackend) await faceapi.tf.setBackend('cpu');
@@ -2269,7 +2792,13 @@ if (isset($_GET['action'])) {
                 await rebuildComputationalMatchingGraph();
                 ui.banner.innerText = "Facial recognition core loaded. System online.";
                 updateCameraControlsUI();
+                updateManualRecordingButtons();
+                updateWakeLockButton();
+                renderMovementClipsList();
                 await loadAttendanceLedgingTicker();
+                if (motionTrackingEnabled) {
+                    await startCameraStream();
+                }
                 suggestNextEmployeeId();
                 await syncActiveFiltersList();
             } catch (err) {
@@ -2646,6 +3175,72 @@ if (isset($_GET['action'])) {
             }, suppressionCooldownPeriod);
         }
 
+        function calculateCheckInStatus(now) {
+            const [shiftH, shiftM] = shiftStartTime.split(':').map(Number);
+            const shiftLimit = new Date(now);
+            shiftLimit.setHours(shiftH, (shiftM || 0) + (parseInt(shiftGraceMinutes, 10) || 0), 0, 0);
+            return now.getTime() > shiftLimit.getTime() ? "Late" : "On-Time";
+        }
+
+        function isBeforeLogoutCutoff(now) {
+            if (!logoutCutoffEnabled) return false;
+            const cutoffDate = parseTimeToDate(now, logoutCutoffTime || "15:00");
+            return now.getTime() < cutoffDate.getTime();
+        }
+
+        function isAfterLogoutCutoff(now) {
+            if (!logoutCutoffEnabled) return false;
+            const cutoffDate = parseTimeToDate(now, logoutCutoffTime || "15:00");
+            return now.getTime() >= cutoffDate.getTime();
+        }
+
+        function calculateCheckoutStatus(now, useBeforeCutoffTag = false) {
+            if (useBeforeCutoffTag && isBeforeLogoutCutoff(now)) {
+                return "Before-Cutoff";
+            }
+            return "-";
+        }
+
+        async function resolveAutomaticAttendanceEvent(empId, employeeName, logsToday, now) {
+            const orderedLogs = [...logsToday].sort((a, b) => a.timestamp - b.timestamp);
+            if (!orderedLogs.length) {
+                return { eventType: "Check-In", status: calculateCheckInStatus(now), reason: "first-scan" };
+            }
+
+            const lastLog = orderedLogs[orderedLogs.length - 1];
+            if (lastLog.type === "Check-Out") {
+                return { eventType: "Check-In", status: calculateCheckInStatus(now), reason: "post-checkout-reentry" };
+            }
+
+            const requiredGapHours = Math.max(0.25, Number(checkoutGapHours) || 2);
+            const elapsedHours = (now.getTime() - Number(lastLog.timestamp || 0)) / 3600000;
+            const canAutoCheckoutByGap = elapsedHours >= requiredGapHours;
+
+            if (canAutoCheckoutByGap || isAfterLogoutCutoff(now)) {
+                return { eventType: "Check-Out", status: "-", reason: "auto-checkout" };
+            }
+
+            const confirmed = await showConfirmDialog({
+                title: "Attendance already marked",
+                text: `${employeeName} checked in recently. Mark logout now anyway?`,
+                icon: "question",
+                confirmButtonText: "Yes, Mark Check-Out",
+                cancelButtonText: "Cancel"
+            });
+
+            if (!confirmed) {
+                triggerToast("Attendance already marked for this employee", "warning");
+                AudioEngine.play('warning');
+                return { cancelled: true };
+            }
+
+            return {
+                eventType: "Check-Out",
+                status: calculateCheckoutStatus(now, true),
+                reason: "manual-early-checkout"
+            };
+        }
+
         async function recordAttendanceLogToDB(empId, employeeName, empDept, empRole, manualTypeOverride = null) {
             const now = new Date();
             const todayStr = now.toISOString().split('T')[0];
@@ -2653,23 +3248,18 @@ if (isset($_GET['action'])) {
             const logsToday = allLogs.filter(l => l.empId === empId && l.dateString === todayStr);
 
             let eventType = "Check-In";
+            let status = "On-Time";
+
             if (manualTypeOverride) {
                 eventType = manualTypeOverride;
-            } else if (logsToday.length > 0) {
-                const lastLog = logsToday[logsToday.length - 1];
-                eventType = lastLog.type === "Check-In" ? "Check-Out" : "Check-In";
-            }
-
-            let status = "On-Time";
-            if (eventType === "Check-In") {
-                const [shiftH, shiftM] = shiftStartTime.split(':').map(Number);
-                const shiftLimit = new Date();
-                shiftLimit.setHours(shiftH, shiftM + shiftGraceMinutes, 0, 0);
-                if (now.getTime() > shiftLimit.getTime()) {
-                    status = "Late";
-                }
+                status = eventType === "Check-In" ? calculateCheckInStatus(now) : calculateCheckoutStatus(now, true);
             } else {
-                status = "-";
+                const resolution = await resolveAutomaticAttendanceEvent(empId, employeeName, logsToday, now);
+                if (resolution.cancelled) {
+                    return;
+                }
+                eventType = resolution.eventType;
+                status = resolution.status;
             }
 
             const logEntry = {
@@ -2679,13 +3269,14 @@ if (isset($_GET['action'])) {
                 role: empRole,
                 timestamp: now.getTime(),
                 dateString: todayStr,
-                timeString: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                timeString: getTimeFromDate(now),
                 type: eventType,
                 status: status
             };
 
             await writeDatabaseRecord("attendance_logs", logEntry);
             await loadAttendanceLedgingTicker();
+            await renderAnalyticsDashboard();
             triggerToast(`${eventType} logged for ${employeeName}`, "success");
             AudioEngine.play('success');
             speakText(`${employeeName} verified. ${eventType} registered.`);
@@ -2897,10 +3488,20 @@ if (isset($_GET['action'])) {
         async function saveShiftPolicySettings() {
             const timeVal = document.getElementById('settings-shift-time').value;
             const graceVal = parseInt(document.getElementById('settings-grace-minutes').value, 10);
+            const gapValRaw = parseFloat(document.getElementById('settings-checkout-gap-hours').value);
+            const gapVal = (Number.isFinite(gapValRaw) && gapValRaw >= 0.25) ? gapValRaw : 2;
+            const cutoffEnabledVal = document.getElementById('settings-logout-cutoff-enabled').checked;
+            const cutoffTimeVal = document.getElementById('settings-logout-cutoff-time').value;
             shiftStartTime = timeVal;
-            shiftGraceMinutes = graceVal;
+            shiftGraceMinutes = Number.isFinite(graceVal) ? graceVal : 15;
+            checkoutGapHours = gapVal;
+            logoutCutoffEnabled = cutoffEnabledVal;
+            logoutCutoffTime = cutoffTimeVal;
             await writeConfigKey("shift_start_time", timeVal);
-            await writeConfigKey("shift_grace_minutes", graceVal);
+            await writeConfigKey("shift_grace_minutes", shiftGraceMinutes);
+            await writeConfigKey("checkout_gap_hours", String(gapVal));
+            await writeConfigKey("logout_cutoff_enabled", cutoffEnabledVal ? "1" : "0");
+            await writeConfigKey("logout_cutoff_time", cutoffTimeVal);
 
             const wkChecked = [];
             for (let i = 0; i < 7; i++) {
@@ -2914,6 +3515,33 @@ if (isset($_GET['action'])) {
             triggerToast("Policies Updated", "success");
             AudioEngine.play('success');
             await renderAnalyticsDashboard();
+        }
+
+        async function saveMotionTrackingSettings() {
+            const ok = await requireAdminPassword("save motion settings");
+            if (!ok) return;
+            motionTrackingEnabled = document.getElementById('settings-motion-enabled').checked;
+            motionAutoDownload = document.getElementById('settings-motion-auto-download').checked;
+            const aggressivenessRaw = parseFloat(document.getElementById('settings-motion-aggressiveness').value);
+            const idleRaw = parseInt(document.getElementById('settings-motion-idle-seconds').value, 10);
+            motionAggressiveness = Number.isFinite(aggressivenessRaw) ? Math.min(Math.max(aggressivenessRaw, 0.5), 30) : 3;
+            motionIdleSeconds = Number.isFinite(idleRaw) ? Math.min(Math.max(idleRaw, 1), 30) : 2;
+
+            await writeConfigKey("motion_tracking_enabled", motionTrackingEnabled ? "1" : "0");
+            await writeConfigKey("motion_auto_download", motionAutoDownload ? "1" : "0");
+            await writeConfigKey("motion_aggressiveness", String(motionAggressiveness));
+            await writeConfigKey("motion_idle_seconds", String(motionIdleSeconds));
+
+            if (motionTrackingEnabled) {
+                await startCameraStream();
+                startMotionTrackingLoop();
+            } else {
+                stopMotionTrackingLoop();
+                stopMotionRecordingSession(true);
+            }
+
+            triggerToast("Motion tracking settings saved", "success");
+            AudioEngine.play('success');
         }
 
         async function renderAnalyticsDashboard() {
@@ -3176,7 +3804,7 @@ if (isset($_GET['action'])) {
                     <td>${log.department}</td>
                     <td>${log.role}</td>
                     <td style="font-weight: 600; color: var(--primary);">${log.type}</td>
-                    <td><span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; background:${log.status === 'On-Time' ? 'var(--success-bg)' : log.status === 'Late' ? 'var(--warning-bg)' : log.status === 'Exempt' ? 'var(--primary-glow)' : 'var(--bg)'}; color:${log.status === 'On-Time' ? 'var(--success)' : log.status === 'Late' ? 'var(--warning)' : log.status === 'Exempt' ? 'var(--primary)' : 'var(--muted)'};">${log.status}</span></td>
+                    <td><span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; background:${log.status === 'On-Time' ? 'var(--success-bg)' : log.status === 'Late' ? 'var(--warning-bg)' : log.status === 'Exempt' ? 'var(--primary-glow)' : log.status === 'Before-Cutoff' ? 'var(--primary-glow)' : 'var(--bg)'}; color:${log.status === 'On-Time' ? 'var(--success)' : log.status === 'Late' ? 'var(--warning)' : log.status === 'Exempt' ? 'var(--primary)' : log.status === 'Before-Cutoff' ? 'var(--primary)' : 'var(--muted)'};">${log.status}</span></td>
                     <td>
                         <div style="display:flex; gap:4px;">
                             <button class="btn btn-secondary" style="padding:4px 8px; font-size:10px; border-radius:4px;" onclick="openRetroactiveModal(${log.id})">Edit</button>
@@ -3255,6 +3883,9 @@ if (isset($_GET['action'])) {
             if (targetViewModeString === 'kiosk') {
                 document.getElementById('view-kiosk').classList.add('active');
                 document.getElementById('nav-kiosk').classList.add('active');
+            } else if (targetViewModeString === 'monitor') {
+                document.getElementById('view-monitor').classList.add('active');
+                document.getElementById('nav-monitor').classList.add('active');
             } else {
                 document.getElementById('view-admin').classList.add('active');
                 document.getElementById('nav-admin').classList.add('active');
@@ -3506,10 +4137,17 @@ if (isset($_GET['action'])) {
             await loadAttendanceLedgingTicker();
         }
 
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState === 'visible' && wakeLockEnabled) {
+                await requestWakeLock();
+            }
+        });
+
         window.onload = compileApplicationCoreSubsystems;
 
         
     </script>
+
 
 
 
