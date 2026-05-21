@@ -931,6 +931,8 @@
     
 
     
+
+    
 <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
@@ -1029,7 +1031,7 @@
 
         <div id="view-monitor" class="view-section">
             <div class="grid-2">
-                <div class="card">
+                <div class="card" style="grid-column: 1 / -1;">
                     <h2>Motion Tracking & Recording</h2>
                     <div style="font-size:11px; color:var(--muted); margin-bottom:8px;">
                         Public monitor controls are available here. Any state change requires admin password.
@@ -1063,12 +1065,6 @@
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:8px;">
                         <button class="btn btn-secondary" id="btn-wakelock-toggle" onclick="toggleSleepPrevention()">Enable No-Sleep Mode</button>
                         <button class="btn btn-secondary" onclick="saveMotionTrackingSettings()">Save Motion Settings</button>
-                    </div>
-                </div>
-                <div class="card">
-                    <h2>Movement Clips</h2>
-                    <div id="movement-clip-list" style="display:flex; flex-direction:column; gap:6px; max-height:340px; overflow-y:auto; border:1px solid var(--border); border-radius:6px; padding:8px; background:var(--bg); font-size:12px;">
-                        <span style="color:var(--muted);">No movement clips captured yet.</span>
                     </div>
                 </div>
             </div>
@@ -1539,6 +1535,11 @@
                             </div>
                             <button class="btn btn-secondary" onclick="saveShiftPolicySettings()">Apply Shift & Calendar Rules</button>
 
+                            <h2 style="margin-top: 10px;">Admin Movement Clips</h2>
+                            <div id="movement-clip-list" style="display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto; border:1px solid var(--border); border-radius:6px; padding:8px; background:var(--bg); font-size:12px;">
+                                <span style="color:var(--muted);">No movement clips captured yet.</span>
+                            </div>
+
                             <h2 style="margin-top: 10px;">Security Access Settings</h2>
                             <div class="input-group">
                                 <label>Change Dashboard Password</label>
@@ -1779,6 +1780,52 @@
                 return false;
             }
             return true;
+        }
+
+        function getMonitorProtectedInputs() {
+            return [
+                document.getElementById('settings-motion-enabled'),
+                document.getElementById('settings-motion-auto-download'),
+                document.getElementById('settings-motion-aggressiveness'),
+                document.getElementById('settings-motion-idle-seconds')
+            ].filter(Boolean);
+        }
+
+        function setMonitorFieldSnapshot(element) {
+            if (!element) return;
+            if (element.type === 'checkbox') {
+                element.dataset.prevValue = element.checked ? '1' : '0';
+            } else {
+                element.dataset.prevValue = element.value;
+            }
+        }
+
+        function restoreMonitorFieldSnapshot(element) {
+            if (!element) return;
+            const prevValue = element.dataset.prevValue;
+            if (element.type === 'checkbox') {
+                element.checked = prevValue === '1';
+            } else if (prevValue !== undefined) {
+                element.value = prevValue;
+            }
+        }
+
+        function setupMonitorFieldGuards() {
+            const elements = getMonitorProtectedInputs();
+            elements.forEach(el => {
+                setMonitorFieldSnapshot(el);
+                el.addEventListener('focus', () => setMonitorFieldSnapshot(el));
+                el.addEventListener('pointerdown', () => setMonitorFieldSnapshot(el));
+                el.addEventListener('keydown', () => setMonitorFieldSnapshot(el), { once: true });
+                el.addEventListener('change', async () => {
+                    const ok = await requireAdminPassword("change monitor control state");
+                    if (!ok) {
+                        restoreMonitorFieldSnapshot(el);
+                        return;
+                    }
+                    setMonitorFieldSnapshot(el);
+                });
+            });
         }
 
         function getPreferredVideoMimeType() {
@@ -2693,6 +2740,7 @@
                 updateManualRecordingButtons();
                 updateWakeLockButton();
                 renderMovementClipsList();
+                setupMonitorFieldGuards();
                 await loadAttendanceLedgingTicker();
                 populateManualOverrideDropdown();
                 populateLeaveRequestDropdown();
@@ -4655,6 +4703,7 @@
 
         
     </script>
+
 
 
 

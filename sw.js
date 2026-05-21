@@ -61,19 +61,23 @@ if (workbox) {
     },
     {
         "url": "index.html",
-        "revision": "0cfd5f7cc57ec4ea7cf4cba58f188465"
+        "revision": "d1f74fe2ca12214f98df16c56f3060ec"
     },
     {
         "url": "index.php",
-        "revision": "a75c447697b18ad3a96158538839a90f"
+        "revision": "411d95925e16336abf50a8eb28766b88"
     },
     {
         "url": "manifest.json",
         "revision": "3f84a037c8236a23efc8efff433deee9"
     },
     {
+        "url": "motion-tracking-overview.md",
+        "revision": "123faa4b1a6eba88f314d5d07843f9b8"
+    },
+    {
         "url": "offline.html",
-        "revision": "45988b8ff6b5e153dea1b678e69da915"
+        "revision": "32f8cd42dbbe5dcb561dae06182f8687"
     },
     {
         "url": "pwa-register.js",
@@ -81,7 +85,7 @@ if (workbox) {
     },
     {
         "url": "sw.js",
-        "revision": "dba5b242eb20cee28824485a6a03d638"
+        "revision": "1a48f0330acc383b6febf05ca249b04a"
     }
 ]);
 
