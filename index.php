@@ -601,7 +601,7 @@ if (isset($_GET['action'])) {
             transform: scaleX(-1);
         }
 
-        canvas {
+        #canvas-runtime-draw {
             position: absolute;
             top: 0;
             left: 0;
@@ -3009,12 +3009,19 @@ if (isset($_GET['action'])) {
 
             const keys = Object.keys(deptCounts);
             const total = Object.values(deptCounts).reduce((a, b) => a + b, 0);
+            const getVarColor = (name, fallback) => {
+                return getComputedStyle(document.body).getPropertyValue(name).trim() || fallback;
+            };
+            const borderCol = getVarColor('--border', '#e2e8f0');
+            const panelCol = getVarColor('--panel', '#ffffff');
+            const textCol = getVarColor('--text', '#0f172a');
+
             if (total === 0) {
-                ctx.fillStyle = 'var(--border)';
+                ctx.fillStyle = borderCol;
                 ctx.beginPath();
                 ctx.arc(70, 70, 60, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.fillStyle = 'var(--panel)';
+                ctx.fillStyle = panelCol;
                 ctx.beginPath();
                 ctx.arc(70, 70, 40, 0, Math.PI * 2);
                 ctx.fill();
@@ -3048,12 +3055,12 @@ if (isset($_GET['action'])) {
                 legend.appendChild(div);
             });
 
-            ctx.fillStyle = 'var(--panel)';
+            ctx.fillStyle = panelCol;
             ctx.beginPath();
             ctx.arc(70, 70, 36, 0, Math.PI * 2);
             ctx.fill();
 
-            ctx.fillStyle = 'var(--text)';
+            ctx.fillStyle = textCol;
             ctx.font = 'bold 12px sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
