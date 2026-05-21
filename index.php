@@ -586,6 +586,10 @@ if (isset($_GET['action'])) {
             gap: 16px;
         }
 
+        .employee-directory-layout {
+            min-width: 0;
+        }
+
         .card {
             background: var(--panel);
             border-radius: 12px;
@@ -1198,8 +1202,12 @@ if (isset($_GET['action'])) {
 
             .grid-2 {
                 display: grid;
-                grid-template-columns: 1.2fr 0.8fr;
+                grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
                 gap: 24px;
+            }
+
+            .employee-directory-layout {
+                grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
             }
 
             .card {
@@ -1239,6 +1247,10 @@ if (isset($_GET['action'])) {
             }
         }
     </style>
+
+    
+
+    
 
     
 
@@ -1595,7 +1607,7 @@ if (isset($_GET['action'])) {
                 </div>
 
                 <div id="sub-view-employees" class="sub-view-section" style="display: none; flex-direction: column; gap: 16px;">
-                    <div class="grid-2">
+                    <div class="grid-2 employee-directory-layout">
                         <div class="card">
                             <h2 id="reg-form-title">Enroll New Employee Profile</h2>
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
@@ -4259,6 +4271,8 @@ if (isset($_GET['action'])) {
 
         
     </script>
+
+
 
 
 
