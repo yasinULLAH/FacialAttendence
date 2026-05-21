@@ -3189,7 +3189,8 @@
             const correctPasswordString = await readConfigKey("master_password");
             if (inputString === correctPasswordString) {
                 isDashboardAuthenticatedState = true;
-                writeSessionState({ isAdminAuthenticated: true });
+                currentPrimaryView = "admin";
+                writeSessionState({ isAdminAuthenticated: true, activeView: currentPrimaryView, activeSubTab: currentAdminSubTab });
                 ui.authGate.style.display = "none";
                 document.getElementById('admin-panel-content').style.display = "flex";
                 ui.passInput.value = "";
@@ -3209,7 +3210,7 @@
         }
         function logoutAdminGate() {
             isDashboardAuthenticatedState = false;
-            writeSessionState({ isAdminAuthenticated: false });
+            writeSessionState({ isAdminAuthenticated: false, activeView: "admin", activeSubTab: currentAdminSubTab });
             stopEnrollmentCamera();
             ui.authGate.style.display = "flex";
             document.getElementById('admin-panel-content').style.display = "none";
@@ -3842,6 +3843,7 @@
                 suggestNextEmployeeId();
                 await syncActiveFiltersList();
                 setDefaultReportingDateRange();
+                restoreSessionStateAfterStartup();
             } catch (err) {
                 ui.banner.innerText = "Fatal core startup framework exception.";
             }
@@ -4176,6 +4178,7 @@
                 joined: originalRecord ? (originalRecord.joined || Date.now()) : Date.now()
             });
             await rebuildComputationalMatchingGraph();
+            empPage = 1;
             await renderAdministrativeEmployeeDirectoryTable();
             populateManualOverrideDropdown();
             populateLeaveRequestDropdown();
@@ -4658,6 +4661,7 @@
                         joined: originalRecord ? (originalRecord.joined || Date.now()) : Date.now()
                     });
                     await rebuildComputationalMatchingGraph();
+                    empPage = 1;
                     await renderAdministrativeEmployeeDirectoryTable();
                     populateManualOverrideDropdown();
                     populateLeaveRequestDropdown();
@@ -4907,6 +4911,7 @@
                 joined: originalRecord.joined || Date.now()
             });
             await rebuildComputationalMatchingGraph();
+            empPage = 1;
             await renderAdministrativeEmployeeDirectoryTable();
             populateManualOverrideDropdown();
             populateLeaveRequestDropdown();
@@ -5384,7 +5389,20 @@
             AudioEngine.play('success');
             await logAuditEvent("attendance_daily_summary_exported");
         }
-        function switchView(targetViewModeString) {
+        function restoreSessionStateAfterStartup() {
+            const state = readSessionState();
+            const validViews = ["kiosk", "admin", "monitor"];
+            const validSubTabs = ["reports", "reporting", "employees", "settings"];
+            currentPrimaryView = validViews.includes(state.activeView) ? state.activeView : "kiosk";
+            currentAdminSubTab = validSubTabs.includes(state.activeSubTab) ? state.activeSubTab : "reports";
+            isDashboardAuthenticatedState = state.isAdminAuthenticated === true;
+            switchView(currentPrimaryView, { skipPersist: true });
+        }
+        function switchView(targetViewModeString, options = {}) {
+            currentPrimaryView = targetViewModeString;
+            if (!options.skipPersist) {
+                writeSessionState({ activeView: currentPrimaryView, activeSubTab: currentAdminSubTab, isAdminAuthenticated: isDashboardAuthenticatedState });
+            }
             document.querySelectorAll('.view-section').forEach(section => section.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             stopEnrollmentCamera();
@@ -5417,11 +5435,15 @@
                 } else {
                     ui.authGate.style.display = "none";
                     document.getElementById('admin-panel-content').style.display = "flex";
-                    switchSubTab('reports');
+                    switchSubTab(currentAdminSubTab || 'reports', { skipPersist: options.skipPersist });
                 }
             }
         }
-        function switchSubTab(subTabName) {
+        function switchSubTab(subTabName, options = {}) {
+            currentAdminSubTab = subTabName;
+            if (!options.skipPersist) {
+                writeSessionState({ activeView: "admin", activeSubTab: currentAdminSubTab, isAdminAuthenticated: isDashboardAuthenticatedState });
+            }
             document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.sub-view-section').forEach(sec => sec.style.display = "none");
             stopEnrollmentCamera();
