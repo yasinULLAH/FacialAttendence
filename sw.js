@@ -53,7 +53,7 @@ if (workbox) {
     },
     {
         "url": "build pwa make html app offline and installable yasin best working re-run this for updates best for html only.pyw",
-        "revision": "da46200dec49ca639eeaf4cc0335c9cb"
+        "revision": "4ba91ac00766609d96565c83e63436d8"
     },
     {
         "url": "icon.svg",
@@ -61,11 +61,11 @@ if (workbox) {
     },
     {
         "url": "index.html",
-        "revision": "f89c631b52318e7ab9c4428a98794231"
+        "revision": "2209412bc080ffe086369b1a3670514f"
     },
     {
         "url": "index.php",
-        "revision": "e88e46c9a8bf3b8c67cd0429fb9176cb"
+        "revision": "a6f47bc8cb847635e402890891b9b2d8"
     },
     {
         "url": "manifest.json",
@@ -77,7 +77,7 @@ if (workbox) {
     },
     {
         "url": "offline.html",
-        "revision": "c463c5d655ddcccd05fb9d4132045ceb"
+        "revision": "563d0d8478dbf315374a725368b98f53"
     },
     {
         "url": "pwa-register.js",
@@ -93,7 +93,7 @@ if (workbox) {
     },
     {
         "url": "sw.js",
-        "revision": "d7ea15883701726bb29655587cabb289"
+        "revision": "ad08ff848adc453cd9982f93c01d116e"
     }
 ]);
 

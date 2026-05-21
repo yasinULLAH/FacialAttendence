@@ -9,6 +9,7 @@
     <title>Aura Facial Recognition Attendance Suite</title>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.6/css/buttons.dataTables.min.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -785,39 +786,150 @@
 
         .sub-nav {
             display: flex;
-            border-bottom: 1px solid var(--border);
             margin-bottom: 16px;
-            overflow-x: auto;
-            gap: 20px;
+            gap: 12px;
             align-items: center;
             justify-content: space-between;
+            background: linear-gradient(130deg, var(--panel), var(--primary-glow));
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+            flex-wrap: wrap;
         }
 
         .sub-nav-tabs {
             display: flex;
-            gap: 20px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .sub-tab-btn {
-            padding: 10px 0;
-            font-size: 13px;
-            font-weight: 600;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 700;
             color: var(--muted);
-            background: none;
-            border: none;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 999px;
             cursor: pointer;
-            border-bottom: 2px solid transparent;
             transition: all 0.2s ease;
             white-space: nowrap;
+            letter-spacing: 0.2px;
         }
 
         .sub-tab-btn:hover {
             color: var(--text);
+            border-color: var(--primary);
+            transform: translateY(-1px);
         }
 
         .sub-tab-btn.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            background: linear-gradient(120deg, var(--primary), var(--primary-hover));
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
+        }
+
+        .reporting-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+            gap: 10px;
+        }
+
+        .reporting-kpi-card {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--panel);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .reporting-kpi-card .label {
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+        }
+
+        .reporting-kpi-card .value {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .reporting-controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 8px;
+        }
+
+        .reporting-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 8px;
+        }
+
+        .reporting-chart-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .reporting-chart-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px;
+            height: 260px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .reporting-chart-card h3 {
+            font-size: 12px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .reporting-chart-card canvas {
+            width: 100% !important;
+            height: 210px !important;
+            max-height: 210px;
+            display: block;
+        }
+
+        #report-chart-lab {
+            width: 100% !important;
+            height: 230px !important;
+            max-height: 230px;
+            display: block;
+        }
+
+        .reporting-infographic-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 8px;
+        }
+
+        .reporting-infographic-item {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            padding: 10px;
+            font-size: 12px;
+            color: var(--text);
+            line-height: 1.45;
+        }
+
+        @media (max-width: 900px) {
+            .reporting-chart-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .theme-picker-group {
@@ -999,8 +1111,16 @@
             }
         }
     </style>
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    
+    
+
+    
+
+    
+
+    
+
+    
 </head>
 
 <body>
@@ -1198,12 +1318,10 @@
             <div id="admin-panel-content" style="display: none; flex-direction: column; gap: 16px; width: 100%;">
                 <div class="sub-nav">
                     <div class="sub-nav-tabs">
-                        <button id="sub-tab-reports" class="sub-tab-btn active" onclick="switchSubTab('reports')">📊
-                            Analytics & Reports</button>
-                        <button id="sub-tab-employees" class="sub-tab-btn" onclick="switchSubTab('employees')">👥
-                            Profile Directory</button>
-                        <button id="sub-tab-settings" class="sub-tab-btn" onclick="switchSubTab('settings')">⚙️ Controls
-                            & Policies</button>
+                        <button id="sub-tab-reports" class="sub-tab-btn active" onclick="switchSubTab('reports')">Analytics & Reports</button>
+                        <button id="sub-tab-reporting" class="sub-tab-btn" onclick="switchSubTab('reporting')">Reporting Center</button>
+                        <button id="sub-tab-employees" class="sub-tab-btn" onclick="switchSubTab('employees')">Profile Directory</button>
+                        <button id="sub-tab-settings" class="sub-tab-btn" onclick="switchSubTab('settings')">Controls & Policies</button>
                     </div>
                     <button class="btn btn-secondary" onclick="logoutAdminGate()"
                         style="padding: 6px 12px; font-size: 11px;">🔒 Lock Console</button>
@@ -1366,6 +1484,154 @@
                                 <button id="btn-report-next" class="datatable-page-btn"
                                     onclick="changeReportsPage(1)">Next</button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="sub-view-reporting" class="sub-view-section"
+                    style="display: none; flex-direction: column; gap: 16px;">
+                    <div class="card">
+                        <h2>Comprehensive Reporting Hub</h2>
+                        <div class="reporting-controls-grid">
+                            <div class="input-group">
+                                <label>From Date</label>
+                                <input type="date" id="reporting-date-from">
+                            </div>
+                            <div class="input-group">
+                                <label>To Date</label>
+                                <input type="date" id="reporting-date-to">
+                            </div>
+                            <div class="input-group">
+                                <label>Department</label>
+                                <select id="reporting-filter-dept">
+                                    <option value="all">All Departments</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Employee</label>
+                                <select id="reporting-filter-employee">
+                                    <option value="all">All Employees</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Event Type</label>
+                                <select id="reporting-filter-type">
+                                    <option value="all">All Types</option>
+                                    <option value="Check-In">Check-In</option>
+                                    <option value="Check-Out">Check-Out</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Policy Status</label>
+                                <select id="reporting-filter-status">
+                                    <option value="all">All Statuses</option>
+                                    <option value="On-Time">On-Time</option>
+                                    <option value="Late">Late</option>
+                                    <option value="Exempt">Exempt</option>
+                                    <option value="-">Check-Out (-)</option>
+                                    <option value="Before-Cutoff">Before Cutoff Logout</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Sort Output</label>
+                                <select id="reporting-sort">
+                                    <option value="timestamp_desc">Latest Logs First</option>
+                                    <option value="timestamp_asc">Oldest Logs First</option>
+                                    <option value="name_asc">Employee Name A-Z</option>
+                                    <option value="name_desc">Employee Name Z-A</option>
+                                    <option value="dept_asc">Department A-Z</option>
+                                    <option value="status_asc">Status A-Z</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="reporting-actions-grid" style="margin-top: 8px;">
+                            <button class="btn btn-primary" onclick="applyComprehensiveReportFilters()">Apply Filters</button>
+                            <button class="btn btn-secondary" onclick="resetComprehensiveReportFilters()">Reset Filters</button>
+                            <button class="btn btn-secondary" onclick="printComprehensiveReportSummary()">Print Summary</button>
+                            <button class="btn btn-secondary" onclick="downloadComprehensiveReportJSON()">Download JSON</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2>Executive KPI Summary</h2>
+                        <div class="reporting-kpi-grid">
+                            <div class="reporting-kpi-card"><span class="label">Total Logs</span><span id="rpt-kpi-total-logs" class="value">0</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Unique Employees</span><span id="rpt-kpi-unique-employees" class="value">0</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Check-In Logs</span><span id="rpt-kpi-check-ins" class="value">0</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Check-Out Logs</span><span id="rpt-kpi-check-outs" class="value">0</span></div>
+                            <div class="reporting-kpi-card"><span class="label">On-Time Rate</span><span id="rpt-kpi-ontime-rate" class="value">0%</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Late Rate</span><span id="rpt-kpi-late-rate" class="value">0%</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Total Worked Time</span><span id="rpt-kpi-work-time" class="value">0h 0m</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Avg Session</span><span id="rpt-kpi-avg-session" class="value">0m</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Attendance Rate</span><span id="rpt-kpi-attendance-rate" class="value">0%</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Pending Checkouts</span><span id="rpt-kpi-open-sessions" class="value">0</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2>Visual Reporting Deck</h2>
+                        <div class="reporting-chart-grid">
+                            <div class="reporting-chart-card">
+                                <h3>Daily Activity Trend</h3>
+                                <canvas id="report-chart-daily"></canvas>
+                            </div>
+                            <div class="reporting-chart-card">
+                                <h3>Department Contribution</h3>
+                                <canvas id="report-chart-department"></canvas>
+                            </div>
+                            <div class="reporting-chart-card">
+                                <h3>Status Mix</h3>
+                                <canvas id="report-chart-status"></canvas>
+                            </div>
+                            <div class="reporting-chart-card">
+                                <h3>Check-In Hour Profile</h3>
+                                <canvas id="report-chart-hour"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="card">
+                            <h2>Chart Lab (Any Type)</h2>
+                            <div class="input-group">
+                                <label>Chart Type</label>
+                                <select id="reporting-chart-type" onchange="renderReportingChartLab()">
+                                    <option value="bar">Bar</option>
+                                    <option value="line">Line</option>
+                                    <option value="doughnut">Doughnut</option>
+                                    <option value="pie">Pie</option>
+                                    <option value="radar">Radar</option>
+                                    <option value="polarArea">Polar Area</option>
+                                    <option value="scatter">Scatter</option>
+                                    <option value="bubble">Bubble</option>
+                                </select>
+                            </div>
+                            <canvas id="report-chart-lab"></canvas>
+                        </div>
+                        <div class="card">
+                            <h2>Infographic Insights</h2>
+                            <div id="reporting-infographic-list" class="reporting-infographic-list"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2>Detailed Records Explorer</h2>
+                        <div class="table-responsive">
+                            <table id="comprehensive-report-table" class="display nowrap" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Employee ID</th>
+                                        <th>Name</th>
+                                        <th>Department</th>
+                                        <th>Role</th>
+                                        <th>Event Type</th>
+                                        <th>Status</th>
+                                        <th>Session Minutes</th>
+                                        <th>Checkout Policy</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="comprehensive-report-table-body"></tbody>
+                            </table>
+                        </div>
+                        <div id="comprehensive-report-empty" style="display:none; margin-top:8px; color:var(--muted); font-size:12px;">
+                            No records match selected reporting filters.
                         </div>
                     </div>
                 </div>
@@ -2107,6 +2373,511 @@
             reportsDataTable = initializeDataTableWithButtons("#attendance-records-table", "Attendance Records");
             directoryDataTable = initializeDataTableWithButtons("#employee-directory-table", "Employee Directory");
         }
+        let comprehensiveReportRows = [];
+        let comprehensiveReportDataTable = null;
+        const reportingCharts = {};
+
+        function toIsoDate(dateObj) {
+            return new Date(dateObj).toISOString().split('T')[0];
+        }
+
+        function percentage(part, total) {
+            if (!total) return "0%";
+            return `${Math.round((part / total) * 100)}%`;
+        }
+
+        function destroyReportingChart(chartId) {
+            if (reportingCharts[chartId]) {
+                reportingCharts[chartId].destroy();
+                reportingCharts[chartId] = null;
+            }
+        }
+
+        function upsertReportingChart(chartId, config) {
+            if (!window.Chart) return;
+            const canvas = document.getElementById(chartId);
+            if (!canvas) return;
+            const fixedHeight = chartId === 'report-chart-lab' ? 230 : 210;
+            if (canvas.parentElement) {
+                canvas.parentElement.style.position = 'relative';
+                canvas.parentElement.style.height = `${fixedHeight}px`;
+                canvas.parentElement.style.maxHeight = `${fixedHeight}px`;
+            }
+            canvas.style.height = `${fixedHeight}px`;
+            canvas.style.maxHeight = `${fixedHeight}px`;
+            destroyReportingChart(chartId);
+            reportingCharts[chartId] = new Chart(canvas.getContext('2d'), config);
+        }
+
+        function setDefaultReportingDateRange() {
+            const fromEl = document.getElementById('reporting-date-from');
+            const toEl = document.getElementById('reporting-date-to');
+            if (!fromEl || !toEl) return;
+            if (!toEl.value) {
+                toEl.value = toIsoDate(new Date());
+            }
+            if (!fromEl.value) {
+                const start = new Date();
+                start.setDate(start.getDate() - 29);
+                fromEl.value = toIsoDate(start);
+            }
+        }
+
+        function syncReportingFilterOptions(employees, departments) {
+            const deptSelect = document.getElementById('reporting-filter-dept');
+            const empSelect = document.getElementById('reporting-filter-employee');
+            if (!deptSelect || !empSelect) return;
+
+            const prevDept = deptSelect.value || "all";
+            const prevEmp = empSelect.value || "all";
+
+            deptSelect.innerHTML = '<option value="all">All Departments</option>';
+            departments.forEach(dept => {
+                deptSelect.innerHTML += `<option value="${dept.name}">${dept.name}</option>`;
+            });
+            if (deptSelect.querySelector(`option[value="${prevDept}"]`)) {
+                deptSelect.value = prevDept;
+            }
+
+            empSelect.innerHTML = '<option value="all">All Employees</option>';
+            [...employees]
+                .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+                .forEach(emp => {
+                    empSelect.innerHTML += `<option value="${emp.id}">${emp.name} (${emp.id})</option>`;
+                });
+            if (empSelect.querySelector(`option[value="${prevEmp}"]`)) {
+                empSelect.value = prevEmp;
+            }
+        }
+
+        function getComprehensiveReportFilters() {
+            let dateFrom = document.getElementById('reporting-date-from')?.value || "";
+            let dateTo = document.getElementById('reporting-date-to')?.value || "";
+            const dept = document.getElementById('reporting-filter-dept')?.value || "all";
+            const employee = document.getElementById('reporting-filter-employee')?.value || "all";
+            const type = document.getElementById('reporting-filter-type')?.value || "all";
+            const status = document.getElementById('reporting-filter-status')?.value || "all";
+            const sort = document.getElementById('reporting-sort')?.value || "timestamp_desc";
+
+            if (dateFrom && dateTo && dateFrom > dateTo) {
+                const tmp = dateFrom;
+                dateFrom = dateTo;
+                dateTo = tmp;
+            }
+
+            return { dateFrom, dateTo, dept, employee, type, status, sort };
+        }
+
+        function sortComprehensiveReportRows(rows, sortBy) {
+            const sorted = [...rows];
+            if (sortBy === "timestamp_asc") sorted.sort((a, b) => a.timestamp - b.timestamp);
+            else if (sortBy === "timestamp_desc") sorted.sort((a, b) => b.timestamp - a.timestamp);
+            else if (sortBy === "name_asc") sorted.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+            else if (sortBy === "name_desc") sorted.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+            else if (sortBy === "dept_asc") sorted.sort((a, b) => (a.department || "").localeCompare(b.department || ""));
+            else if (sortBy === "status_asc") sorted.sort((a, b) => (a.status || "").localeCompare(b.status || ""));
+            return sorted;
+        }
+
+        function filterComprehensiveReportLogs(logs, filters) {
+            const fromTs = filters.dateFrom ? new Date(`${filters.dateFrom}T00:00:00`).getTime() : null;
+            const toTs = filters.dateTo ? new Date(`${filters.dateTo}T23:59:59`).getTime() : null;
+            const filtered = logs.filter(log => {
+                if (fromTs && log.timestamp < fromTs) return false;
+                if (toTs && log.timestamp > toTs) return false;
+                if (filters.dept !== "all" && log.department !== filters.dept) return false;
+                if (filters.employee !== "all" && log.empId !== filters.employee) return false;
+                if (filters.type !== "all" && log.type !== filters.type) return false;
+                if (filters.status !== "all" && log.status !== filters.status) return false;
+                return true;
+            });
+            return sortComprehensiveReportRows(filtered, filters.sort);
+        }
+
+        function computeOpenSessionsFromLogs(logs) {
+            const map = new Map();
+            [...logs]
+                .sort((a, b) => a.timestamp - b.timestamp)
+                .forEach(log => {
+                    const key = `${log.empId}|${log.dateString}`;
+                    const current = map.get(key) || 0;
+                    if (log.type === "Check-In") {
+                        map.set(key, current + 1);
+                    } else if (log.type === "Check-Out") {
+                        map.set(key, Math.max(0, current - 1));
+                    }
+                });
+            let total = 0;
+            map.forEach(v => {
+                if (v > 0) total += v;
+            });
+            return total;
+        }
+
+        function renderComprehensiveKpis(rows, employees) {
+            const checkIns = rows.filter(r => r.type === "Check-In");
+            const checkOuts = rows.filter(r => r.type === "Check-Out");
+            const onTime = checkIns.filter(r => r.status === "On-Time").length;
+            const late = checkIns.filter(r => r.status === "Late").length;
+            const workedMinutes = rows
+                .filter(r => typeof r.sessionMinutes === "number" && !Number.isNaN(r.sessionMinutes))
+                .reduce((sum, r) => sum + r.sessionMinutes, 0);
+            const avgSession = checkOuts.length ? Math.round(workedMinutes / checkOuts.length) : 0;
+            const uniqueEmployees = new Set(rows.map(r => r.empId)).size;
+            const activeEmployees = employees.filter(e => e.status !== "Banned").length;
+            const attendanceRate = percentage(uniqueEmployees, activeEmployees);
+            const openSessions = computeOpenSessionsFromLogs(rows);
+
+            const setText = (id, val) => {
+                const node = document.getElementById(id);
+                if (node) node.innerText = val;
+            };
+
+            setText('rpt-kpi-total-logs', rows.length);
+            setText('rpt-kpi-unique-employees', uniqueEmployees);
+            setText('rpt-kpi-check-ins', checkIns.length);
+            setText('rpt-kpi-check-outs', checkOuts.length);
+            setText('rpt-kpi-ontime-rate', percentage(onTime, checkIns.length));
+            setText('rpt-kpi-late-rate', percentage(late, checkIns.length));
+            setText('rpt-kpi-work-time', formatDurationFromMinutes(workedMinutes));
+            setText('rpt-kpi-avg-session', `${avgSession}m`);
+            setText('rpt-kpi-attendance-rate', attendanceRate);
+            setText('rpt-kpi-open-sessions', openSessions);
+        }
+
+        function buildCountMap(rows, keyBuilder, filterFn = null) {
+            const map = {};
+            rows.forEach(row => {
+                if (filterFn && !filterFn(row)) return;
+                const key = keyBuilder(row);
+                map[key] = (map[key] || 0) + 1;
+            });
+            return map;
+        }
+
+        function renderComprehensiveCharts(rows) {
+            const dailyMap = buildCountMap(rows, row => row.dateString, row => row.type === "Check-In");
+            const dailyLabels = Object.keys(dailyMap).sort((a, b) => a.localeCompare(b));
+            const dailyData = dailyLabels.map(label => dailyMap[label]);
+
+            const deptMap = buildCountMap(rows, row => row.department || "Unknown");
+            const deptLabels = Object.keys(deptMap);
+            const deptData = deptLabels.map(label => deptMap[label]);
+
+            const statusMap = buildCountMap(rows, row => row.status || "-");
+            const statusLabels = Object.keys(statusMap);
+            const statusData = statusLabels.map(label => statusMap[label]);
+
+            const hourMap = {};
+            for (let i = 0; i < 24; i++) hourMap[i] = 0;
+            rows
+                .filter(row => row.type === "Check-In")
+                .forEach(row => {
+                    const hourNum = Number((row.timeString || "00:00:00").split(':')[0]);
+                    if (Number.isFinite(hourNum) && hourNum >= 0 && hourNum < 24) {
+                        hourMap[hourNum] += 1;
+                    }
+                });
+            const hourLabels = Object.keys(hourMap).map(h => `${String(h).padStart(2, '0')}:00`);
+            const hourData = Object.values(hourMap);
+
+            const palette = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#14b8a6', '#ec4899', '#3b82f6', '#8b5cf6'];
+
+            upsertReportingChart('report-chart-daily', {
+                type: 'line',
+                data: {
+                    labels: dailyLabels.length ? dailyLabels : ['No Data'],
+                    datasets: [{ label: 'Check-Ins', data: dailyLabels.length ? dailyData : [0], borderColor: '#4f46e5', backgroundColor: 'rgba(79,70,229,0.2)', tension: 0.35, fill: true }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            upsertReportingChart('report-chart-department', {
+                type: 'bar',
+                data: {
+                    labels: deptLabels.length ? deptLabels : ['No Data'],
+                    datasets: [{ label: 'Logs', data: deptLabels.length ? deptData : [0], backgroundColor: palette }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            upsertReportingChart('report-chart-status', {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels.length ? statusLabels : ['No Data'],
+                    datasets: [{ label: 'Status', data: statusLabels.length ? statusData : [1], backgroundColor: palette }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            upsertReportingChart('report-chart-hour', {
+                type: 'bar',
+                data: {
+                    labels: hourLabels,
+                    datasets: [{ label: 'Check-Ins', data: hourData, backgroundColor: '#10b981' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function renderReportingInfographics(rows, employees) {
+            const listEl = document.getElementById('reporting-infographic-list');
+            if (!listEl) return;
+
+            const deptMap = buildCountMap(rows, row => row.department || "Unknown");
+            const topDeptEntry = Object.entries(deptMap).sort((a, b) => b[1] - a[1])[0];
+            const topDept = topDeptEntry ? `${topDeptEntry[0]} (${topDeptEntry[1]} logs)` : 'N/A';
+
+            const employeeMap = buildCountMap(rows, row => row.name || row.empId || "Unknown");
+            const topEmployeeEntry = Object.entries(employeeMap).sort((a, b) => b[1] - a[1])[0];
+            const topEmployee = topEmployeeEntry ? `${topEmployeeEntry[0]} (${topEmployeeEntry[1]} logs)` : 'N/A';
+
+            const checkIns = rows.filter(r => r.type === "Check-In");
+            const onTime = checkIns.filter(r => r.status === "On-Time").length;
+            const late = checkIns.filter(r => r.status === "Late").length;
+            const punctuality = percentage(onTime, checkIns.length);
+            const lateRatio = percentage(late, checkIns.length);
+
+            const activeEmployees = employees.filter(e => e.status !== "Banned").length;
+            const uniqueEmployees = new Set(rows.map(r => r.empId)).size;
+            const coverage = percentage(uniqueEmployees, activeEmployees);
+
+            const hourMap = {};
+            checkIns.forEach(log => {
+                const hour = Number((log.timeString || "00:00:00").split(':')[0]);
+                if (!Number.isFinite(hour)) return;
+                hourMap[hour] = (hourMap[hour] || 0) + 1;
+            });
+            const peakHourEntry = Object.entries(hourMap).sort((a, b) => b[1] - a[1])[0];
+            const peakHour = peakHourEntry ? `${String(peakHourEntry[0]).padStart(2, '0')}:00 (${peakHourEntry[1]} check-ins)` : 'N/A';
+
+            listEl.innerHTML = `
+                <div class="reporting-infographic-item"><strong>Top Department</strong><br>${topDept}</div>
+                <div class="reporting-infographic-item"><strong>Top Employee</strong><br>${topEmployee}</div>
+                <div class="reporting-infographic-item"><strong>Punctuality</strong><br>${punctuality} on-time, ${lateRatio} late</div>
+                <div class="reporting-infographic-item"><strong>Coverage</strong><br>${coverage} of active employees appear in this report window</div>
+                <div class="reporting-infographic-item"><strong>Peak Check-In Hour</strong><br>${peakHour}</div>
+            `;
+        }
+
+        function renderComprehensiveReportTable(rows) {
+            const tbody = document.getElementById('comprehensive-report-table-body');
+            const emptyState = document.getElementById('comprehensive-report-empty');
+            if (!tbody || !emptyState) return;
+
+            tbody.innerHTML = '';
+            rows.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${log.dateString || ''}</td>
+                    <td>${log.timeString || ''}</td>
+                    <td>${log.empId || ''}</td>
+                    <td>${log.name || ''}</td>
+                    <td>${log.department || ''}</td>
+                    <td>${log.role || ''}</td>
+                    <td>${log.type || ''}</td>
+                    <td>${log.status || ''}</td>
+                    <td>${typeof log.sessionMinutes === "number" ? log.sessionMinutes : ''}</td>
+                    <td>${log.checkoutCompliance || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            emptyState.style.display = rows.length ? "none" : "block";
+
+            if (!window.jQuery || !jQuery.fn || !jQuery.fn.dataTable) return;
+            if (jQuery.fn.DataTable.isDataTable('#comprehensive-report-table')) {
+                jQuery('#comprehensive-report-table').DataTable().destroy();
+            }
+            if (window.DataTable && DataTable.Buttons) {
+                if (window.JSZip && typeof DataTable.Buttons.jszip === "function") {
+                    DataTable.Buttons.jszip(window.JSZip);
+                }
+                if (window.pdfMake && typeof DataTable.Buttons.pdfMake === "function") {
+                    DataTable.Buttons.pdfMake(window.pdfMake);
+                }
+            }
+
+            comprehensiveReportDataTable = jQuery('#comprehensive-report-table').DataTable({
+                order: [],
+                paging: true,
+                pageLength: 25,
+                searching: true,
+                info: true,
+                autoWidth: false,
+                scrollX: true,
+                layout: {
+                    topStart: {
+                        buttons: [
+                            { extend: "colvis", text: "Column visibility" },
+                            { extend: "copyHtml5", text: "Copy", title: "Comprehensive Report", exportOptions: { columns: ":visible" } },
+                            { extend: "excelHtml5", text: "Excel", title: "Comprehensive Report", exportOptions: { columns: ":visible" } },
+                            { extend: "pdfHtml5", text: "PDF", title: "Comprehensive Report", exportOptions: { columns: ":visible" } },
+                            { extend: "csvHtml5", text: "CSV", title: "Comprehensive Report", exportOptions: { columns: ":visible" } },
+                            { extend: "print", text: "Print", title: "Comprehensive Report", exportOptions: { columns: ":visible" } }
+                        ]
+                    }
+                }
+            });
+        }
+
+        function renderReportingChartLab() {
+            const type = document.getElementById('reporting-chart-type')?.value || 'bar';
+            const rows = comprehensiveReportRows || [];
+            const deptMap = buildCountMap(rows, row => row.department || "Unknown");
+            const labels = Object.keys(deptMap);
+            const dataValues = labels.map(k => deptMap[k]);
+            const palette = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#14b8a6', '#ec4899', '#3b82f6', '#8b5cf6'];
+
+            let config = null;
+            if (type === 'scatter') {
+                const dayMap = buildCountMap(rows, row => row.dateString, row => row.type === "Check-In");
+                const points = Object.entries(dayMap).sort((a, b) => a[0].localeCompare(b[0])).map((entry, idx) => ({ x: idx + 1, y: entry[1] }));
+                config = {
+                    type: 'scatter',
+                    data: { datasets: [{ label: 'Daily Check-Ins', data: points, backgroundColor: '#4f46e5' }] },
+                    options: { responsive: true, maintainAspectRatio: false }
+                };
+            } else if (type === 'bubble') {
+                const points = labels.map((label, idx) => ({ x: idx + 1, y: dataValues[idx], r: Math.min(24, 6 + dataValues[idx]) }));
+                config = {
+                    type: 'bubble',
+                    data: { datasets: [{ label: 'Department Load', data: points, backgroundColor: palette.map(c => `${c}bb`) }] },
+                    options: { responsive: true, maintainAspectRatio: false }
+                };
+            } else {
+                config = {
+                    type,
+                    data: {
+                        labels: labels.length ? labels : ['No Data'],
+                        datasets: [{
+                            label: 'Logs',
+                            data: labels.length ? dataValues : [0],
+                            backgroundColor: palette,
+                            borderColor: '#1f2937',
+                            borderWidth: type === 'line' ? 2 : 1,
+                            fill: type === 'line'
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                };
+            }
+
+            upsertReportingChart('report-chart-lab', config);
+        }
+
+        async function renderComprehensiveReportingHub() {
+            if (!isDashboardAuthenticatedState) return;
+            const logs = await readAllDatabaseRecords("attendance_logs");
+            const employees = await readAllDatabaseRecords("employees");
+            const departments = await readAllDatabaseRecords("departments");
+
+            setDefaultReportingDateRange();
+            syncReportingFilterOptions(employees, departments);
+
+            const filters = getComprehensiveReportFilters();
+            comprehensiveReportRows = filterComprehensiveReportLogs(logs, filters);
+
+            renderComprehensiveKpis(comprehensiveReportRows, employees);
+            renderComprehensiveCharts(comprehensiveReportRows);
+            renderReportingInfographics(comprehensiveReportRows, employees);
+            renderComprehensiveReportTable(comprehensiveReportRows);
+            renderReportingChartLab();
+        }
+
+        async function applyComprehensiveReportFilters() {
+            await renderComprehensiveReportingHub();
+        }
+
+        async function resetComprehensiveReportFilters() {
+            const setVal = (id, value) => {
+                const node = document.getElementById(id);
+                if (node) node.value = value;
+            };
+            const to = new Date();
+            const from = new Date();
+            from.setDate(from.getDate() - 29);
+            setVal('reporting-date-from', toIsoDate(from));
+            setVal('reporting-date-to', toIsoDate(to));
+            setVal('reporting-filter-dept', 'all');
+            setVal('reporting-filter-employee', 'all');
+            setVal('reporting-filter-type', 'all');
+            setVal('reporting-filter-status', 'all');
+            setVal('reporting-sort', 'timestamp_desc');
+            setVal('reporting-chart-type', 'bar');
+            await renderComprehensiveReportingHub();
+        }
+
+        async function downloadComprehensiveReportJSON() {
+            if (!comprehensiveReportRows.length) {
+                triggerToast("No report records available for JSON download", "warning");
+                return;
+            }
+            const payload = {
+                generatedAt: new Date().toISOString(),
+                filters: getComprehensiveReportFilters(),
+                rowCount: comprehensiveReportRows.length,
+                rows: comprehensiveReportRows
+            };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = `comprehensive_report_${Math.floor(Date.now() / 1000)}.json`;
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+            URL.revokeObjectURL(url);
+            triggerToast("Comprehensive JSON report downloaded", "success");
+            AudioEngine.play('success');
+            await logAuditEvent("comprehensive_report_json_exported", { rows: comprehensiveReportRows.length });
+        }
+
+        function printComprehensiveReportSummary() {
+            const printWindow = window.open('', '_blank', 'width=1100,height=750');
+            if (!printWindow) return;
+            const filters = getComprehensiveReportFilters();
+            const summaryHtml = `
+                <h2>Comprehensive Reporting Summary</h2>
+                <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
+                <p><strong>Filters:</strong> ${JSON.stringify(filters)}</p>
+                <p><strong>Total Records:</strong> ${comprehensiveReportRows.length}</p>
+                <table border="1" cellspacing="0" cellpadding="6" style="border-collapse:collapse; width:100%; font-size:12px;">
+                    <thead>
+                        <tr>
+                            <th>Date</th><th>Time</th><th>ID</th><th>Name</th><th>Department</th><th>Event</th><th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${comprehensiveReportRows.slice(0, 200).map(r => `
+                            <tr>
+                                <td>${r.dateString || ''}</td>
+                                <td>${r.timeString || ''}</td>
+                                <td>${r.empId || ''}</td>
+                                <td>${r.name || ''}</td>
+                                <td>${r.department || ''}</td>
+                                <td>${r.type || ''}</td>
+                                <td>${r.status || ''}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                ${comprehensiveReportRows.length > 200 ? `<p style="font-size:11px;">Showing first 200 rows in print preview. Use DataTable PDF/Excel/CSV for full exports.</p>` : ''}
+            `;
+            printWindow.document.write(`<html><head><title>Comprehensive Report</title>
+    
+
+    
+
+    
+<link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head><body>${summaryHtml}</body></html>`);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+        }
+
         function initializeDatabaseCoreSubsystems() {
             return new Promise((resolve, reject) => {
                 const openRequest = indexedDB.open("EnterpriseBiometricKioskCoreDB", 6);
@@ -2885,6 +3656,7 @@
                 }
                 suggestNextEmployeeId();
                 await syncActiveFiltersList();
+                setDefaultReportingDateRange();
             } catch (err) {
                 ui.banner.innerText = "Fatal core startup framework exception.";
             }
@@ -4096,6 +4868,10 @@
             drawWeeklyAnalyticsChart(logs);
             drawDepartmentCanvasChart(employees, logsToday);
             drawMonthlyContributionHeatmap(logs);
+            const reportingView = document.getElementById('sub-view-reporting');
+            if (reportingView && reportingView.style.display === "flex") {
+                await renderComprehensiveReportingHub();
+            }
             await renderComplianceAlerts(logs, employees);
         }
         function drawWeeklyAnalyticsChart(logs) {
@@ -4439,6 +5215,9 @@
             if (subTabName === 'reports') {
                 document.getElementById('sub-view-reports').style.display = "flex";
                 renderAnalyticsDashboard();
+            } else if (subTabName === 'reporting') {
+                document.getElementById('sub-view-reporting').style.display = "flex";
+                renderComprehensiveReportingHub();
             } else if (subTabName === 'employees') {
                 cancelEditEmployeeMode();
                 document.getElementById('sub-view-employees').style.display = "flex";
@@ -4457,16 +5236,24 @@
             const filterReportSelect = document.getElementById('report-filter-dept');
             const filterEmpSelect = document.getElementById('emp-filter-dept');
             const regSelect = document.getElementById('reg-employee-dept');
+            const reportingDeptSelect = document.getElementById('reporting-filter-dept');
             const reportVal = filterReportSelect.value;
             const empVal = filterEmpSelect.value;
             const regVal = regSelect.value;
+            const reportingDeptVal = reportingDeptSelect ? reportingDeptSelect.value : "all";
             filterReportSelect.innerHTML = '<option value="all">All Departments</option>';
             filterEmpSelect.innerHTML = '<option value="all">All Departments</option>';
             regSelect.innerHTML = '';
+            if (reportingDeptSelect) {
+                reportingDeptSelect.innerHTML = '<option value="all">All Departments</option>';
+            }
             depts.forEach(d => {
                 filterReportSelect.innerHTML += `<option value="${d.name}">${d.name}</option>`;
                 filterEmpSelect.innerHTML += `<option value="${d.name}">${d.name}</option>`;
                 regSelect.innerHTML += `<option value="${d.name}">${d.name}</option>`;
+                if (reportingDeptSelect) {
+                    reportingDeptSelect.innerHTML += `<option value="${d.name}">${d.name}</option>`;
+                }
             });
             if (reportVal && filterReportSelect.querySelector(`option[value="${reportVal}"]`)) {
                 filterReportSelect.value = reportVal;
@@ -4476,6 +5263,9 @@
             }
             if (regVal && regSelect.querySelector(`option[value="${regVal}"]`)) {
                 regSelect.value = regVal;
+            }
+            if (reportingDeptSelect && reportingDeptVal && reportingDeptSelect.querySelector(`option[value="${reportingDeptVal}"]`)) {
+                reportingDeptSelect.value = reportingDeptVal;
             }
         }
         async function renderSettingsLists() {
@@ -4693,7 +5483,13 @@
         });
         window.onload = compileApplicationCoreSubsystems;
     </script>
-    <script type="module" src="./pwa-register.js"></script>
+    
+
+
+
+<script type="module" src="./pwa-register.js"></script>
 </body>
 
 </html>
+
+

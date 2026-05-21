@@ -211,6 +211,13 @@ def update_html_files(html_files):
     manifest_link_str = '<link rel="manifest" href="manifest.json">'
     favicon_link_str = '<link rel="icon" type="image/x-icon" href="favicon.ico">'
     sw_script_tag = '<script type="module" src="./pwa-register.js"></script>'
+
+    def inject_before_last_tag(source, closing_tag_pattern, injection):
+        matches = list(re.finditer(closing_tag_pattern, source, flags=re.IGNORECASE))
+        if not matches:
+            return source
+        last = matches[-1]
+        return source[:last.start()] + f"{injection}\n" + source[last.start():]
     for html_path in html_files:
         try:
             with open(html_path, 'r', encoding='utf-8', errors='ignore') as f:
@@ -240,13 +247,8 @@ def update_html_files(html_files):
 
             content = re.sub(r'<script\b[^>]*>([\s\S]*?)</script>', process_script, content, flags=re.IGNORECASE)
 
-            head_match = re.search(r'</head>', content, re.IGNORECASE)
-            if head_match:
-                content = content[:head_match.start()] + f"{manifest_link_str}\n    {favicon_link_str}\n" + content[head_match.start():]
-
-            body_match = re.search(r'</body>', content, re.IGNORECASE)
-            if body_match:
-                content = content[:body_match.start()] + f"{sw_script_tag}\n" + content[body_match.start():]
+            content = inject_before_last_tag(content, r'</head\s*>', f"{manifest_link_str}\n    {favicon_link_str}")
+            content = inject_before_last_tag(content, r'</body\s*>', sw_script_tag)
 
             with open(html_path, 'w', encoding='utf-8') as f:
                 f.write(content)
