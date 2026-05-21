@@ -5,8 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#4f46e5">
-    
-    
     <link rel="apple-touch-icon" href="icon.svg">
     <title>Aura Facial Recognition Attendance Suite</title>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
@@ -59,11 +57,35 @@
             --danger-bg: rgba(239, 68, 68, 0.1);
         }
 
-        body.accent-indigo { --primary: #4f46e5; --primary-hover: #4338ca; --primary-glow: rgba(79, 70, 229, 0.08); }
-        body.accent-emerald { --primary: #059669; --primary-hover: #047857; --primary-glow: rgba(5, 150, 105, 0.08); }
-        body.accent-rose { --primary: #e11d48; --primary-hover: #be123c; --primary-glow: rgba(225, 29, 72, 0.08); }
-        body.accent-amber { --primary: #d97706; --primary-hover: #b45309; --primary-glow: rgba(217, 119, 6, 0.08); }
-        body.accent-blue { --primary: #2563eb; --primary-hover: #1d4ed8; --primary-glow: rgba(37, 99, 235, 0.08); }
+        body.accent-indigo {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-glow: rgba(79, 70, 229, 0.08);
+        }
+
+        body.accent-emerald {
+            --primary: #059669;
+            --primary-hover: #047857;
+            --primary-glow: rgba(5, 150, 105, 0.08);
+        }
+
+        body.accent-rose {
+            --primary: #e11d48;
+            --primary-hover: #be123c;
+            --primary-glow: rgba(225, 29, 72, 0.08);
+        }
+
+        body.accent-amber {
+            --primary: #d97706;
+            --primary-hover: #b45309;
+            --primary-glow: rgba(217, 119, 6, 0.08);
+        }
+
+        body.accent-blue {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-glow: rgba(37, 99, 235, 0.08);
+        }
 
         * {
             box-sizing: border-box;
@@ -227,7 +249,7 @@
             color: var(--text);
             border-radius: 8px;
             border: 1px solid var(--border);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
             padding: 10px 12px;
             font-size: 12px;
             line-height: 1.4;
@@ -810,18 +832,32 @@
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid transparent;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .color-dot.active {
             border-color: var(--text);
         }
 
-        .color-dot.indigo { background: #4f46e5; }
-        .color-dot.emerald { background: #059669; }
-        .color-dot.rose { background: #e11d48; }
-        .color-dot.amber { background: #d97706; }
-        .color-dot.blue { background: #2563eb; }
+        .color-dot.indigo {
+            background: #4f46e5;
+        }
+
+        .color-dot.emerald {
+            background: #059669;
+        }
+
+        .color-dot.rose {
+            background: #e11d48;
+        }
+
+        .color-dot.amber {
+            background: #d97706;
+        }
+
+        .color-dot.blue {
+            background: #2563eb;
+        }
 
         .heatmap-grid {
             display: grid;
@@ -844,10 +880,25 @@
             color: var(--muted);
         }
 
-        .heatmap-day.val-1 { background: rgba(16, 185, 129, 0.25); color: #10b981; }
-        .heatmap-day.val-2 { background: rgba(16, 185, 129, 0.5); color: #ffffff; }
-        .heatmap-day.val-3 { background: rgba(16, 185, 129, 0.75); color: #ffffff; }
-        .heatmap-day.val-4 { background: rgba(16, 185, 129, 1); color: #ffffff; }
+        .heatmap-day.val-1 {
+            background: rgba(16, 185, 129, 0.25);
+            color: #10b981;
+        }
+
+        .heatmap-day.val-2 {
+            background: rgba(16, 185, 129, 0.5);
+            color: #ffffff;
+        }
+
+        .heatmap-day.val-3 {
+            background: rgba(16, 185, 129, 0.75);
+            color: #ffffff;
+        }
+
+        .heatmap-day.val-4 {
+            background: rgba(16, 185, 129, 1);
+            color: #ffffff;
+        }
 
         .modal-overlay {
             position: fixed;
@@ -948,29 +999,7 @@
             }
         }
     </style>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-<link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 
@@ -985,7 +1014,8 @@
         </div>
         <nav>
             <button id="nav-kiosk" class="tab-btn active" onclick="switchView('kiosk')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="16" y1="2" x2="16" y2="4"></line>
                     <line x1="8" y1="2" x2="8" y2="4"></line>
@@ -994,34 +1024,37 @@
                 Kiosk Scanner
             </button>
             <button id="nav-admin" class="tab-btn" onclick="switchView('admin')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
                 Admin Terminal
             </button>
             <button id="nav-monitor" class="tab-btn" onclick="switchView('monitor')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 12h3l3 8 4-16 3 8h5"></path>
                 </svg>
                 Security Monitor
             </button>
         </nav>
         <div class="status-container">
-            <button class="btn btn-secondary" onclick="toggleTheme()" style="padding: 4px 8px; font-size: 11px; margin-right: 8px;">🌓 Theme</button>
+            <button class="btn btn-secondary" onclick="toggleTheme()"
+                style="padding: 4px 8px; font-size: 11px; margin-right: 8px;">🌓 Theme</button>
             <span id="system-status-dot" class="status-dot active"></span>
             <span id="system-status-text">Core Active</span>
         </div>
     </header>
     <main>
         <div id="system-alert-banner">Initializing System Local Filesystem Core...</div>
-
         <div id="view-kiosk" class="view-section active">
             <div class="grid-2">
                 <div class="card">
                     <h2>
                         <span>Facial Recognition Scanner</span>
-                        <span id="camera-status-pill" style="font-size: 9px; padding: 2px 6px; border-radius: 4px; background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); font-weight: 700;">OFFLINE</span>
+                        <span id="camera-status-pill"
+                            style="font-size: 9px; padding: 2px 6px; border-radius: 4px; background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); font-weight: 700;">OFFLINE</span>
                     </h2>
                     <div class="camera-container">
                         <video id="webcam-stream" autoplay loop muted playsinline></video>
@@ -1029,28 +1062,33 @@
                         <div id="camera-placeholder" class="camera-placeholder-overlay">
                             <div class="placeholder-icon">📷</div>
                             <div class="placeholder-title">Webcam Inactive</div>
-                            <div class="placeholder-subtitle">Activate scanner device to start high-precision verification scans.</div>
+                            <div class="placeholder-subtitle">Activate scanner device to start high-precision
+                                verification scans.</div>
                             <button id="btn-placeholder-start" class="btn btn-primary" onclick="startCameraStream()">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <polygon points="5 3 19 12 5 21 5 3"></polygon>
                                 </svg>
                                 <span>Start Webcam</span>
                             </button>
                         </div>
                         <div class="camera-controls-bar">
-                            <button id="btn-cam-start" class="control-btn control-btn-start" onclick="startCameraStream()" title="Start/Resume Camera">
+                            <button id="btn-cam-start" class="control-btn control-btn-start"
+                                onclick="startCameraStream()" title="Start/Resume Camera">
                                 <svg viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M8 5v14l11-7z" />
                                 </svg>
                                 Start
                             </button>
-                            <button id="btn-cam-pause" class="control-btn control-btn-pause" onclick="pauseCameraStream()" title="Pause Camera" disabled>
+                            <button id="btn-cam-pause" class="control-btn control-btn-pause"
+                                onclick="pauseCameraStream()" title="Pause Camera" disabled>
                                 <svg viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                                 </svg>
                                 Pause
                             </button>
-                            <button id="btn-cam-stop" class="control-btn control-btn-stop" onclick="stopCameraStream()" title="Stop Camera" disabled>
+                            <button id="btn-cam-stop" class="control-btn control-btn-stop" onclick="stopCameraStream()"
+                                title="Stop Camera" disabled>
                                 <svg viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M6 6h12v12H6z" />
                                 </svg>
@@ -1065,7 +1103,6 @@
                 </div>
             </div>
         </div>
-
         <div id="view-monitor" class="view-section">
             <div class="grid-2">
                 <div class="card" style="grid-column: 1 / -1;">
@@ -1075,20 +1112,23 @@
                     </div>
                     <div style="display:flex; gap: 8px; align-items:center;">
                         <input type="checkbox" id="settings-motion-enabled" style="width:auto;">
-                        <label for="settings-motion-enabled" style="text-transform:none; letter-spacing:0; font-size:12px; margin:0;">
+                        <label for="settings-motion-enabled"
+                            style="text-transform:none; letter-spacing:0; font-size:12px; margin:0;">
                             Keep camera active and detect movement clips automatically
                         </label>
                     </div>
                     <div style="display:flex; gap: 8px; align-items:center; margin-top:4px;">
                         <input type="checkbox" id="settings-motion-auto-download" style="width:auto;">
-                        <label for="settings-motion-auto-download" style="text-transform:none; letter-spacing:0; font-size:12px; margin:0;">
+                        <label for="settings-motion-auto-download"
+                            style="text-transform:none; letter-spacing:0; font-size:12px; margin:0;">
                             Auto-download motion clips when capture ends
                         </label>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top:8px;">
                         <div class="input-group">
                             <label>Motion Aggressiveness (%)</label>
-                            <input type="number" id="settings-motion-aggressiveness" value="3" min="0.5" max="30" step="0.5">
+                            <input type="number" id="settings-motion-aggressiveness" value="3" min="0.5" max="30"
+                                step="0.5">
                         </div>
                         <div class="input-group">
                             <label>Motion Stop Delay (Sec)</label>
@@ -1096,42 +1136,57 @@
                         </div>
                     </div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                        <button class="btn btn-secondary" id="btn-manual-record-start" onclick="startManualContinuousRecording()">Start Continuous Recording</button>
-                        <button class="btn btn-danger" id="btn-manual-record-stop" onclick="stopManualContinuousRecording()" disabled>Stop Continuous Recording</button>
+                        <button class="btn btn-secondary" id="btn-manual-record-start"
+                            onclick="startManualContinuousRecording()">Start Continuous Recording</button>
+                        <button class="btn btn-danger" id="btn-manual-record-stop"
+                            onclick="stopManualContinuousRecording()" disabled>Stop Continuous Recording</button>
                     </div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:8px;">
-                        <button class="btn btn-secondary" id="btn-wakelock-toggle" onclick="toggleSleepPrevention()">Enable No-Sleep Mode</button>
-                        <button class="btn btn-secondary" onclick="saveMotionTrackingSettings()">Save Motion Settings</button>
+                        <button class="btn btn-secondary" id="btn-wakelock-toggle"
+                            onclick="toggleSleepPrevention()">Enable No-Sleep Mode</button>
+                        <button class="btn btn-secondary" onclick="saveMotionTrackingSettings()">Save Motion
+                            Settings</button>
                     </div>
                 </div>
             </div>
         </div>
-
         <div id="view-admin" class="view-section">
             <div id="admin-auth-gate" class="card">
                 <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
-                    <div class="placeholder-icon" style="color: var(--primary); background: var(--primary-glow); margin-bottom:8px;">🔒</div>
+                    <div class="placeholder-icon"
+                        style="color: var(--primary); background: var(--primary-glow); margin-bottom:8px;">🔒</div>
                     <h2 style="border:none; padding:0; font-size:16px;">Administrative Access Gate</h2>
-                    <span style="font-size:12px; color: var(--muted); text-align:center; max-width:260px; line-height:1.4;">Enter master passcode to view analytics reports, directories and system settings.</span>
+                    <span
+                        style="font-size:12px; color: var(--muted); text-align:center; max-width:260px; line-height:1.4;">Enter
+                        master passcode to view analytics reports, directories and system settings.</span>
                 </div>
                 <div class="input-group">
                     <label>Master Passcode</label>
-                    <input type="password" id="admin-gate-pass" placeholder="Enter master key passcode" onkeydown="if(event.key==='Enter') verifyAdminCredentialGateAccess()">
+                    <input type="password" id="admin-gate-pass" placeholder="Enter master key passcode"
+                        onkeydown="if(event.key==='Enter') verifyAdminCredentialGateAccess()">
                 </div>
                 <div style="display:flex; align-items:center; gap:6px;">
-                    <input type="checkbox" id="show-pass-check" onchange="toggleGatePasswordReveal()" style="width:auto; cursor:pointer;">
-                    <label for="show-pass-check" style="cursor:pointer; font-size:11px; color: var(--muted); text-transform:none; letter-spacing:0;">Reveal passcode input characters</label>
+                    <input type="checkbox" id="show-pass-check" onchange="toggleGatePasswordReveal()"
+                        style="width:auto; cursor:pointer;">
+                    <label for="show-pass-check"
+                        style="cursor:pointer; font-size:11px; color: var(--muted); text-transform:none; letter-spacing:0;">Reveal
+                        passcode input characters</label>
                 </div>
-                <button class="btn btn-primary" onclick="verifyAdminCredentialGateAccess()" style="width:100%;">Verify Identity Signature</button>
-                <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--border); padding-top: 14px; font-size: 11px; line-height: 1.45;">
-                    <div style="background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning); padding: 8px 10px; border-radius: 6px; display: flex; gap: 8px;">
+                <button class="btn btn-primary" onclick="verifyAdminCredentialGateAccess()" style="width:100%;">Verify
+                    Identity Signature</button>
+                <div
+                    style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--border); padding-top: 14px; font-size: 11px; line-height: 1.45;">
+                    <div
+                        style="background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning); padding: 8px 10px; border-radius: 6px; display: flex; gap: 8px;">
                         <span style="font-size: 14px;">🔑</span>
                         <div>
                             <strong style="display: block; margin-bottom: 2px;">Default Access Key</strong>
-                            The default master passcode is <code style="font-family: monospace; font-weight: 700; background: rgba(0,0,0,0.05); padding: 1px 4px; border-radius: 3px;">admin1234</code>.
+                            The default master passcode is <code
+                                style="font-family: monospace; font-weight: 700; background: rgba(0,0,0,0.05); padding: 1px 4px; border-radius: 3px;">admin1234</code>.
                         </div>
                     </div>
-                    <div style="background: var(--primary-glow); color: var(--primary); border: 1px solid var(--border); padding: 8px 10px; border-radius: 6px; display: flex; gap: 8px;">
+                    <div
+                        style="background: var(--primary-glow); color: var(--primary); border: 1px solid var(--border); padding: 8px 10px; border-radius: 6px; display: flex; gap: 8px;">
                         <span style="font-size: 14px;">🗂️</span>
                         <div>
                             <strong style="display: block; margin-bottom: 2px;">Backup Reminder</strong>
@@ -1140,18 +1195,21 @@
                     </div>
                 </div>
             </div>
-
             <div id="admin-panel-content" style="display: none; flex-direction: column; gap: 16px; width: 100%;">
                 <div class="sub-nav">
                     <div class="sub-nav-tabs">
-                        <button id="sub-tab-reports" class="sub-tab-btn active" onclick="switchSubTab('reports')">📊 Analytics & Reports</button>
-                        <button id="sub-tab-employees" class="sub-tab-btn" onclick="switchSubTab('employees')">👥 Profile Directory</button>
-                        <button id="sub-tab-settings" class="sub-tab-btn" onclick="switchSubTab('settings')">⚙️ Controls & Policies</button>
+                        <button id="sub-tab-reports" class="sub-tab-btn active" onclick="switchSubTab('reports')">📊
+                            Analytics & Reports</button>
+                        <button id="sub-tab-employees" class="sub-tab-btn" onclick="switchSubTab('employees')">👥
+                            Profile Directory</button>
+                        <button id="sub-tab-settings" class="sub-tab-btn" onclick="switchSubTab('settings')">⚙️ Controls
+                            & Policies</button>
                     </div>
-                    <button class="btn btn-secondary" onclick="logoutAdminGate()" style="padding: 6px 12px; font-size: 11px;">🔒 Lock Console</button>
+                    <button class="btn btn-secondary" onclick="logoutAdminGate()"
+                        style="padding: 6px 12px; font-size: 11px;">🔒 Lock Console</button>
                 </div>
-
-                <div id="sub-view-reports" class="sub-view-section" style="display: flex; flex-direction: column; gap: 16px;">
+                <div id="sub-view-reports" class="sub-view-section"
+                    style="display: flex; flex-direction: column; gap: 16px;">
                     <div class="metrics-grid">
                         <div class="metric-card">
                             <div class="metric-label">Profiles Enrolled</div>
@@ -1186,35 +1244,42 @@
                             <div id="stat-open-sessions" class="metric-value">0</div>
                         </div>
                     </div>
-
                     <div class="grid-2">
                         <div class="card">
                             <h2>Weekly Attendance Distribution</h2>
-                            <div id="analytics-chart-container" style="min-height: 180px; display: flex; align-items: center; justify-content: center;"></div>
+                            <div id="analytics-chart-container"
+                                style="min-height: 180px; display: flex; align-items: center; justify-content: center;">
+                            </div>
                         </div>
                         <div class="card">
                             <h2>Department Distribution</h2>
-                            <div style="display: flex; align-items: center; justify-content: center; min-height: 180px; gap: 16px;">
-                                <canvas id="dept-canvas" width="140" height="140" style="max-width: 140px; max-height: 140px;"></canvas>
-                                <div id="dept-legend" style="display: flex; flex-direction: column; gap: 4px; font-size: 11px;"></div>
+                            <div
+                                style="display: flex; align-items: center; justify-content: center; min-height: 180px; gap: 16px;">
+                                <canvas id="dept-canvas" width="140" height="140"
+                                    style="max-width: 140px; max-height: 140px;"></canvas>
+                                <div id="dept-legend"
+                                    style="display: flex; flex-direction: column; gap: 4px; font-size: 11px;"></div>
                             </div>
                         </div>
                     </div>
-
                     <div class="grid-2">
                         <div class="card">
                             <h2>Monthly Logs Heatmap</h2>
-                            <div id="heatmap-container" style="min-height: 140px; display: flex; flex-direction: column; justify-content: center; gap: 12px;"></div>
+                            <div id="heatmap-container"
+                                style="min-height: 140px; display: flex; flex-direction: column; justify-content: center; gap: 12px;">
+                            </div>
                         </div>
                         <div class="card">
                             <h2>Datatable Advanced Filters</h2>
-                            <div class="datatable-header" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                            <div class="datatable-header"
+                                style="flex-direction: column; align-items: stretch; gap: 10px;">
                                 <div class="datatable-search-wrapper">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <circle cx="11" cy="11" r="8"></circle>
                                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                                     </svg>
-                                    <input type="text" id="report-search-name" class="datatable-search-input" placeholder="Search name or ID..." oninput="reportSearchChange()">
+                                    <input type="text" id="report-search-name" class="datatable-search-input"
+                                        placeholder="Search name or ID..." oninput="reportSearchChange()">
                                 </div>
                                 <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px;">
                                     <div class="input-group">
@@ -1256,21 +1321,22 @@
                                     </div>
                                 </div>
                                 <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px;">
-                                    <button class="btn btn-primary" onclick="openRetroactiveModal(null)">➕ Add Retro Log</button>
+                                    <button class="btn btn-primary" onclick="openRetroactiveModal(null)">➕ Add Retro
+                                        Log</button>
                                     <button class="btn btn-secondary" onclick="exportReportsToCSV()">
                                         📥 Export CSV
                                     </button>
-                                    <button class="btn btn-secondary" style="grid-column: 1 / -1;" onclick="exportDailySummaryCSV()">Export Today Summary</button>
+                                    <button class="btn btn-secondary" style="grid-column: 1 / -1;"
+                                        onclick="exportDailySummaryCSV()">Export Today Summary</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                     <div class="card">
                         <h2>Compliance Alerts</h2>
-                        <div id="compliance-alerts-container" style="display:flex; flex-direction:column; gap:6px; min-height:70px;"></div>
+                        <div id="compliance-alerts-container"
+                            style="display:flex; flex-direction:column; gap:6px; min-height:70px;"></div>
                     </div>
-
                     <div class="card">
                         <h2>Attendance Records Datatable</h2>
                         <div class="table-responsive">
@@ -1295,14 +1361,16 @@
                         <div class="datatable-footer">
                             <div id="reports-paging-info">Showing 0 to 0 of 0 logs</div>
                             <div class="datatable-pagination">
-                                <button id="btn-report-prev" class="datatable-page-btn" onclick="changeReportsPage(-1)">Prev</button>
-                                <button id="btn-report-next" class="datatable-page-btn" onclick="changeReportsPage(1)">Next</button>
+                                <button id="btn-report-prev" class="datatable-page-btn"
+                                    onclick="changeReportsPage(-1)">Prev</button>
+                                <button id="btn-report-next" class="datatable-page-btn"
+                                    onclick="changeReportsPage(1)">Next</button>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div id="sub-view-employees" class="sub-view-section" style="display: none; flex-direction: column; gap: 16px;">
+                <div id="sub-view-employees" class="sub-view-section"
+                    style="display: none; flex-direction: column; gap: 16px;">
                     <div class="grid-2">
                         <div class="card">
                             <h2 id="reg-form-title">Enroll New Employee Profile</h2>
@@ -1346,45 +1414,59 @@
                                 </div>
                                 <div class="input-group">
                                     <label>Personal Shift Start (Optional)</label>
-                                    <input type="time" id="reg-employee-shift-start" placeholder="Uses department/global when blank">
+                                    <input type="time" id="reg-employee-shift-start"
+                                        placeholder="Uses department/global when blank">
                                 </div>
                             </div>
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                                 <div class="input-group">
                                     <label>Personal Grace Minutes (Optional)</label>
-                                    <input type="number" id="reg-employee-shift-grace" min="0" placeholder="Uses department/global when blank">
+                                    <input type="number" id="reg-employee-shift-grace" min="0"
+                                        placeholder="Uses department/global when blank">
                                 </div>
                             </div>
-
                             <div class="input-group" style="margin-top: 4px;">
                                 <label>Facial Recognition Enrollment Preview</label>
-                                <div class="camera-container" style="padding-top: 56.25%; margin-top: 4px; border-radius: 6px;">
+                                <div class="camera-container"
+                                    style="padding-top: 56.25%; margin-top: 4px; border-radius: 6px;">
                                     <video id="webcam-enroll-stream" autoplay loop muted playsinline></video>
-                                    <div id="enroll-camera-placeholder" class="camera-placeholder-overlay" style="background: var(--bg);">
-                                        <div class="placeholder-icon" style="width:40px; height:40px; font-size:20px;">📷</div>
-                                        <div class="placeholder-title" style="font-size:12px;">Enrollment Camera Inactive</div>
-                                        <button class="btn btn-secondary" onclick="startEnrollmentCamera()" style="padding: 4px 10px; font-size: 11px; margin-top: 4px;">Start Preview</button>
+                                    <div id="enroll-camera-placeholder" class="camera-placeholder-overlay"
+                                        style="background: var(--bg);">
+                                        <div class="placeholder-icon" style="width:40px; height:40px; font-size:20px;">
+                                            📷</div>
+                                        <div class="placeholder-title" style="font-size:12px;">Enrollment Camera
+                                            Inactive</div>
+                                        <button class="btn btn-secondary" onclick="startEnrollmentCamera()"
+                                            style="padding: 4px 10px; font-size: 11px; margin-top: 4px;">Start
+                                            Preview</button>
                                     </div>
                                 </div>
                             </div>
-
-                            <div id="reg-actions-enroll" style="display: flex; flex-direction: column; gap: 8px; margin-top:12px;">
-                                <button id="btn-trigger-capture" class="btn btn-primary" onclick="captureAndSerializeTopology()" disabled>Capture Via Webcam</button>
+                            <div id="reg-actions-enroll"
+                                style="display: flex; flex-direction: column; gap: 8px; margin-top:12px;">
+                                <button id="btn-trigger-capture" class="btn btn-primary"
+                                    onclick="captureAndSerializeTopology()" disabled>Capture Via Webcam</button>
                                 <div class="dropzone-area" onclick="document.getElementById('reg-file-upload').click()">
                                     <span>📁 Upload Portrait Photo</span>
                                 </div>
-                                <input type="file" id="reg-file-upload" accept="image/*" style="display: none;" onchange="handleImageEnrollmentUpload(event)">
+                                <input type="file" id="reg-file-upload" accept="image/*" style="display: none;"
+                                    onchange="handleImageEnrollmentUpload(event)">
                             </div>
-                            <div id="reg-actions-edit" style="display: none; flex-direction: column; gap: 8px; margin-top:12px;">
-                                <button class="btn btn-primary" onclick="commitEditEmployeeProfile()">Save Profile Changes</button>
-                                <button id="btn-trigger-capture-edit" class="btn btn-secondary" onclick="captureAndSerializeTopology()" disabled>Update Face Via Webcam</button>
-                                <div class="dropzone-area" onclick="document.getElementById('reg-file-upload-edit').click()">
+                            <div id="reg-actions-edit"
+                                style="display: none; flex-direction: column; gap: 8px; margin-top:12px;">
+                                <button class="btn btn-primary" onclick="commitEditEmployeeProfile()">Save Profile
+                                    Changes</button>
+                                <button id="btn-trigger-capture-edit" class="btn btn-secondary"
+                                    onclick="captureAndSerializeTopology()" disabled>Update Face Via Webcam</button>
+                                <div class="dropzone-area"
+                                    onclick="document.getElementById('reg-file-upload-edit').click()">
                                     <span>📁 Update Face Portrait Photo</span>
                                 </div>
-                                <input type="file" id="reg-file-upload-edit" accept="image/*" style="display: none;" onchange="handleImageEnrollmentUpload(event)">
-                                <button class="btn btn-danger" onclick="cancelEditEmployeeMode()">Cancel Editing</button>
+                                <input type="file" id="reg-file-upload-edit" accept="image/*" style="display: none;"
+                                    onchange="handleImageEnrollmentUpload(event)">
+                                <button class="btn btn-danger" onclick="cancelEditEmployeeMode()">Cancel
+                                    Editing</button>
                             </div>
-
                             <h2 style="margin-top:8px;">Manual Check-in Override</h2>
                             <div style="display:grid; grid-template-columns: 1.2fr 0.8fr; gap:8px;">
                                 <div class="input-group">
@@ -1399,8 +1481,8 @@
                                     </select>
                                 </div>
                             </div>
-                            <button class="btn btn-primary" onclick="commitManualAttendanceLog()">Register Manual Check</button>
-
+                            <button class="btn btn-primary" onclick="commitManualAttendanceLog()">Register Manual
+                                Check</button>
                             <h2 style="margin-top:8px;">Leave & Permission Manager</h2>
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                                 <div class="input-group">
@@ -1440,9 +1522,10 @@
                                 </div>
                             </div>
                             <button class="btn btn-secondary" onclick="createLeaveRequest()">Save Leave Request</button>
-                            <div id="leave-list-container" style="display:flex; flex-direction:column; gap:6px; max-height:140px; overflow-y:auto; margin-top:4px;"></div>
+                            <div id="leave-list-container"
+                                style="display:flex; flex-direction:column; gap:6px; max-height:140px; overflow-y:auto; margin-top:4px;">
+                            </div>
                         </div>
-
                         <div class="card">
                             <h2>Profiles Records Directory</h2>
                             <div class="datatable-toolbar">
@@ -1451,7 +1534,8 @@
                                         <circle cx="11" cy="11" r="8"></circle>
                                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                                     </svg>
-                                    <input type="text" id="emp-search-name" class="datatable-search-input" placeholder="Search profiles..." oninput="empSearchChange()">
+                                    <input type="text" id="emp-search-name" class="datatable-search-input"
+                                        placeholder="Search profiles..." oninput="empSearchChange()">
                                 </div>
                                 <div class="input-group" style="width: auto;">
                                     <select id="emp-filter-dept" onchange="empSearchChange()" style="width: 150px;">
@@ -1480,29 +1564,33 @@
                             <div class="datatable-footer">
                                 <div id="emp-paging-info">Showing 0 to 0 of 0 profiles</div>
                                 <div class="datatable-pagination">
-                                    <button id="btn-emp-prev" class="datatable-page-btn" onclick="changeEmpPage(-1)">Prev</button>
-                                    <button id="btn-emp-next" class="datatable-page-btn" onclick="changeEmpPage(1)">Next</button>
+                                    <button id="btn-emp-prev" class="datatable-page-btn"
+                                        onclick="changeEmpPage(-1)">Prev</button>
+                                    <button id="btn-emp-next" class="datatable-page-btn"
+                                        onclick="changeEmpPage(1)">Next</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div id="sub-view-settings" class="sub-view-section" style="display: none; flex-direction: column; gap: 16px;">
+                <div id="sub-view-settings" class="sub-view-section"
+                    style="display: none; flex-direction: column; gap: 16px;">
                     <div class="grid-2">
                         <div class="card">
                             <h2>System Themes & Styling</h2>
                             <div class="input-group">
                                 <label>Accent Color Brand Palette</label>
                                 <div class="theme-picker-group">
-                                    <div class="color-dot indigo" onclick="applyAccentColor('indigo')" id="dot-indigo"></div>
-                                    <div class="color-dot emerald" onclick="applyAccentColor('emerald')" id="dot-emerald"></div>
+                                    <div class="color-dot indigo" onclick="applyAccentColor('indigo')" id="dot-indigo">
+                                    </div>
+                                    <div class="color-dot emerald" onclick="applyAccentColor('emerald')"
+                                        id="dot-emerald"></div>
                                     <div class="color-dot rose" onclick="applyAccentColor('rose')" id="dot-rose"></div>
-                                    <div class="color-dot amber" onclick="applyAccentColor('amber')" id="dot-amber"></div>
+                                    <div class="color-dot amber" onclick="applyAccentColor('amber')" id="dot-amber">
+                                    </div>
                                     <div class="color-dot blue" onclick="applyAccentColor('blue')" id="dot-blue"></div>
                                 </div>
                             </div>
-
                             <h2 style="margin-top: 10px;">Liveness Challenge Anti-Spoofing</h2>
                             <div class="input-group">
                                 <label>Anti-Spoofing Protocol Level</label>
@@ -1512,7 +1600,6 @@
                                     <option value="challenge">Level 2: Interactive Head Turn Challenge</option>
                                 </select>
                             </div>
-
                             <h2 style="margin-top: 10px;">Shift & Late Policy Policies</h2>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                                 <div class="input-group">
@@ -1531,7 +1618,8 @@
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                                 <div class="input-group">
                                     <label>Auto Check-Out Gap (Hours)</label>
-                                    <input type="number" id="settings-checkout-gap-hours" value="2" min="0.25" step="0.25">
+                                    <input type="number" id="settings-checkout-gap-hours" value="2" min="0.25"
+                                        step="0.25">
                                 </div>
                                 <div class="input-group">
                                     <label>Logout Cutoff Time</label>
@@ -1540,89 +1628,110 @@
                             </div>
                             <div style="display:flex; gap: 8px; align-items:center; margin:4px 0 8px;">
                                 <input type="checkbox" id="settings-logout-cutoff-enabled" style="width:auto;">
-                                <label for="settings-logout-cutoff-enabled" style="text-transform:none; letter-spacing:0; font-size:12px; margin:0;">
+                                <label for="settings-logout-cutoff-enabled"
+                                    style="text-transform:none; letter-spacing:0; font-size:12px; margin:0;">
                                     Enforce logout cutoff rule (after this time, second scan logs Check-Out)
                                 </label>
                             </div>
                             <div class="input-group">
                                 <label>Weekend Days Selection</label>
                                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
-                                    <label style="display:flex; align-items:center; gap:4px; text-transform:none; font-size:12px; font-weight:500; cursor:pointer;">
+                                    <label
+                                        style="display:flex; align-items:center; gap:4px; text-transform:none; font-size:12px; font-weight:500; cursor:pointer;">
                                         <input type="checkbox" id="wk-0" value="0" style="width:auto;"> Sun
                                     </label>
-                                    <label style="display:flex; align-items:center; gap:4px; text-transform:none; font-size:12px; font-weight:500; cursor:pointer;">
+                                    <label
+                                        style="display:flex; align-items:center; gap:4px; text-transform:none; font-size:12px; font-weight:500; cursor:pointer;">
                                         <input type="checkbox" id="wk-1" value="1" style="width:auto;"> Mon
                                     </label>
-                                    <label style="display:flex; align-items:center; gap:4px; text-transform:none; font-size:12px; font-weight:500; cursor:pointer;">
+                                    <label
+                                        style="display:flex; align-items:center; gap:4px; text-transform:none; font-size:12px; font-weight:500; cursor:pointer;">
                                         <input type="checkbox" id="wk-2" value="2" style="width:auto;"> Tue
                                     </label>
-                                    <label style="display:flex; align-items:center; gap:4px; text-transform:none; font-size:12px; font-weight:500; cursor:pointer;">
+                                    <label
+                                        style="display:flex; align-items:center; gap:4px; text-transform:none; font-size:12px; font-weight:500; cursor:pointer;">
                                         <input type="checkbox" id="wk-3" value="3" style="width:auto;"> Wed
                                     </label>
-                                    <label style="display:flex; align-items:center; gap:4px; text-transform:none; font-size:12px; font-weight:500; cursor:pointer;">
+                                    <label
+                                        style="display:flex; align-items:center; gap:4px; text-transform:none; font-size:12px; font-weight:500; cursor:pointer;">
                                         <input type="checkbox" id="wk-4" value="4" style="width:auto;"> Thu
                                     </label>
-                                    <label style="display:flex; align-items:center; gap:4px; text-transform:none; font-size:12px; font-weight:500; cursor:pointer;">
+                                    <label
+                                        style="display:flex; align-items:center; gap:4px; text-transform:none; font-size:12px; font-weight:500; cursor:pointer;">
                                         <input type="checkbox" id="wk-5" value="5" style="width:auto;"> Fri
                                     </label>
-                                    <label style="display:flex; align-items:center; gap:4px; text-transform:none; font-size:12px; font-weight:500; cursor:pointer;">
+                                    <label
+                                        style="display:flex; align-items:center; gap:4px; text-transform:none; font-size:12px; font-weight:500; cursor:pointer;">
                                         <input type="checkbox" id="wk-6" value="6" style="width:auto;"> Sat
                                     </label>
                                 </div>
                             </div>
-                            <button class="btn btn-secondary" onclick="saveShiftPolicySettings()">Apply Shift & Calendar Rules</button>
-
+                            <button class="btn btn-secondary" onclick="saveShiftPolicySettings()">Apply Shift & Calendar
+                                Rules</button>
                             <h2 style="margin-top: 10px;">Admin Movement Clips</h2>
-                            <div id="movement-clip-list" style="display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto; border:1px solid var(--border); border-radius:6px; padding:8px; background:var(--bg); font-size:12px;">
+                            <div id="movement-clip-list"
+                                style="display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto; border:1px solid var(--border); border-radius:6px; padding:8px; background:var(--bg); font-size:12px;">
                                 <span style="color:var(--muted);">No movement clips captured yet.</span>
                             </div>
-
                             <h2 style="margin-top: 10px;">Security Access Settings</h2>
                             <div class="input-group">
                                 <label>Change Dashboard Password</label>
                                 <input type="password" id="admin-new-pass" placeholder="Enter new master key passcode">
                             </div>
-                            <button class="btn btn-secondary" onclick="updateAdministrativeSystemPassword()">Update Passcode Key</button>
+                            <button class="btn btn-secondary" onclick="updateAdministrativeSystemPassword()">Update
+                                Passcode Key</button>
                         </div>
-
                         <div class="card">
                             <h2>Corporate Calendars & Divisions</h2>
                             <div class="input-group">
                                 <label>Manage Departments</label>
                                 <div style="display: flex; gap: 6px;">
                                     <input type="text" id="settings-new-dept" placeholder="Administration">
-                                    <button class="btn btn-primary" onclick="addNewDepartment()" style="padding: 0 16px;">Add</button>
+                                    <button class="btn btn-primary" onclick="addNewDepartment()"
+                                        style="padding: 0 16px;">Add</button>
                                 </div>
-                                <div id="dept-list-container" style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; margin-top: 4px; padding-right: 4px;"></div>
+                                <div id="dept-list-container"
+                                    style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; margin-top: 4px; padding-right: 4px;">
+                                </div>
                             </div>
                             <div class="input-group" style="margin-top: 8px;">
                                 <label>Holidays Exclusions</label>
                                 <div style="display: flex; gap: 6px;">
                                     <input type="date" id="settings-new-holiday-date" style="width:130px;">
-                                    <input type="text" id="settings-new-holiday-name" placeholder="Christmas Day" style="flex:1;">
-                                    <button class="btn btn-primary" onclick="addNewHoliday()" style="padding: 0 16px;">Add</button>
+                                    <input type="text" id="settings-new-holiday-name" placeholder="Christmas Day"
+                                        style="flex:1;">
+                                    <button class="btn btn-primary" onclick="addNewHoliday()"
+                                        style="padding: 0 16px;">Add</button>
                                 </div>
-                                <div id="holiday-list-container" style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; margin-top: 4px; padding-right: 4px;"></div>
+                                <div id="holiday-list-container"
+                                    style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; margin-top: 4px; padding-right: 4px;">
+                                </div>
                             </div>
-
                             <div class="input-group" style="margin-top: 8px;">
                                 <label>Department Shift Templates</label>
                                 <div style="display:grid; grid-template-columns: 1fr 0.8fr 0.8fr; gap:6px;">
                                     <select id="settings-shift-policy-dept"></select>
                                     <input type="time" id="settings-shift-policy-time" value="09:00">
-                                    <input type="number" id="settings-shift-policy-grace" min="0" value="15" placeholder="Grace">
+                                    <input type="number" id="settings-shift-policy-grace" min="0" value="15"
+                                        placeholder="Grace">
                                 </div>
-                                <button class="btn btn-secondary" style="margin-top:6px;" onclick="saveDepartmentShiftPolicy()">Save Department Shift Policy</button>
-                                <div id="shift-policy-list-container" style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; margin-top: 6px; padding-right: 4px;"></div>
+                                <button class="btn btn-secondary" style="margin-top:6px;"
+                                    onclick="saveDepartmentShiftPolicy()">Save Department Shift Policy</button>
+                                <div id="shift-policy-list-container"
+                                    style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; margin-top: 6px; padding-right: 4px;">
+                                </div>
                             </div>
-
                             <h2 style="margin-top: 10px;">System Datastore Utilities</h2>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                <button class="btn btn-secondary" onclick="exportDatastorePayload()">Export Backup JSON</button>
-                                <button class="btn btn-secondary" onclick="document.getElementById('file-import').click()">Import Backup JSON</button>
-                                <input type="file" id="file-import" accept=".json" style="display:none" onchange="importDatastorePayload(event)">
+                                <button class="btn btn-secondary" onclick="exportDatastorePayload()">Export Backup
+                                    JSON</button>
+                                <button class="btn btn-secondary"
+                                    onclick="document.getElementById('file-import').click()">Import Backup JSON</button>
+                                <input type="file" id="file-import" accept=".json" style="display:none"
+                                    onchange="importDatastorePayload(event)">
                             </div>
-                            <button class="btn btn-danger" onclick="purgeSystemLocalMemoryStore()">Purge Local Database Indexes</button>
+                            <button class="btn btn-danger" onclick="purgeSystemLocalMemoryStore()">Purge Local Database
+                                Indexes</button>
                         </div>
                     </div>
                     <div class="card">
@@ -1631,13 +1740,14 @@
                             <button class="btn btn-secondary" onclick="exportAuditTrailCSV()">Export Audit CSV</button>
                             <button class="btn btn-secondary" onclick="renderAuditTrail()">Refresh</button>
                         </div>
-                        <div id="audit-log-list-container" style="display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto;"></div>
+                        <div id="audit-log-list-container"
+                            style="display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto;">
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </main>
-
     <div class="modal-overlay" id="retroactive-log-modal">
         <div class="modal-card">
             <h2 id="retro-modal-title">Retroactive Attendance Log Entry</h2>
@@ -1681,16 +1791,14 @@
             </div>
             <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
                 <button class="btn btn-secondary" onclick="closeRetroactiveModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="commitRetroactiveAttendanceLog()">Save Attendance Record</button>
+                <button class="btn btn-primary" onclick="commitRetroactiveAttendanceLog()">Save Attendance
+                    Record</button>
             </div>
         </div>
     </div>
-
     <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
-
     <script>
         const CDN_MODELS_PATH = 'https://justadudewhohacks.github.io/face-api.js/models';
-
         const AudioEngine = {
             ctx: null,
             init() {
@@ -1732,7 +1840,6 @@
                 }
             }
         };
-
         function speakText(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -1743,7 +1850,6 @@
                 window.speechSynthesis.speak(utterance);
             }
         }
-
         function triggerToast(text, style = 'success') {
             const container = document.getElementById('toast-container');
             const div = document.createElement('div');
@@ -1756,18 +1862,15 @@
                 setTimeout(() => { div.remove(); }, 300);
             }, 3000);
         }
-
         function getTimeFromDate(dateObj) {
             return dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
-
         function parseTimeToDate(baseDate, timeString) {
             const [h, m] = timeString.split(':').map(Number);
             const dt = new Date(baseDate);
             dt.setHours(h || 0, m || 0, 0, 0);
             return dt;
         }
-
         async function showConfirmDialog(options) {
             if (window.Swal && typeof window.Swal.fire === 'function') {
                 const result = await window.Swal.fire({
@@ -1783,7 +1886,6 @@
             }
             return confirm(options.text || 'Are you sure?');
         }
-
         async function requireAdminPassword(actionLabel = "this action") {
             const realPass = await readConfigKey("master_password");
             if (!realPass) {
@@ -1818,7 +1920,6 @@
             }
             return true;
         }
-
         function getMonitorProtectedInputs() {
             return [
                 document.getElementById('settings-motion-enabled'),
@@ -1827,7 +1928,6 @@
                 document.getElementById('settings-motion-idle-seconds')
             ].filter(Boolean);
         }
-
         function setMonitorFieldSnapshot(element) {
             if (!element) return;
             if (element.type === 'checkbox') {
@@ -1836,7 +1936,6 @@
                 element.dataset.prevValue = element.value;
             }
         }
-
         function restoreMonitorFieldSnapshot(element) {
             if (!element) return;
             const prevValue = element.dataset.prevValue;
@@ -1846,7 +1945,6 @@
                 element.value = prevValue;
             }
         }
-
         function setupMonitorFieldGuards() {
             const elements = getMonitorProtectedInputs();
             elements.forEach(el => {
@@ -1864,7 +1962,6 @@
                 });
             });
         }
-
         function getPreferredVideoMimeType() {
             const candidates = [
                 'video/webm;codecs=vp9,opus',
@@ -1878,7 +1975,6 @@
             }
             return '';
         }
-
         const ui = {
             video: document.getElementById('webcam-stream'),
             videoEnroll: document.getElementById('webcam-enroll-stream'),
@@ -1902,16 +1998,13 @@
             manualRecordStopBtn: document.getElementById('btn-manual-record-stop'),
             wakeLockToggleBtn: document.getElementById('btn-wakelock-toggle')
         };
-
         let indexedDatabasePointer = null;
         let applicationFaceMatcherRuntime = null;
         let precompiledProfilesRegistry = [];
         let precompiledEmployeesList = [];
         const transactionThrottleMap = new Map();
-
         let livenessChallengeMode = "none";
         const livenessTrackingCache = new Map();
-
         let isDashboardAuthenticatedState = false;
         let isCameraActive = false;
         let isCameraPaused = false;
@@ -1919,11 +2012,9 @@
         let inferenceIntervalId = null;
         let latestFaceDetections = [];
         let currentEditingEmployeeId = null;
-
         let scanLinePos = 0;
         let scanLineSpeed = 2.5;
         let scanLineDirection = 1;
-
         let shiftStartTime = "09:00";
         let shiftGraceMinutes = 15;
         let minimumSessionMinutes = 480;
@@ -1931,7 +2022,6 @@
         let checkoutGapHours = 2;
         let logoutCutoffEnabled = false;
         let logoutCutoffTime = "15:00";
-
         let motionTrackingEnabled = false;
         let motionAggressiveness = 3;
         let motionAutoDownload = false;
@@ -1946,25 +2036,20 @@
         let motionLastDetectedAt = 0;
         let motionClipRecords = [];
         let isMotionCheckProcessing = false;
-
         let manualRecordingInstance = null;
         let manualRecordingChunks = [];
         let manualRecordingStartAt = null;
         let isInferenceProcessing = false;
-
         let wakeLockHandle = null;
         let wakeLockEnabled = false;
-
         let reportsPage = 1;
         const reportsRowsPerPage = 10;
         let filteredReportsList = [];
         let reportsDataTable = null;
-
         let empPage = 1;
         const empRowsPerPage = 10;
         let filteredEmpList = [];
         let directoryDataTable = null;
-
         if (window.DataTable && DataTable.ext) {
             DataTable.ext.errMode = "none";
         }
@@ -1976,14 +2061,12 @@
                 return false;
             });
         }
-
         function initializeDataTableWithButtons(tableSelector, exportTitle) {
             if (!window.jQuery || !jQuery.fn || !jQuery.fn.dataTable) return null;
             const tableEl = document.querySelector(tableSelector);
             if (!tableEl) return null;
             const tbodyEl = tableEl.querySelector("tbody");
             if (!tbodyEl) return null;
-
             if (window.DataTable && DataTable.Buttons) {
                 if (window.JSZip && typeof DataTable.Buttons.jszip === "function") {
                     DataTable.Buttons.jszip(window.JSZip);
@@ -1992,16 +2075,13 @@
                     DataTable.Buttons.pdfMake(window.pdfMake);
                 }
             }
-
             const $table = jQuery(tableSelector);
             if (jQuery.fn.DataTable.isDataTable(tableSelector)) {
                 $table.DataTable().destroy();
             }
-
             if (tbodyEl.querySelector("td[colspan]")) {
                 return null;
             }
-
             return $table.DataTable({
                 order: [],
                 paging: false,
@@ -2023,12 +2103,10 @@
                 }
             });
         }
-
         function refreshDataTablesButtons() {
             reportsDataTable = initializeDataTableWithButtons("#attendance-records-table", "Attendance Records");
             directoryDataTable = initializeDataTableWithButtons("#employee-directory-table", "Employee Directory");
         }
-
         function initializeDatabaseCoreSubsystems() {
             return new Promise((resolve, reject) => {
                 const openRequest = indexedDB.open("EnterpriseBiometricKioskCoreDB", 6);
@@ -2063,7 +2141,6 @@
                 openRequest.onerror = (e) => reject(e.target.error);
             });
         }
-
         function writeDatabaseRecord(storeName, valueObject) {
             return new Promise((resolve) => {
                 const txn = indexedDatabasePointer.transaction(storeName, "readwrite");
@@ -2071,7 +2148,6 @@
                 txn.oncomplete = () => resolve();
             });
         }
-
         function deleteDatabaseRecord(storeName, keyId) {
             return new Promise((resolve) => {
                 const txn = indexedDatabasePointer.transaction(storeName, "readwrite");
@@ -2079,7 +2155,6 @@
                 txn.oncomplete = () => resolve();
             });
         }
-
         function readAllDatabaseRecords(storeName) {
             return new Promise((resolve) => {
                 const txn = indexedDatabasePointer.transaction(storeName, "readonly");
@@ -2087,7 +2162,6 @@
                 req.onsuccess = () => resolve(req.result || []);
             });
         }
-
         function readConfigKey(key) {
             return new Promise((resolve) => {
                 const txn = indexedDatabasePointer.transaction("system_config", "readonly");
@@ -2095,28 +2169,23 @@
                 req.onsuccess = () => resolve(req.result ? req.result.value : null);
             });
         }
-
         async function seedDatabaseDefaults() {
             const checkPass = await readConfigKey("master_password");
             if (!checkPass) {
                 await writeDatabaseRecord("system_config", { key: "master_password", value: "admin1234" });
             }
-
             const checkLiveness = await readConfigKey("liveness_level");
             if (!checkLiveness) {
                 await writeDatabaseRecord("system_config", { key: "liveness_level", value: "none" });
             }
-
             const checkTheme = await readConfigKey("theme_color");
             if (!checkTheme) {
                 await writeDatabaseRecord("system_config", { key: "theme_color", value: "indigo" });
             }
-
             const checkMode = await readConfigKey("theme_mode");
             if (!checkMode) {
                 await writeDatabaseRecord("system_config", { key: "theme_mode", value: "light" });
             }
-
             const depts = await readAllDatabaseRecords("departments");
             if (depts.length === 0) {
                 const defaults = ["Administration", "Engineering", "Sales", "Marketing", "Human Resources", "Finance", "Operations"];
@@ -2124,53 +2193,43 @@
                     await writeDatabaseRecord("departments", { name: d });
                 }
             }
-
             const weekends = await readConfigKey("weekend_days");
             if (!weekends) {
                 await writeDatabaseRecord("system_config", { key: "weekend_days", value: [0, 6] });
             }
-
             const minimumSession = await readConfigKey("minimum_session_minutes");
             if (!minimumSession) {
                 await writeDatabaseRecord("system_config", { key: "minimum_session_minutes", value: 480 });
             }
-
             const checkoutGap = await readConfigKey("checkout_gap_hours");
             if (!checkoutGap) {
                 await writeDatabaseRecord("system_config", { key: "checkout_gap_hours", value: 2 });
             }
-
             const logoutCutoffEnabledCfg = await readConfigKey("logout_cutoff_enabled");
             if (logoutCutoffEnabledCfg === null || logoutCutoffEnabledCfg === undefined) {
                 await writeDatabaseRecord("system_config", { key: "logout_cutoff_enabled", value: "0" });
             }
-
             const logoutCutoff = await readConfigKey("logout_cutoff_time");
             if (!logoutCutoff) {
                 await writeDatabaseRecord("system_config", { key: "logout_cutoff_time", value: "15:00" });
             }
-
             const motionEnabledCfg = await readConfigKey("motion_tracking_enabled");
             if (motionEnabledCfg === null || motionEnabledCfg === undefined) {
                 await writeDatabaseRecord("system_config", { key: "motion_tracking_enabled", value: "0" });
             }
-
             const motionAggCfg = await readConfigKey("motion_aggressiveness");
             if (!motionAggCfg) {
                 await writeDatabaseRecord("system_config", { key: "motion_aggressiveness", value: 3 });
             }
-
             const motionAutoCfg = await readConfigKey("motion_auto_download");
             if (motionAutoCfg === null || motionAutoCfg === undefined) {
                 await writeDatabaseRecord("system_config", { key: "motion_auto_download", value: "0" });
             }
-
             const motionIdleCfg = await readConfigKey("motion_idle_seconds");
             if (!motionIdleCfg) {
                 await writeDatabaseRecord("system_config", { key: "motion_idle_seconds", value: 2 });
             }
         }
-
         async function verifyAdminCredentialGateAccess() {
             const inputString = ui.passInput.value;
             const correctPasswordString = await readConfigKey("master_password");
@@ -2189,12 +2248,10 @@
                 AudioEngine.play('error');
             }
         }
-
         function toggleGatePasswordReveal() {
             const check = document.getElementById('show-pass-check');
             ui.passInput.type = check.checked ? "text" : "password";
         }
-
         function logoutAdminGate() {
             isDashboardAuthenticatedState = false;
             stopEnrollmentCamera();
@@ -2204,7 +2261,6 @@
             triggerToast("Admin Console Locked", "warning");
             AudioEngine.play('warning');
         }
-
         async function updateAdministrativeSystemPassword() {
             const targetString = ui.newPassInput.value.trim();
             if (targetString.length < 4) {
@@ -2217,7 +2273,6 @@
             AudioEngine.play('success');
             await logAuditEvent("admin_passcode_updated");
         }
-
         function updateCameraControlsUI() {
             if (isCameraActive) {
                 ui.placeholder.style.opacity = '0';
@@ -2241,7 +2296,6 @@
                 ui.cameraStatus.style.borderColor = "var(--danger)";
             }
         }
-
         async function startCameraStream() {
             if (isCameraActive) {
                 if (isCameraPaused) {
@@ -2284,7 +2338,6 @@
                 AudioEngine.play('error');
             }
         }
-
         function pauseCameraStream() {
             if (isCameraActive && !isCameraPaused) {
                 ui.video.pause();
@@ -2300,7 +2353,6 @@
                 ui.banner.innerText = "Camera scan stream suspended.";
             }
         }
-
         function stopCameraStream() {
             if (isCameraActive) {
                 if (inferenceIntervalId) {
@@ -2323,7 +2375,6 @@
                 ui.banner.innerText = "Scanning framework offline.";
             }
         }
-
         function startMotionTrackingLoop() {
             if (motionDetectionIntervalId || !motionTrackingEnabled) return;
             motionPrevFrameData = null;
@@ -2345,16 +2396,13 @@
                     return;
                 }
                 isMotionCheckProcessing = true;
-
                 try {
                     motionSampleCtx.drawImage(ui.video, 0, 0, motionSampleCanvas.width, motionSampleCanvas.height);
                     const currentFrame = motionSampleCtx.getImageData(0, 0, motionSampleCanvas.width, motionSampleCanvas.height).data;
-
                     if (!motionPrevFrameData) {
                         motionPrevFrameData = currentFrame;
                         return;
                     }
-
                     let changed = 0;
                     let compared = 0;
                     for (let i = 0; i < currentFrame.length; i += 24) {
@@ -2369,7 +2417,6 @@
                     const motionPercent = compared ? (changed / compared) * 100 : 0;
                     const threshold = Math.max(0.5, Number(motionAggressiveness) || 3);
                     const nowTs = Date.now();
-
                     if (motionPercent >= threshold) {
                         motionLastDetectedAt = nowTs;
                         if (!motionRecordingInstance) {
@@ -2386,7 +2433,6 @@
                 }
             }, 650);
         }
-
         function stopMotionTrackingLoop() {
             if (motionDetectionIntervalId) {
                 clearInterval(motionDetectionIntervalId);
@@ -2394,7 +2440,6 @@
             }
             motionPrevFrameData = null;
         }
-
         async function startMotionRecordingSession() {
             if (motionRecordingInstance || !ui.video.srcObject || !window.MediaRecorder) return;
             const sourceStream = ui.video.srcObject;
@@ -2434,7 +2479,6 @@
             recorder.start(500);
             triggerToast("Motion detected: recording started", "warning");
         }
-
         function stopMotionRecordingSession(silent = false) {
             if (!motionRecordingInstance) return;
             const rec = motionRecordingInstance;
@@ -2446,7 +2490,6 @@
                 triggerToast("Motion recording ended", "success");
             }
         }
-
         function renderMovementClipsList() {
             if (!ui.movementClipList) return;
             if (!motionClipRecords.length) {
@@ -2468,7 +2511,6 @@
                 ui.movementClipList.appendChild(row);
             });
         }
-
         function downloadMovementClipById(clipId) {
             const clip = motionClipRecords.find(item => item.id === clipId);
             if (!clip) return;
@@ -2479,7 +2521,6 @@
             a.click();
             document.body.removeChild(a);
         }
-
         async function startManualContinuousRecording(enforcePassword = true) {
             if (enforcePassword) {
                 const ok = await requireAdminPassword("start continuous recording");
@@ -2529,7 +2570,6 @@
             updateManualRecordingButtons();
             triggerToast("Continuous recording started", "warning");
         }
-
         async function stopManualContinuousRecording(silent = false, enforcePassword = true) {
             if (enforcePassword) {
                 const ok = await requireAdminPassword("stop continuous recording");
@@ -2546,12 +2586,10 @@
                 triggerToast("Continuous recording stopped", "success");
             }
         }
-
         function updateManualRecordingButtons() {
             if (ui.manualRecordStartBtn) ui.manualRecordStartBtn.disabled = !!manualRecordingInstance;
             if (ui.manualRecordStopBtn) ui.manualRecordStopBtn.disabled = !manualRecordingInstance;
         }
-
         async function requestWakeLock() {
             if (!('wakeLock' in navigator) || wakeLockHandle) return;
             try {
@@ -2567,7 +2605,6 @@
                 updateWakeLockButton();
             }
         }
-
         async function releaseWakeLock() {
             if (!wakeLockHandle) return;
             try {
@@ -2578,7 +2615,6 @@
             wakeLockHandle = null;
             updateWakeLockButton();
         }
-
         function updateWakeLockButton() {
             if (!ui.wakeLockToggleBtn) return;
             if (wakeLockEnabled) {
@@ -2587,7 +2623,6 @@
                 ui.wakeLockToggleBtn.textContent = "Enable No-Sleep Mode";
             }
         }
-
         async function toggleSleepPrevention(enforcePassword = true) {
             if (enforcePassword) {
                 const ok = await requireAdminPassword("change no-sleep mode");
@@ -2602,7 +2637,6 @@
             }
             updateWakeLockButton();
         }
-
         async function startEnrollmentCamera() {
             if (isEnrollCameraActive) return;
             try {
@@ -2625,7 +2659,6 @@
                 triggerToast("Webcam access failed", "error");
             }
         }
-
         function stopEnrollmentCamera() {
             if (isEnrollCameraActive) {
                 ui.videoEnroll.pause();
@@ -2642,7 +2675,6 @@
                 if (editBtn) editBtn.disabled = true;
             }
         }
-
         function executeCanvasBoundingSynchronization() {
             const boundsWidth = ui.video.videoWidth || 640;
             const boundsHeight = ui.video.videoHeight || 480;
@@ -2650,7 +2682,6 @@
             ui.canvas.height = boundsHeight;
             faceapi.matchDimensions(ui.canvas, { width: boundsWidth, height: boundsHeight });
         }
-
         async function exportDatastorePayload() {
             const emps = await readAllDatabaseRecords("employees");
             const logs = await readAllDatabaseRecords("attendance_logs");
@@ -2669,7 +2700,6 @@
             AudioEngine.play('success');
             await logAuditEvent("backup_exported_json");
         }
-
         async function importDatastorePayload(event) {
             const targetFile = event.target.files[0];
             if (!targetFile) return;
@@ -2731,7 +2761,6 @@
             };
             reader.readAsText(targetFile);
         }
-
         async function purgeSystemLocalMemoryStore() {
             if (confirm("Danger: Wiping all local records and logs. Continue?")) {
                 const txnEmps = indexedDatabasePointer.transaction("employees", "readwrite");
@@ -2764,27 +2793,22 @@
                 await logAuditEvent("local_database_purged");
             }
         }
-
         async function compileApplicationCoreSubsystems() {
             try {
                 startRenderLoop();
                 await initializeDatabaseCoreSubsystems();
                 await seedDatabaseDefaults();
-
                 const accentColor = await readConfigKey("theme_color");
                 applyAccentColor(accentColor);
-
                 const themeMode = await readConfigKey("theme_mode");
                 if (themeMode === 'dark') {
                     document.body.classList.add('dark');
                 } else {
                     document.body.classList.remove('dark');
                 }
-
                 const liveLevel = await readConfigKey("liveness_level");
                 livenessChallengeMode = liveLevel;
                 document.getElementById('settings-liveness-level').value = liveLevel;
-
                 const savedTime = await readConfigKey("shift_start_time");
                 if (savedTime) {
                     shiftStartTime = savedTime;
@@ -2808,7 +2832,6 @@
                 const savedCutoffEnabled = await readConfigKey("logout_cutoff_enabled");
                 logoutCutoffEnabled = String(savedCutoffEnabled) === "1";
                 document.getElementById('settings-logout-cutoff-enabled').checked = logoutCutoffEnabled;
-
                 const savedCutoffTime = await readConfigKey("logout_cutoff_time");
                 if (savedCutoffTime) {
                     logoutCutoffTime = savedCutoffTime;
@@ -2817,7 +2840,6 @@
                 const savedMotionEnabled = await readConfigKey("motion_tracking_enabled");
                 motionTrackingEnabled = String(savedMotionEnabled) === "1";
                 document.getElementById('settings-motion-enabled').checked = motionTrackingEnabled;
-
                 const savedMotionAgg = await readConfigKey("motion_aggressiveness");
                 if (savedMotionAgg) {
                     motionAggressiveness = parseFloat(savedMotionAgg);
@@ -2826,7 +2848,6 @@
                 const savedMotionAuto = await readConfigKey("motion_auto_download");
                 motionAutoDownload = String(savedMotionAuto) === "1";
                 document.getElementById('settings-motion-auto-download').checked = motionAutoDownload;
-
                 const savedMotionIdle = await readConfigKey("motion_idle_seconds");
                 if (savedMotionIdle) {
                     motionIdleSeconds = parseInt(savedMotionIdle, 10);
@@ -2839,7 +2860,6 @@
                         document.getElementById(`wk-${i}`).checked = savedWk.includes(i);
                     }
                 }
-
                 ui.banner.innerText = "Downloading core weight libraries (approx. 5MB)...";
                 if (faceapi.tf && faceapi.tf.setBackend) await faceapi.tf.setBackend('cpu');
                 await Promise.all([
@@ -2869,11 +2889,9 @@
                 ui.banner.innerText = "Fatal core startup framework exception.";
             }
         }
-
         async function loadEmployeesListFromDB() {
             precompiledEmployeesList = await readAllDatabaseRecords("employees");
         }
-
         async function rebuildComputationalMatchingGraph() {
             await loadEmployeesListFromDB();
             precompiledProfilesRegistry = [];
@@ -2887,13 +2905,11 @@
                 applicationFaceMatcherRuntime = null;
             }
         }
-
         async function suggestNextEmployeeId() {
             const list = await readAllDatabaseRecords("employees");
             const nextIdx = list.length + 1;
             document.getElementById('reg-employee-id').value = "EMP-" + String(nextIdx).padStart(3, '0');
         }
-
         function formatDurationFromMinutes(totalMinutes) {
             if (typeof totalMinutes !== "number" || Number.isNaN(totalMinutes) || totalMinutes < 0) {
                 return "-";
@@ -2902,7 +2918,6 @@
             const mins = totalMinutes % 60;
             return `${hrs}h ${mins}m`;
         }
-
         function resolveCheckoutSessionMinutes(logsForEmployeeAndDate, checkoutTimestamp) {
             const checkIns = logsForEmployeeAndDate
                 .filter(l => l.type === "Check-In" && l.timestamp < checkoutTimestamp)
@@ -2914,12 +2929,10 @@
             const diff = Math.round((checkoutTimestamp - pairingCheckIn.timestamp) / 60000);
             return diff >= 0 ? diff : null;
         }
-
         function resolveCheckoutCompliance(sessionMinutes) {
             if (typeof sessionMinutes !== "number" || Number.isNaN(sessionMinutes)) return "-";
             return sessionMinutes >= minimumSessionMinutes ? "Met" : "Short";
         }
-
         function buildDailySessionSummaryMap(logsForDate) {
             const summaryMap = new Map();
             const sorted = [...logsForDate].sort((a, b) => a.timestamp - b.timestamp);
@@ -2949,7 +2962,6 @@
             });
             return summaryMap;
         }
-
         function validateUniqueProfileContact(existingEmployees, targetEmployeeId, email, phone) {
             const normalizedTargetId = (targetEmployeeId || "").toLowerCase();
             const normalizedEmail = (email || "").trim().toLowerCase();
@@ -2970,7 +2982,6 @@
             }
             return null;
         }
-
         function toAuditDetailString(detail) {
             if (detail === null || detail === undefined) return "";
             if (typeof detail === "string") return detail;
@@ -2980,7 +2991,6 @@
                 return String(detail);
             }
         }
-
         async function logAuditEvent(action, detail = "") {
             try {
                 await writeDatabaseRecord("audit_logs", {
@@ -2992,7 +3002,6 @@
                 // Non-blocking by design.
             }
         }
-
         async function resolveShiftPolicyForEmployee(empId, fallbackDept = "") {
             let policyStart = shiftStartTime;
             let policyGrace = shiftGraceMinutes;
@@ -3014,7 +3023,6 @@
             }
             return { shiftStartTime: policyStart, shiftGraceMinutes: policyGrace };
         }
-
         async function saveDepartmentShiftPolicy() {
             const department = document.getElementById('settings-shift-policy-dept').value;
             const shiftTime = document.getElementById('settings-shift-policy-time').value;
@@ -3033,7 +3041,6 @@
             AudioEngine.play('success');
             await logAuditEvent("department_shift_policy_saved", { department, shiftTime, grace });
         }
-
         async function deleteDepartmentShiftPolicy(department) {
             if (!confirm(`Delete shift policy for ${department}?`)) return;
             await deleteDatabaseRecord("shift_policies", department);
@@ -3042,15 +3049,12 @@
             AudioEngine.play('warning');
             await logAuditEvent("department_shift_policy_deleted", { department });
         }
-
         async function renderDepartmentShiftPolicies() {
             const listContainer = document.getElementById('shift-policy-list-container');
             const deptSelect = document.getElementById('settings-shift-policy-dept');
             if (!listContainer || !deptSelect) return;
-
             const departments = await readAllDatabaseRecords("departments");
             const policies = await readAllDatabaseRecords("shift_policies");
-
             const previous = deptSelect.value;
             deptSelect.innerHTML = "";
             departments.forEach(d => {
@@ -3059,7 +3063,6 @@
             if (previous && deptSelect.querySelector(`option[value="${previous}"]`)) {
                 deptSelect.value = previous;
             }
-
             listContainer.innerHTML = "";
             if (!policies.length) {
                 listContainer.innerHTML = '<div style="font-size:11px; color:var(--muted); border:1px solid var(--border); border-radius:6px; padding:8px;">No department shift templates configured.</div>';
@@ -3075,7 +3078,6 @@
                 listContainer.appendChild(div);
             });
         }
-
         async function renderComplianceAlerts(logs, employees) {
             const container = document.getElementById('compliance-alerts-container');
             if (!container) return;
@@ -3084,7 +3086,6 @@
             const summary = buildDailySessionSummaryMap(logsToday);
             const activeEmployees = employees.filter(e => e.status !== "Banned");
             const alerts = [];
-
             summary.forEach((info, empId) => {
                 const emp = activeEmployees.find(e => e.id === empId);
                 if (!emp) return;
@@ -3092,18 +3093,15 @@
                     alerts.push({ level: "warning", text: `${emp.name} (${empId}) is pending check-out.` });
                 }
             });
-
             logsToday
                 .filter(l => l.type === "Check-Out" && l.checkoutCompliance === "Short")
                 .forEach(l => {
                     alerts.push({ level: "warning", text: `${l.name} (${l.empId}) has a short session (${formatDurationFromMinutes(l.sessionMinutes)}).` });
                 });
-
             if (!alerts.length) {
                 container.innerHTML = '<div style="font-size:12px; color:var(--success); background:var(--success-bg); border:1px solid var(--success); border-radius:6px; padding:8px;">No compliance alerts for today.</div>';
                 return;
             }
-
             container.innerHTML = "";
             alerts.slice(0, 12).forEach(alert => {
                 const div = document.createElement('div');
@@ -3112,7 +3110,6 @@
                 container.appendChild(div);
             });
         }
-
         async function renderAuditTrail() {
             const container = document.getElementById('audit-log-list-container');
             if (!container) return;
@@ -3137,7 +3134,6 @@
                 container.appendChild(row);
             });
         }
-
         async function exportAuditTrailCSV() {
             const audits = await readAllDatabaseRecords("audit_logs");
             if (!audits.length) {
@@ -3163,7 +3159,6 @@
             triggerToast("Audit CSV Exported", "success");
             AudioEngine.play('success');
         }
-
         async function captureAndSerializeTopology() {
             const targetLabelString = ui.regName.value.trim();
             const targetIdString = document.getElementById('reg-employee-id').value.trim();
@@ -3197,11 +3192,9 @@
             ui.captureBtn.disabled = true;
             const captureBtnEdit = document.getElementById('btn-trigger-capture-edit');
             if (captureBtnEdit) captureBtnEdit.disabled = true;
-
             const result = await faceapi.detectSingleFace(ui.videoEnroll, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
                 .withFaceLandmarks()
                 .withFaceDescriptor();
-
             if (!result) {
                 triggerToast("Face not found or lighting weak", "error");
                 ui.captureBtn.disabled = false;
@@ -3209,7 +3202,6 @@
                 ui.banner.innerText = "Ready.";
                 return;
             }
-
             const standardArrayPayload = Array.from(result.descriptor);
             const targetStatusString = document.getElementById('reg-employee-status').value;
             const originalRecord = existing.find(e => e.id === currentEditingEmployeeId);
@@ -3226,14 +3218,12 @@
                 shiftGraceMinutes: personalShiftGrace,
                 joined: originalRecord ? (originalRecord.joined || Date.now()) : Date.now()
             });
-
             await rebuildComputationalMatchingGraph();
             await renderAdministrativeEmployeeDirectoryTable();
             populateManualOverrideDropdown();
             populateLeaveRequestDropdown();
             suggestNextEmployeeId();
             stopEnrollmentCamera();
-
             const isEditing = !!currentEditingEmployeeId;
             if (isEditing) {
                 cancelEditEmployeeMode();
@@ -3250,31 +3240,25 @@
             AudioEngine.play('success');
             ui.banner.innerText = "Ready.";
         }
-
         async function renderAdministrativeEmployeeDirectoryTable() {
             if (!isDashboardAuthenticatedState) return;
             const listing = await readAllDatabaseRecords("employees");
             const searchQuery = document.getElementById('emp-search-name').value.toLowerCase().trim();
             const deptQuery = document.getElementById('emp-filter-dept').value;
-
             filteredEmpList = listing.filter(emp => {
                 if (searchQuery && !emp.name.toLowerCase().includes(searchQuery) && !emp.id.toLowerCase().includes(searchQuery) && !emp.role.toLowerCase().includes(searchQuery) && !emp.email.toLowerCase().includes(searchQuery)) return false;
                 if (deptQuery !== "all" && emp.department !== deptQuery) return false;
                 return true;
             });
-
             filteredEmpList.sort((a, b) => (b.joined || 0) - (a.joined || 0));
             const totalRecords = filteredEmpList.length;
             const totalPages = Math.ceil(totalRecords / empRowsPerPage) || 1;
             if (empPage > totalPages) empPage = totalPages;
-
             const startIndex = (empPage - 1) * empRowsPerPage;
             const endIndex = Math.min(startIndex + empRowsPerPage, totalRecords);
             const pagedEmps = filteredEmpList.slice(startIndex, endIndex);
-
             const tbody = ui.directoryTable;
             tbody.innerHTML = "";
-
             if (totalRecords === 0) {
                 tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--muted);">No matching profiles found.</td></tr>';
                 document.getElementById('emp-paging-info').innerText = "Showing 0 to 0 of 0 profiles";
@@ -3283,12 +3267,11 @@
                 refreshDataTablesButtons();
                 return;
             }
-
             pagedEmps.forEach(employee => {
                 const joinedDate = employee.joined ? new Date(employee.joined).toLocaleDateString() : "-";
                 const isBanned = employee.status === "Banned";
-                const statusBadge = isBanned 
-                    ? `<span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; background:var(--danger-bg); color:var(--danger); border:1px solid var(--danger);">Suspended</span>` 
+                const statusBadge = isBanned
+                    ? `<span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; background:var(--danger-bg); color:var(--danger); border:1px solid var(--danger);">Suspended</span>`
                     : `<span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; background:var(--success-bg); color:var(--success); border:1px solid var(--success);">Active</span>`;
                 const shiftText = employee.shiftStartTime ? `${employee.shiftStartTime} (+${Number.isFinite(parseInt(employee.shiftGraceMinutes, 10)) ? employee.shiftGraceMinutes : shiftGraceMinutes}m)` : "Dept/Global";
                 const tr = document.createElement('tr');
@@ -3311,13 +3294,11 @@
                 `;
                 tbody.appendChild(tr);
             });
-
             document.getElementById('emp-paging-info').innerText = `Showing ${startIndex + 1} to ${endIndex} of ${totalRecords} profiles`;
             document.getElementById('btn-emp-prev').disabled = empPage === 1;
             document.getElementById('btn-emp-next').disabled = empPage === totalPages;
             refreshDataTablesButtons();
         }
-
         async function removeProfileTemplateRecord(nameId) {
             if (confirm(`Confirm action: Drop template for ID [${nameId}]?`)) {
                 await deleteDatabaseRecord("employees", nameId);
@@ -3332,16 +3313,13 @@
                 AudioEngine.play('warning');
             }
         }
-
         const evaluateEuclideanPointsDistance = (pt1, pt2) => Math.sqrt(Math.pow(pt1.x - pt2.x, 2) + Math.pow(pt1.y - pt2.y, 2));
-
         function processEyeAspectRatioMetric(eyeClusterNodes) {
             const vertVectorA = evaluateEuclideanPointsDistance(eyeClusterNodes[1], eyeClusterNodes[5]);
             const vertVectorB = evaluateEuclideanPointsDistance(eyeClusterNodes[2], eyeClusterNodes[4]);
             const horizVector = evaluateEuclideanPointsDistance(eyeClusterNodes[0], eyeClusterNodes[3]);
             return (vertVectorA + vertVectorB) / (2.0 * horizVector);
         }
-
         function calculateHeadTurnRatio(landmarks) {
             const leftEye = landmarks.getLeftEye()[0];
             const rightEye = landmarks.getRightEye()[3];
@@ -3350,7 +3328,6 @@
             const distRight = evaluateEuclideanPointsDistance(rightEye, noseTip);
             return distLeft / (distRight || 1);
         }
-
         function drawCustomFaceOverlay(box, label, color, ctx) {
             const canvasWidth = ui.canvas.width;
             const mirroredX = canvasWidth - box.x - box.width;
@@ -3363,7 +3340,6 @@
                 ctx.rect(mirroredX, box.y, box.width, box.height);
             }
             ctx.stroke();
-
             ctx.fillStyle = color;
             ctx.font = 'bold 11px "Inter", -apple-system, BlinkMacSystemFont, sans-serif';
             const textPadding = 6;
@@ -3384,7 +3360,6 @@
             ctx.fillStyle = '#ffffff';
             ctx.fillText(label, labelX + textPadding, labelY + 14);
         }
-
         function startRenderLoop() {
             function render() {
                 if (isCameraActive && !isCameraPaused) {
@@ -3418,7 +3393,6 @@
             }
             requestAnimationFrame(render);
         }
-
         function initiateContinuousInferenceEngineLoop() {
             if (inferenceIntervalId) clearInterval(inferenceIntervalId);
             const renderResolutionDimensions = { width: ui.canvas.width, height: ui.canvas.height };
@@ -3432,7 +3406,6 @@
                         .withFaceLandmarks()
                         .withFaceDescriptors();
                     const parsedResultsCollection = faceapi.resizeResults(rawInferenceFrameDetections, renderResolutionDimensions);
-
                     if (!applicationFaceMatcherRuntime) {
                         let tempDetections = [];
                         parsedResultsCollection.forEach(det => {
@@ -3445,7 +3418,6 @@
                         latestFaceDetections = tempDetections;
                         return;
                     }
-
                     let tempDetections = [];
                     parsedResultsCollection.forEach(faceObject => {
                         const matchScoreResolution = applicationFaceMatcherRuntime.findBestMatch(faceObject.descriptor);
@@ -3479,7 +3451,6 @@
                                 } else if (tracker.challenge === "right" && symmetry > 1.6) {
                                     tracker.turnPassed = true;
                                 }
-
                                 if (livenessChallengeMode === "none") {
                                     outputInterfaceDisplayString = `${displayName}${displayDept} - Verified`;
                                     activeHexChromeStrokeColor = "rgba(16, 185, 129, 0.9)";
@@ -3522,7 +3493,6 @@
                 }
             }, intervalMs);
         }
-
         async function registerVerifiedAttendanceEvent(empId) {
             const timestamp = Date.now();
             const suppressionCooldownPeriod = 20000;
@@ -3541,7 +3511,6 @@
                 }
             }, suppressionCooldownPeriod);
         }
-
         async function calculateCheckInStatus(empId, empDept, now) {
             const policy = await resolveShiftPolicyForEmployee(empId, empDept);
             const [shiftH, shiftM] = policy.shiftStartTime.split(':').map(Number);
@@ -3549,45 +3518,37 @@
             shiftLimit.setHours(shiftH, (shiftM || 0) + (parseInt(policy.shiftGraceMinutes, 10) || 0), 0, 0);
             return now.getTime() > shiftLimit.getTime() ? "Late" : "On-Time";
         }
-
         function isBeforeLogoutCutoff(now) {
             if (!logoutCutoffEnabled) return false;
             const cutoffDate = parseTimeToDate(now, logoutCutoffTime || "15:00");
             return now.getTime() < cutoffDate.getTime();
         }
-
         function isAfterLogoutCutoff(now) {
             if (!logoutCutoffEnabled) return false;
             const cutoffDate = parseTimeToDate(now, logoutCutoffTime || "15:00");
             return now.getTime() >= cutoffDate.getTime();
         }
-
         function calculateCheckoutStatus(now, useBeforeCutoffTag = false) {
             if (useBeforeCutoffTag && isBeforeLogoutCutoff(now)) {
                 return "Before-Cutoff";
             }
             return "-";
         }
-
         async function resolveAutomaticAttendanceEvent(empId, employeeName, logsToday, now) {
             const orderedLogs = [...logsToday].sort((a, b) => a.timestamp - b.timestamp);
             if (!orderedLogs.length) {
                 return { eventType: "Check-In", reason: "first-scan" };
             }
-
             const lastLog = orderedLogs[orderedLogs.length - 1];
             if (lastLog.type === "Check-Out") {
                 return { eventType: "Check-In", reason: "post-checkout-reentry" };
             }
-
             const requiredGapHours = Math.max(0.25, Number(checkoutGapHours) || 2);
             const elapsedHours = (now.getTime() - Number(lastLog.timestamp || 0)) / 3600000;
             const canAutoCheckoutByGap = elapsedHours >= requiredGapHours;
-
             if (canAutoCheckoutByGap || isAfterLogoutCutoff(now)) {
                 return { eventType: "Check-Out", status: "-", reason: "auto-checkout" };
             }
-
             const confirmed = await showConfirmDialog({
                 title: "Attendance already marked",
                 text: `${employeeName} checked in recently. Mark logout now anyway?`,
@@ -3595,20 +3556,17 @@
                 confirmButtonText: "Yes, Mark Check-Out",
                 cancelButtonText: "Cancel"
             });
-
             if (!confirmed) {
                 triggerToast("Attendance already marked for this employee", "warning");
                 AudioEngine.play('warning');
                 return { cancelled: true };
             }
-
             return {
                 eventType: "Check-Out",
                 status: calculateCheckoutStatus(now, true),
                 reason: "manual-early-checkout"
             };
         }
-
         async function recordAttendanceLogToDB(empId, employeeName, empDept, empRole, manualTypeOverride = null) {
             const now = new Date();
             const todayStr = now.toISOString().split('T')[0];
@@ -3616,10 +3574,8 @@
             const logsToday = allLogs
                 .filter(l => l.empId === empId && l.dateString === todayStr)
                 .sort((a, b) => a.timestamp - b.timestamp);
-
             let eventType = "Check-In";
             let status = "On-Time";
-
             if (manualTypeOverride) {
                 eventType = manualTypeOverride;
                 status = eventType === "Check-In"
@@ -3635,14 +3591,12 @@
                     status = resolution.status || "-";
                 }
             }
-
             let sessionMinutes = null;
             let checkoutCompliance = "-";
             if (eventType === "Check-Out") {
                 sessionMinutes = resolveCheckoutSessionMinutes(logsToday, now.getTime());
                 checkoutCompliance = resolveCheckoutCompliance(sessionMinutes);
             }
-
             const logEntry = {
                 empId: empId,
                 name: employeeName,
@@ -3656,7 +3610,6 @@
                 sessionMinutes: sessionMinutes,
                 checkoutCompliance: checkoutCompliance
             };
-
             await writeDatabaseRecord("attendance_logs", logEntry);
             await loadAttendanceLedgingTicker();
             await renderAnalyticsDashboard();
@@ -3665,7 +3618,6 @@
             AudioEngine.play('success');
             speakText(`${employeeName} verified. ${eventType} registered.`);
         }
-
         async function loadAttendanceLedgingTicker() {
             ui.kioskLedger.innerHTML = "";
             const allLogs = await readAllDatabaseRecords("attendance_logs");
@@ -3678,7 +3630,6 @@
                 ui.kioskLedger.appendChild(div);
             });
         }
-
         async function handleImageEnrollmentUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -3722,7 +3673,6 @@
                     const result = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 }))
                         .withFaceLandmarks()
                         .withFaceDescriptor();
-
                     if (!result) {
                         triggerToast("Face characteristics not verified in file", "error");
                         ui.banner.innerText = "Ready.";
@@ -3750,7 +3700,6 @@
                     populateLeaveRequestDropdown();
                     suggestNextEmployeeId();
                     await syncActiveFiltersList();
-
                     const isEditing = !!currentEditingEmployeeId;
                     if (isEditing) {
                         cancelEditEmployeeMode();
@@ -3773,7 +3722,6 @@
             };
             img.src = URL.createObjectURL(file);
         }
-
         async function populateManualOverrideDropdown() {
             const selectEl = document.getElementById('manual-log-employee');
             selectEl.innerHTML = '<option value="">Select Employee...</option>';
@@ -3784,7 +3732,6 @@
                 selectEl.appendChild(opt);
             });
         }
-
         function populateLeaveRequestDropdown() {
             const selectEl = document.getElementById('leave-employee');
             if (!selectEl) return;
@@ -3798,11 +3745,9 @@
                     selectEl.appendChild(opt);
                 });
         }
-
         function dateWithinRange(targetDate, startDate, endDate) {
             return targetDate >= startDate && targetDate <= endDate;
         }
-
         function normalizeLeaveRecord(record) {
             return {
                 ...record,
@@ -3813,7 +3758,6 @@
                 dateTo: record.dateTo || record.dateFrom || record.date
             };
         }
-
         async function createLeaveRequest() {
             const empId = document.getElementById('leave-employee').value;
             const type = document.getElementById('leave-type').value;
@@ -3865,7 +3809,6 @@
             await renderLeaveRequests();
             await renderAnalyticsDashboard();
         }
-
         async function updateLeaveRequestStatus(id, status) {
             const leaveRecords = await readAllDatabaseRecords("leave_requests");
             const target = leaveRecords.find(item => item.id === id);
@@ -3878,7 +3821,6 @@
             await renderLeaveRequests();
             await renderAnalyticsDashboard();
         }
-
         async function deleteLeaveRequest(id) {
             if (!confirm("Delete this leave request?")) return;
             await deleteDatabaseRecord("leave_requests", id);
@@ -3888,7 +3830,6 @@
             await renderLeaveRequests();
             await renderAnalyticsDashboard();
         }
-
         async function renderLeaveRequests() {
             const container = document.getElementById('leave-list-container');
             if (!container) return;
@@ -3923,7 +3864,6 @@
                 container.appendChild(row);
             });
         }
-
         async function startEditEmployee(empId) {
             const existing = await readAllDatabaseRecords("employees");
             const emp = existing.find(e => e.id === empId);
@@ -3947,7 +3887,6 @@
                 editBtn.disabled = !isEnrollCameraActive;
             }
         }
-
         function cancelEditEmployeeMode() {
             currentEditingEmployeeId = null;
             document.getElementById('reg-form-title').innerText = "Enroll New Employee Profile";
@@ -3964,7 +3903,6 @@
             document.getElementById('reg-actions-enroll').style.display = "flex";
             document.getElementById('reg-actions-edit').style.display = "none";
         }
-
         async function commitEditEmployeeProfile() {
             const targetLabelString = ui.regName.value.trim();
             const targetIdString = document.getElementById('reg-employee-id').value.trim();
@@ -4015,7 +3953,6 @@
             triggerToast("Profile Updated Successfully", "success");
             AudioEngine.play('success');
         }
-
         async function toggleBanEmployee(empId) {
             const existing = await readAllDatabaseRecords("employees");
             const emp = existing.find(e => e.id === empId);
@@ -4034,7 +3971,6 @@
             triggerToast(`Profile status updated to: ${newStatus}`, "success");
             AudioEngine.play('success');
         }
-
         async function commitManualAttendanceLog() {
             const selectEl = document.getElementById('manual-log-employee');
             const empId = selectEl.value;
@@ -4048,7 +3984,6 @@
             await recordAttendanceLogToDB(emp.id, emp.name, emp.department, emp.role, logType);
             selectEl.value = "";
         }
-
         async function saveShiftPolicySettings() {
             const timeVal = document.getElementById('settings-shift-time').value;
             const graceVal = parseInt(document.getElementById('settings-grace-minutes').value, 10);
@@ -4073,7 +4008,6 @@
             await writeDatabaseRecord("system_config", { key: "checkout_gap_hours", value: gapVal });
             await writeDatabaseRecord("system_config", { key: "logout_cutoff_enabled", value: cutoffEnabledVal ? "1" : "0" });
             await writeDatabaseRecord("system_config", { key: "logout_cutoff_time", value: cutoffTimeVal });
-
             const wkChecked = [];
             for (let i = 0; i < 7; i++) {
                 if (document.getElementById(`wk-${i}`).checked) {
@@ -4082,13 +4016,11 @@
             }
             weekendDays = wkChecked;
             await writeDatabaseRecord("system_config", { key: "weekend_days", value: wkChecked });
-
             triggerToast("Policies Updated", "success");
             AudioEngine.play('success');
             await logAuditEvent("global_shift_policy_updated", { timeVal, graceVal, minSessionVal, gapVal, cutoffEnabledVal, cutoffTimeVal, weekendDays: wkChecked });
             await renderAnalyticsDashboard();
         }
-
         async function saveMotionTrackingSettings() {
             const ok = await requireAdminPassword("save motion settings");
             if (!ok) return;
@@ -4098,12 +4030,10 @@
             const idleRaw = parseInt(document.getElementById('settings-motion-idle-seconds').value, 10);
             motionAggressiveness = Number.isFinite(aggressivenessRaw) ? Math.min(Math.max(aggressivenessRaw, 0.5), 30) : 3;
             motionIdleSeconds = Number.isFinite(idleRaw) ? Math.min(Math.max(idleRaw, 1), 30) : 2;
-
             await writeDatabaseRecord("system_config", { key: "motion_tracking_enabled", value: motionTrackingEnabled ? "1" : "0" });
             await writeDatabaseRecord("system_config", { key: "motion_auto_download", value: motionAutoDownload ? "1" : "0" });
             await writeDatabaseRecord("system_config", { key: "motion_aggressiveness", value: motionAggressiveness });
             await writeDatabaseRecord("system_config", { key: "motion_idle_seconds", value: motionIdleSeconds });
-
             if (motionTrackingEnabled) {
                 await startCameraStream();
                 startMotionTrackingLoop();
@@ -4111,7 +4041,6 @@
                 stopMotionTrackingLoop();
                 stopMotionRecordingSession(true);
             }
-
             triggerToast("Motion tracking settings saved", "success");
             AudioEngine.play('success');
             await logAuditEvent("motion_tracking_settings_updated", {
@@ -4121,19 +4050,16 @@
                 motionIdleSeconds
             });
         }
-
         async function renderAnalyticsDashboard() {
             const employees = await readAllDatabaseRecords("employees");
             const logs = await readAllDatabaseRecords("attendance_logs");
             const holidays = await readAllDatabaseRecords("holidays");
             const leaveRequests = (await readAllDatabaseRecords("leave_requests")).map(normalizeLeaveRecord);
-
             const now = new Date();
             const todayStr = now.toISOString().split('T')[0];
             const currentDayIndex = now.getDay();
             const isWeekend = weekendDays.includes(currentDayIndex);
             const isHoliday = holidays.some(h => h.date === todayStr);
-
             const logsToday = logs.filter(l => l.dateString === todayStr);
             const activeEmployees = employees.filter(e => e.status !== "Banned");
             const totalCount = activeEmployees.length;
@@ -4154,12 +4080,10 @@
                     .map(req => req.empId)
             );
             const leaveExemptCount = activeEmployees.filter(e => leaveTodaySet.has(e.id) && !presentTodayNames.has(e.id)).length;
-            
             let absentCount = 0;
             if (!isWeekend && !isHoliday) {
                 absentCount = Math.max(0, totalCount - presentTodayCount - leaveExemptCount);
             }
-
             document.getElementById('stat-total-emp').innerText = totalCount;
             document.getElementById('stat-present').innerText = presentTodayCount;
             document.getElementById('stat-on-time').innerText = onTimeCount;
@@ -4168,14 +4092,12 @@
             document.getElementById('stat-on-leave').innerText = leaveExemptCount;
             document.getElementById('stat-hours').innerText = formatDurationFromMinutes(workedMinutesToday);
             document.getElementById('stat-open-sessions').innerText = pendingCheckOutCount;
-
             filterReportsTable();
             drawWeeklyAnalyticsChart(logs);
             drawDepartmentCanvasChart(employees, logsToday);
             drawMonthlyContributionHeatmap(logs);
             await renderComplianceAlerts(logs, employees);
         }
-
         function drawWeeklyAnalyticsChart(logs) {
             const chartContainer = document.getElementById('analytics-chart-container');
             if (!chartContainer) return;
@@ -4224,7 +4146,6 @@
                 </svg>
             `;
         }
-
         function drawDepartmentCanvasChart(employees, logsToday) {
             const canvas = document.getElementById('dept-canvas');
             const legend = document.getElementById('dept-legend');
@@ -4232,7 +4153,6 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             legend.innerHTML = "";
-
             const presentTodayNames = new Set(logsToday.filter(l => l.type === "Check-In").map(l => l.empId));
             const deptCounts = {};
             presentTodayNames.forEach(empId => {
@@ -4241,7 +4161,6 @@
                     deptCounts[emp.department] = (deptCounts[emp.department] || 0) + 1;
                 }
             });
-
             const keys = Object.keys(deptCounts);
             const total = Object.values(deptCounts).reduce((a, b) => a + b, 0);
             const getVarColor = (name, fallback) => {
@@ -4250,7 +4169,6 @@
             const borderCol = getVarColor('--border', '#e2e8f0');
             const panelCol = getVarColor('--panel', '#ffffff');
             const textCol = getVarColor('--text', '#0f172a');
-
             if (total === 0) {
                 ctx.fillStyle = borderCol;
                 ctx.beginPath();
@@ -4263,7 +4181,6 @@
                 legend.innerHTML = '<span style="color:var(--muted)">0 Checked-in today</span>';
                 return;
             }
-
             const colors = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#ec4899', '#8b5cf6', '#14b8a6'];
             let startAngle = -Math.PI / 2;
             keys.forEach((key, idx) => {
@@ -4271,16 +4188,13 @@
                 const percentage = count / total;
                 const sliceAngle = percentage * Math.PI * 2;
                 const color = colors[idx % colors.length];
-
                 ctx.fillStyle = color;
                 ctx.beginPath();
                 ctx.moveTo(70, 70);
                 ctx.arc(70, 70, 60, startAngle, startAngle + sliceAngle);
                 ctx.closePath();
                 ctx.fill();
-
                 startAngle += sliceAngle;
-
                 const div = document.createElement('div');
                 div.style.display = 'flex';
                 div.style.alignItems = 'center';
@@ -4289,19 +4203,16 @@
                                  <span>${key}: <strong>${count}</strong></span>`;
                 legend.appendChild(div);
             });
-
             ctx.fillStyle = panelCol;
             ctx.beginPath();
             ctx.arc(70, 70, 36, 0, Math.PI * 2);
             ctx.fill();
-
             ctx.fillStyle = textCol;
             ctx.font = 'bold 12px sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(total, 70, 70);
         }
-
         function drawMonthlyContributionHeatmap(logs) {
             const container = document.getElementById('heatmap-container');
             if (!container) return;
@@ -4309,7 +4220,7 @@
             const daysInMonth = 28;
             const grid = document.createElement('div');
             grid.className = 'heatmap-grid';
-            const sortedLogs = logs.sort((a,b)=>b.timestamp-a.timestamp);
+            const sortedLogs = logs.sort((a, b) => b.timestamp - a.timestamp);
             const now = new Date();
             for (let i = 27; i >= 0; i--) {
                 const d = new Date();
@@ -4321,7 +4232,6 @@
                 else if (dayCount > 1 && dayCount <= 3) valClass = "val-2";
                 else if (dayCount > 3 && dayCount <= 5) valClass = "val-3";
                 else if (dayCount > 5) valClass = "val-4";
-
                 const div = document.createElement('div');
                 div.className = `heatmap-day ${valClass}`;
                 div.innerText = d.getDate();
@@ -4336,7 +4246,6 @@
             container.appendChild(grid);
             container.appendChild(label);
         }
-
         async function filterReportsTable() {
             const logs = await readAllDatabaseRecords("attendance_logs");
             const searchName = document.getElementById('report-search-name').value.toLowerCase().trim();
@@ -4344,7 +4253,6 @@
             const filterDept = document.getElementById('report-filter-dept').value;
             const filterType = document.getElementById('report-filter-type').value;
             const filterStatus = document.getElementById('report-filter-status').value;
-
             const now = new Date();
             const todayStr = now.toISOString().split('T')[0];
             const yesterday = new Date();
@@ -4354,7 +4262,6 @@
             weekAgo.setDate(weekAgo.getDate() - 7);
             const monthAgo = new Date();
             monthAgo.setDate(monthAgo.getDate() - 30);
-
             filteredReportsList = logs.filter(log => {
                 if (searchName && !log.name.toLowerCase().includes(searchName) && !log.empId.toLowerCase().includes(searchName)) return false;
                 if (filterDate === "today") {
@@ -4371,19 +4278,15 @@
                 if (filterStatus !== "all" && log.status !== filterStatus) return false;
                 return true;
             });
-
             filteredReportsList.sort((a, b) => b.timestamp - a.timestamp);
             const totalRecords = filteredReportsList.length;
             const totalPages = Math.ceil(totalRecords / reportsRowsPerPage) || 1;
             if (reportsPage > totalPages) reportsPage = totalPages;
-
             const startIndex = (reportsPage - 1) * reportsRowsPerPage;
             const endIndex = Math.min(startIndex + reportsRowsPerPage, totalRecords);
             const pagedLogs = filteredReportsList.slice(startIndex, endIndex);
-
             const tbody = document.getElementById('reports-table-body');
             tbody.innerHTML = "";
-
             if (totalRecords === 0) {
                 tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:var(--muted);">No matching attendance records found.</td></tr>';
                 document.getElementById('reports-paging-info').innerText = "Showing 0 to 0 of 0 logs";
@@ -4392,7 +4295,6 @@
                 refreshDataTablesButtons();
                 return;
             }
-
             pagedLogs.forEach(log => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -4414,38 +4316,31 @@
                 `;
                 tbody.appendChild(tr);
             });
-
             document.getElementById('reports-paging-info').innerText = `Showing ${startIndex + 1} to ${endIndex} of ${totalRecords} logs`;
             document.getElementById('btn-report-prev').disabled = reportsPage === 1;
             document.getElementById('btn-report-next').disabled = reportsPage === totalPages;
             refreshDataTablesButtons();
         }
-
         function changeReportsPage(dir) {
             reportsPage += dir;
             filterReportsTable();
         }
-
         function reportSearchChange() {
             reportsPage = 1;
             filterReportsTable();
         }
-
         function reportFilterChange() {
             reportsPage = 1;
             filterReportsTable();
         }
-
         function changeEmpPage(dir) {
             empPage += dir;
             renderAdministrativeEmployeeDirectoryTable();
         }
-
         function empSearchChange() {
             empPage = 1;
             renderAdministrativeEmployeeDirectoryTable();
         }
-
         async function deleteAttendanceLog(logId) {
             if (confirm("Confirm action: Remove this log record?")) {
                 await deleteDatabaseRecord("attendance_logs", logId);
@@ -4456,7 +4351,6 @@
                 await logAuditEvent("attendance_log_deleted", { logId });
             }
         }
-
         async function exportReportsToCSV() {
             if (!filteredReportsList.length) {
                 triggerToast("Records table is empty", "error");
@@ -4480,7 +4374,6 @@
             AudioEngine.play('success');
             await logAuditEvent("attendance_report_exported", { rows: filteredReportsList.length });
         }
-
         async function exportDailySummaryCSV() {
             const employees = await readAllDatabaseRecords("employees");
             if (!employees.length) {
@@ -4491,7 +4384,6 @@
             const todayStr = new Date().toISOString().split('T')[0];
             const logsToday = logs.filter(l => l.dateString === todayStr);
             const summaryMap = buildDailySessionSummaryMap(logsToday);
-
             let csvContent = "data:text/csv;charset=utf-8,";
             csvContent += "Date,Employee ID,Employee Name,Department,Role,First Check-In,Last Check-Out,Worked Minutes,Worked Duration,Checkout Compliance,Pending Checkout\n";
             employees
@@ -4505,7 +4397,6 @@
                     const checkoutCompliance = totalMinutes > 0 ? resolveCheckoutCompliance(totalMinutes) : "-";
                     csvContent += `"${todayStr}","${emp.id}","${emp.name}","${emp.department}","${emp.role || ''}","${firstIn}","${lastOut}","${totalMinutes}","${formatDurationFromMinutes(totalMinutes)}","${checkoutCompliance}","${hasOpenSession ? 'Yes' : 'No'}"\n`;
                 });
-
             const encodedUri = encodeURI(csvContent);
             const anchor = document.createElement("a");
             anchor.setAttribute("href", encodedUri);
@@ -4517,7 +4408,6 @@
             AudioEngine.play('success');
             await logAuditEvent("attendance_daily_summary_exported");
         }
-
         function switchView(targetViewModeString) {
             document.querySelectorAll('.view-section').forEach(section => section.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -4541,7 +4431,6 @@
                 }
             }
         }
-
         function switchSubTab(subTabName) {
             document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.sub-view-section').forEach(sec => sec.style.display = "none");
@@ -4563,28 +4452,22 @@
                 renderSettingsLists();
             }
         }
-
         async function syncActiveFiltersList() {
             const depts = await readAllDatabaseRecords("departments");
-            
             const filterReportSelect = document.getElementById('report-filter-dept');
             const filterEmpSelect = document.getElementById('emp-filter-dept');
             const regSelect = document.getElementById('reg-employee-dept');
-
             const reportVal = filterReportSelect.value;
             const empVal = filterEmpSelect.value;
             const regVal = regSelect.value;
-
             filterReportSelect.innerHTML = '<option value="all">All Departments</option>';
             filterEmpSelect.innerHTML = '<option value="all">All Departments</option>';
             regSelect.innerHTML = '';
-
             depts.forEach(d => {
                 filterReportSelect.innerHTML += `<option value="${d.name}">${d.name}</option>`;
                 filterEmpSelect.innerHTML += `<option value="${d.name}">${d.name}</option>`;
                 regSelect.innerHTML += `<option value="${d.name}">${d.name}</option>`;
             });
-
             if (reportVal && filterReportSelect.querySelector(`option[value="${reportVal}"]`)) {
                 filterReportSelect.value = reportVal;
             }
@@ -4595,7 +4478,6 @@
                 regSelect.value = regVal;
             }
         }
-
         async function renderSettingsLists() {
             const depts = await readAllDatabaseRecords("departments");
             const deptContainer = document.getElementById('dept-list-container');
@@ -4607,11 +4489,10 @@
                                  <button class="btn btn-danger" style="padding:2px 6px; font-size:10px; border-radius:4px;" onclick="deleteDepartment('${d.name}')">Drop</button>`;
                 deptContainer.appendChild(div);
             });
-
             const holidays = await readAllDatabaseRecords("holidays");
             const holidayContainer = document.getElementById('holiday-list-container');
             holidayContainer.innerHTML = "";
-            holidays.sort((a,b)=>a.date.localeCompare(b.date)).forEach(h => {
+            holidays.sort((a, b) => a.date.localeCompare(b.date)).forEach(h => {
                 const div = document.createElement('div');
                 div.style = "display:flex; justify-content:space-between; align-items:center; background:var(--bg); border:1px solid var(--border); padding:6px 10px; border-radius:6px; font-size:12px;";
                 div.innerHTML = `<span><strong>${h.date}</strong> - ${h.name}</span>
@@ -4621,7 +4502,6 @@
             await renderDepartmentShiftPolicies();
             await renderAuditTrail();
         }
-
         async function addNewDepartment() {
             const name = document.getElementById('settings-new-dept').value.trim();
             if (!name) return;
@@ -4633,7 +4513,6 @@
             await syncActiveFiltersList();
             await renderSettingsLists();
         }
-
         async function deleteDepartment(name) {
             if (confirm(`Confirm dropping department: ${name}?`)) {
                 await deleteDatabaseRecord("departments", name);
@@ -4645,7 +4524,6 @@
                 await renderSettingsLists();
             }
         }
-
         async function addNewHoliday() {
             const date = document.getElementById('settings-new-holiday-date').value;
             const name = document.getElementById('settings-new-holiday-name').value.trim();
@@ -4662,7 +4540,6 @@
             await renderSettingsLists();
             await renderAnalyticsDashboard();
         }
-
         async function deleteHoliday(date) {
             if (confirm(`Confirm dropping holiday exception for: ${date}?`)) {
                 await deleteDatabaseRecord("holidays", date);
@@ -4673,7 +4550,6 @@
                 await renderAnalyticsDashboard();
             }
         }
-
         async function saveLivenessSettings() {
             const level = document.getElementById('settings-liveness-level').value;
             livenessChallengeMode = level;
@@ -4681,7 +4557,6 @@
             triggerToast("Anti-Spoofing Rules Saved", "success");
             AudioEngine.play('success');
         }
-
         async function applyAccentColor(color) {
             document.body.classList.remove('accent-indigo', 'accent-emerald', 'accent-rose', 'accent-amber', 'accent-blue');
             document.body.classList.add(`accent-${color}`);
@@ -4690,7 +4565,6 @@
             if (activeDot) activeDot.classList.add('active');
             await writeDatabaseRecord("system_config", { key: "theme_color", value: color });
         }
-
         async function toggleTheme() {
             const isDark = document.body.classList.contains('dark');
             if (isDark) {
@@ -4701,7 +4575,6 @@
                 await writeDatabaseRecord("system_config", { key: "theme_mode", value: "dark" });
             }
         }
-
         async function openRetroactiveModal(logId = null) {
             const selectEl = document.getElementById('retro-log-employee');
             selectEl.innerHTML = "";
@@ -4709,14 +4582,12 @@
             emps.forEach(e => {
                 selectEl.innerHTML += `<option value="${e.id}">${e.name} (${e.id})</option>`;
             });
-
             const dateField = document.getElementById('retro-log-date');
             const timeField = document.getElementById('retro-log-time');
             const typeField = document.getElementById('retro-log-type');
             const statusField = document.getElementById('retro-log-status');
             const sessionField = document.getElementById('retro-log-session');
             const hiddenId = document.getElementById('retro-log-id');
-
             if (logId) {
                 const logs = await readAllDatabaseRecords("attendance_logs");
                 const log = logs.find(l => l.id === logId);
@@ -4744,11 +4615,9 @@
             }
             document.getElementById('retroactive-log-modal').style.display = 'flex';
         }
-
         function closeRetroactiveModal() {
             document.getElementById('retroactive-log-modal').style.display = 'none';
         }
-
         async function commitRetroactiveAttendanceLog() {
             const logIdVal = document.getElementById('retro-log-id').value;
             const empId = document.getElementById('retro-log-employee').value;
@@ -4757,16 +4626,13 @@
             const eventType = document.getElementById('retro-log-type').value;
             const statusVal = document.getElementById('retro-log-status').value;
             const sessionFieldRaw = document.getElementById('retro-log-session').value.trim();
-
             if (!empId || !dateStr || !timeStr) {
                 triggerToast("Complete all details", "warning");
                 return;
             }
-
             const emps = await readAllDatabaseRecords("employees");
             const emp = emps.find(e => e.id === empId);
             if (!emp) return;
-
             const datetimeObj = new Date(`${dateStr}T${timeStr}`);
             const logs = await readAllDatabaseRecords("attendance_logs");
             const sameDayEmployeeLogs = logs.filter(l =>
@@ -4774,7 +4640,6 @@
                 l.dateString === dateStr &&
                 (!logIdVal || l.id !== parseInt(logIdVal, 10))
             );
-
             let computedStatus = statusVal;
             let sessionMinutes = null;
             let checkoutCompliance = "-";
@@ -4791,7 +4656,6 @@
                 computedStatus = statusVal === "Before-Cutoff" ? "Before-Cutoff" : "-";
                 checkoutCompliance = resolveCheckoutCompliance(sessionMinutes);
             }
-
             const logEntry = {
                 empId: emp.id,
                 name: emp.name,
@@ -4805,11 +4669,9 @@
                 sessionMinutes: sessionMinutes,
                 checkoutCompliance: checkoutCompliance
             };
-
             if (logIdVal) {
                 logEntry.id = parseInt(logIdVal, 10);
             }
-
             await writeDatabaseRecord("attendance_logs", logEntry);
             closeRetroactiveModal();
             triggerToast(logIdVal ? "Log Record Updated" : "Retro Log Entry Appended", "success");
@@ -4818,36 +4680,20 @@
             await renderAnalyticsDashboard();
             await loadAttendanceLedgingTicker();
         }
-
         document.addEventListener('visibilitychange', async () => {
             if (document.visibilityState === 'visible' && wakeLockEnabled) {
                 await requestWakeLock();
             }
         });
-
         window.addEventListener('beforeunload', (event) => {
             if (manualRecordingInstance || motionRecordingInstance || motionClipRecords.length > 0) {
                 event.preventDefault();
                 event.returnValue = "Recording/clips are in temporary memory. Leaving now may lose unsaved clips.";
             }
         });
-
         window.onload = compileApplicationCoreSubsystems;
-
-        
     </script>
-
-
-
-
-
-
-
-
-
-
-
-<script type="module" src="./pwa-register.js"></script>
+    <script type="module" src="./pwa-register.js"></script>
 </body>
 
 </html>
