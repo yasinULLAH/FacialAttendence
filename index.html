@@ -163,6 +163,28 @@
             text-transform: uppercase;
         }
 
+        @media (max-width: 767px) {
+            .brand-title, .brand-badge, #system-status-text {
+                display: none !important;
+            }
+            header {
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .brand {
+                width: auto;
+            }
+            nav {
+                order: 3;
+                width: 100%;
+            }
+            .status-container {
+                order: 2;
+            }
+        }
+
         nav {
             display: flex;
             background: var(--bg);
@@ -3128,6 +3150,8 @@
                 ${comprehensiveReportRows.length > 200 ? `<p style="font-size:11px;">Showing first 200 rows in print preview. Use DataTable PDF/Excel/CSV for full exports.</p>` : ''}
             `;
             printWindow.document.write(`<html><head><title>Comprehensive Report</title>
+
+    
 
     
 
@@ -6224,6 +6248,7 @@
         window.onload = compileApplicationCoreSubsystems;
     </script>
     
+
 
 
 <script type="module" src="./pwa-register.js"></script>
