@@ -1,118 +1,269 @@
-# 🎯 Aura Facial Recognition Attendance Suite v3.0 - Comprehensive Feature Report
-
-| 📋 Module & Features | ✨ Key Capabilities | 🔐 Security & Access |
-|---------------------|-------------------|-------------------|
-| **🏠 Dashboard & Analytics**<br>✅ Role-specific views (Kiosk/Admin/Security)<br>✅ Live statistics cards (Enrolled, Present, On-Time, Late, Absent, On Leave)<br>✅ Interactive charts (Weekly Attendance, Department Distribution, Monthly Heatmap)<br>✅ Real-time check-in ticker display<br>✅ Quick action shortcuts & system status indicators<br>✅ Theme toggle (🌓 Light/Dark mode) | 📊 Visual data insights with Chart.js-ready structure<br>📱 Fully responsive mobile-first layout<br>⚡ Instant load with PWA caching & offline support<br>🎨 Dynamic accent color & brand palette customization | 🔐 Admin password gate for analytics access<br>👁️ Data visibility filtered by terminal mode<br>🔄 Auto-refresh for live attendance stats |
-| **👁️ Facial Recognition Scanner**<br>✅ High-precision face verification engine<br>✅ Webcam activation with preview controls (Start/Pause/Stop)<br>✅ Real-time motion tracking & auto-recording<br>✅ Liveness challenge anti-spoofing (3 levels)<br>✅ Auto check-in/out on successful match<br>✅ TTS voice feedback ready | 👁️ Level 0: Standard Face Match<br>👁️ Level 1: Passive Eye Blink Verification<br>👁️ Level 2: Interactive Head Turn Challenge<br>🎥 Motion-triggered clip capture with auto-download<br>🌐 Offline-first operation with local verification | 🔐 Liveness detection prevents photo/video spoofing<br>🔒 Encrypted facial template storage (local)<br>⏰ Time-window validation for scan sessions<br>🚫 Rate limiting on verification attempts |
-| **👥 Employee Profile Management**<br>✅ Complete profile enrollment (Name, ID, Dept, Role, Email, Phone)<br>✅ Facial recognition enrollment via webcam or photo upload<br>✅ Profile status control (Active/Suspended)<br>✅ Personal shift & grace period customization<br>✅ Bulk profile directory with advanced filtering<br>✅ Soft-delete & audit-ready profile history | 📷 Live enrollment camera preview<br>📁 Drag-and-drop portrait photo upload<br>🔄 One-click face update via webcam<br>🔍 Smart filtering by department, status, role<br>📋 Printable profile cards with QR codes | 🔐 Admin-only profile creation/editing<br>📝 Full audit trail for profile changes<br>🗂️ Encrypted PII storage (email, phone)<br>✅ Input validation & sanitization on all fields |
-| **✅ Attendance & Check-in System**<br>✅ Automated facial recognition check-in/out<br>✅ Manual override with admin authentication<br>✅ Policy-based status tagging (On-Time/Late/Exempt)<br>✅ Session duration tracking & auto check-out gap<br>✅ Logout cutoff time enforcement<br>✅ Retroactive log entry for corrections | 🎯 Auto-status calculation based on shift policy<br>⏱️ Grace period handling for late arrivals<br>📊 Session minutes tracking for compliance<br>🔄 Bulk retro log import capability<br>📱 Mobile-friendly manual check-in form | 🔐 Master passcode required for manual overrides<br>✅ Policy rule validation before status assignment<br>📋 Tamper-evident audit log for all attendance changes<br>🔒 HMAC-signed attendance event records |
-| **📊 Reports & Analytics Engine**<br>✅ Weekly attendance distribution charts<br>✅ Department-wise attendance breakdown<br>✅ Monthly logs heatmap visualization<br>✅ Advanced datatable filters (Date, Dept, Event Type, Status)<br>✅ Export: CSV, Today Summary, Full Audit<br>✅ Compliance alerts & anomaly detection | 📈 Interactive Chart.js-powered visualizations<br>🔍 Column visibility toggle & saved filter presets<br>📤 One-click export in multiple formats<br>🎯 Real-time summary cards with live counts<br>🖨️ Print-optimized report layouts | 🔐 Role-based report access control<br>✅ Data aggregation validation for accuracy<br>📝 Report generation logged in audit trail<br>🔒 Export files signed with integrity hash |
-| **📅 Shift & Policy Configuration**<br>✅ Global shift start time & grace period settings<br>✅ Minimum session minutes for checkout compliance<br>✅ Auto check-out gap configuration (hours)<br>✅ Logout cutoff time with enforcement toggle<br>✅ Weekend day selection (Sun-Sat multi-select)<br>✅ Department-specific shift templates | 🗓️ Visual calendar policy preview<br>🔄 Inherit/override policy hierarchy<br>⏰ Timezone-aware policy application<br>📋 Policy change preview before apply<br>🎨 Color-coded policy status indicators | 🔐 Admin-only policy modification rights<br>✅ Policy conflict detection & warning system<br>📝 Full change history with user attribution<br>🔒 Policy export/import with signature validation |
-| **🗂️ Leave & Permission Manager**<br>✅ Leave request submission (Sick/Casual/Emergency)<br>✅ Permission request workflow<br>✅ Date range selection with calendar picker<br>✅ Status tracking (Approved/Pending/Rejected)<br>✅ Reason documentation & attachment support<br>✅ Leave balance visualization | 📱 Mobile-optimized request form<br>🔔 Automated approval workflow notifications<br>📊 Visual leave calendar per employee<br>🔄 Bulk leave status update capability<br>📋 Printable leave approval certificates | 🔐 Role-based request submission rights<br>✅ Manager approval chain validation<br>📝 Decision audit trail with timestamp<br>🔒 Sensitive reason field encryption |
-| **🎥 Motion Tracking & Security Monitor**<br>✅ Continuous recording with motion detection<br>✅ Auto-clip capture on movement events<br>✅ Adjustable motion aggressiveness (%)<br>✅ Configurable motion stop delay (seconds)<br>✅ Auto-download clips post-capture<br>✅ No-sleep mode for unattended operation | 🎬 Smart motion segmentation & tagging<br>📦 Batch clip export with metadata<br>🔍 Timestamped clip indexing for quick search<br>📱 Remote clip preview capability<br>🔄 Auto-archive old clips based on policy | 🔐 Admin password required for clip access<br>✅ Clip file integrity verification<br>📝 Access logging for all video exports<br>🔒 Encrypted local clip storage |
-| **⚙️ System Configuration & Utilities**<br>✅ Theme & styling customization (accent colors)<br>✅ Anti-spoofing protocol level selection<br>✅ Corporate calendar & division management<br>✅ Holiday exclusion configuration<br>✅ Department shift template library<br>✅ System datastore utilities (Backup/Import/Purge) | 🎨 Live theme preview before apply<br>📅 iCal-compatible holiday import<br>🔄 One-click backup JSON generation<br>💾 Incremental backup with versioning<br>🗑️ Secure purge with confirmation workflow | 🔐 Master passcode for system settings<br>✅ Backup file encryption & signature<br>📝 Configuration change audit logging<br>🔒 Purge operation requires dual confirmation |
-| **🔐 Authentication & Access Control**<br>✅ Master passcode gate (default: admin1234)<br>✅ Passcode visibility toggle for secure entry<br>✅ Identity signature verification step<br>✅ Session timeout & auto-lock<br>✅ Console lock function for unattended terminals<br>✅ Multi-terminal role separation (Kiosk/Admin/Security) | 🔑 Password strength validation on change<br>🔄 Passcode rotation reminder system<br>📱 Biometric unlock ready (WebAuthn)<br>⏰ Configurable idle timeout duration<br>🚨 Emergency lock override protocol | 🔐 bcrypt-style hashing for stored credentials<br>🛡️ CSRF token protection on all forms<br>⏱️ Session regeneration on privilege escalation<br>🚫 Account lockout after failed attempts |
-| **📦 PWA & Offline Capabilities**<br>✅ Installable Progressive Web App (manifest.json)<br>✅ Service Worker with Workbox caching strategies<br>✅ Offline fallback page (offline.html)<br>✅ Precached assets: icons, HTML, CSS, JS<br>✅ Stale-While-Revalidate for dynamic content<br>✅ Cache-First for images with expiration | 📲 App-like installation on mobile/desktop<br>🌐 Full offline attendance scanning & logging<br>🔄 Auto-sync when connectivity restored<br>⚡ Instant load from local cache<br>📦 Background update detection & reload | 🔐 Secure service worker scope & registration<br>✅ Cache integrity verification on load<br>📋 PWA installation & update logging<br>🔒 Encrypted IndexedDB for offline data |
-| **🗃️ Data Management & Audit**<br>✅ Export Backup JSON (full system state)<br>✅ Import Backup JSON with validation<br>✅ Purge local database indexes securely<br>✅ System audit trail with CSV export<br>✅ Retroactive attendance log entry<br>✅ Datatable advanced filtering & pagination | 📦 Complete snapshot backup including profiles, logs, policies<br>🔄 Incremental backup with change detection<br>🔍 Audit trail searchable by user, action, timestamp<br>📤 Bulk data export with column selection<br>🗂️ Soft-delete with recovery window | 🔐 Admin-only backup/restore operations<br>✅ Backup file signature & integrity check<br>📝 All data mutations logged with user context<br>🔒 Encrypted export files with optional password |
-| **🎨 UI/UX Excellence**<br>✅ Bootstrap-inspired responsive layout<br>✅ Dark/Light theme toggle with persistence<br>✅ Modal forms for all CRUD operations<br>✅ Toast notifications & inline validation<br>✅ DataTables with export buttons & column toggle<br>✅ GLightbox-ready media preview structure | 🎨 Professional security-focused aesthetic<br>📱 Seamless mobile & kiosk touchscreen experience<br>⚡ Instant feedback on all user actions<br>♿ Accessible keyboard navigation & ARIA labels<br>🔄 Smooth animations & transition states | 🔐 Secure form handling with client+server validation<br>✅ Input sanitization to prevent XSS<br>📝 User interaction logging for UX analytics<br>🔒 CSP-ready asset loading structure |
-| **🔗 API & Integration Ready**<br>✅ RESTful endpoint structure prepared<br>✅ HMAC signature verification ready<br>✅ Webhook support for external systems<br>✅ CSV/JSON import/export standards<br>✅ Face recognition SDK integration hooks<br>✅ SMS/Email notification service adapters | 🔗 Seamless HRIS/Payroll system integration<br>📊 Structured data exchange with external analytics<br>⚡ Optimized payload compression for low-bandwidth<br>🔄 Webhook retry logic with exponential backoff | 🔐 API key management & rotation<br>✅ Request signing & timestamp validation<br>📋 Comprehensive API usage logging<br>🚫 Rate limiting & abuse detection ready |
+# 🌐 Aura Facial Recognition Attendance Suite v3.0
+## 📖 Comprehensive Bilingual Documentation (English | Urdu)
+**A client-ready, feature-complete guide covering every module, setting, workflow, and system-wide impact.**
 
 ---
 
-### 🏆 System Highlights
+## 📖 Project Overview | 📖 منصوبے کا جائزہ
+**English:**  
+Aura Facial Recognition Attendance Suite v3.0 is a secure, offline-capable, real-time attendance management system built with facial recognition, motion tracking, advanced analytics, and strict policy enforcement. It operates on a local filesystem core, ensuring data privacy and zero dependency on cloud infrastructure. The suite is divided into three primary interfaces: **Kiosk Scanner**, **Security Monitor**, and **Admin Terminal**, each serving distinct operational roles while sharing a unified data layer.
 
-| 🌟 Category | 🎯 Key Achievements |
-|------------|-------------------|
-| **🔐 Security** | Multi-layer protection: liveness anti-spoofing (3 levels), master passcode gates, encrypted local storage, audit trails, CSRF protection, and secure offline operation |
-| **📱 Accessibility** | Fully responsive PWA, kiosk-optimized touch interface, theme toggle for visual comfort, keyboard navigation support, and clear visual status indicators |
-| **🤖 Innovation** | Advanced facial recognition with configurable liveness challenges, motion-triggered security recording, AI-ready analytics structure, and offline-first architecture |
-| **🎨 User Experience** | Intuitive terminal-based navigation (Kiosk/Admin/Security), real-time visual feedback, modal-driven workflows, and professional security-focused UI design |
-| **📊 Data Intelligence** | Interactive attendance heatmaps, department distribution analytics, compliance alerting, advanced filtering, and one-click export for audit readiness |
-| **🔄 Reliability** | Workbox-powered PWA caching, offline attendance logging with auto-sync, backup/restore utilities, and robust error handling with offline fallback page |
+**اردو:**  
+Aura Facial Recognition Attendance Suite v3.0 ایک محفوظ، آف لائن چلنے والا، ریئل ٹائم حاضری مینجمنٹ سسٹم ہے جو فیشل ریکگنیشن، موشن ٹریکنگ، ایڈوانسڈ اینالیٹکس، اور سخت پالیسی نفاذ پر مبنی ہے۔ یہ لوکل فائل سسٹم کور پر کام کرتا ہے، جو ڈیٹا کی رازداری اور کلاؤڈ انفراسٹرکچر سے مکمل آزادی یقینی بناتا ہے۔ سوٹ تین بنیادی انٹرفیسز پر مشتمل ہے: **Kiosk Scanner**، **Security Monitor**، اور **Admin Terminal**، جو ہر ایک الگ آپریشنل کردار ادا کرتے ہوئے ایک مشترکہ ڈیٹا لیئر استعمال کرتے ہیں۔
 
 ---
 
-### ⚙️ Technical Architecture Overview
+## 🔐 Administrative Access Gate | 🔐 انتظامی رسائی گیٹ
+| Feature / خصوصیت | Function / کام | System Impact / نظامی اثر |
+|---|---|---|
+| Master Passcode Input | Requires authentication to access analytics, directories, and policies. | Blocks unauthorized configuration changes. All admin modules remain locked until verified. |
+| Reveal Toggle | Shows/hides passcode characters during entry. | Improves UX without compromising security. |
+| Default Access Key | `admin1234` (Pre-configured for first-time setup) | Allows initial system access. **Must be changed** via Security Access Settings for production use. |
+| Verify Identity Signature 🔑 | Cryptographic validation of entered credentials. | Grants persistent admin session. Triggers audit trail logging. |
 
-```
-📁 Aura Facial Recognition Attendance Suite v3.0
-├── 🌐 Frontend (index.html)
-│   ├── 🎨 Responsive UI with Theme Toggle
-│   ├── 📊 Chart.js-Ready Analytics Dashboard
-│   ├── 🗂️ Modal-Based CRUD Forms
-│   └── 📱 PWA Install Prompt Integration
-├── 👁️ Facial Recognition Module
-│   ├── 📷 Webcam Capture & Preview
-│   ├── 👁️ Liveness Challenge Engine (3 Levels)
-│   ├── 🔍 Face Matching & Verification
-│   └── 🎥 Motion Tracking & Auto-Recording
-├── 💾 Local Data Management
-│   ├── 🗃️ IndexedDB for Offline Profiles/Logs
-│   ├── 🔐 Encrypted Facial Template Storage
-│   ├── 📦 JSON Backup/Restore Utilities
-│   └── 🗑️ Secure Purge with Confirmation
-├── 🔄 Service Worker (sw.js + Workbox)
-│   ├── 📦 Precaching Strategy for Core Assets
-│   ├── 🔄 Stale-While-Revalidate for Dynamic Content
-│   ├── 🖼️ Cache-First for Images (30-day expiry)
-│   └── 🚫 Offline Fallback to offline.html
-├── 📱 PWA Configuration (manifest.json)
-│   ├── 🎨 App Icons (72px - 512px)
-│   ├── 🎨 Theme & Background Colors
-│   ├── 📱 Standalone Display Mode
-│   └── 🌐 Portrait-Primary Orientation
-└── 🔐 Security Layer
-    ├── 🔑 Master Passcode Authentication
-    ├── 📝 Comprehensive Audit Trail
-    ├── 🛡️ Input Validation & Sanitization
-    └── 🔒 Encrypted Local Data Storage
-```
+**اردو:**  
+- **ماسٹر پاس کوڈ ان پٹ:** اینالیٹکس، ڈائریکٹریز اور پالیسیز تک رسائی کے لیے تصدیق ضروری ہے۔ غیر مجاز تبدیلیوں کو روکتا ہے۔  
+- **ریویل ٹوگل:** ٹائپنگ کے دوران پاس ورڈ کے حروف ظاہر/چھپاتا ہے۔  
+- **ڈیفالٹ ایکسس کی:** `admin1234` (پہلی بار سیٹ اپ کے لیے)۔ پروڈکشن میں استعمال سے قبل سیکیورٹی سیٹنگز سے تبدیل کرنا لازمی ہے۔  
+- **تصدیق 🗝️:** داخل کردہ کریڈنشلز کی کریپٹوگرافک ویلیڈیشن۔ ایڈمن سیشن فعال کرتا ہے اور آڈٹ ٹریل میں لاگ انٹری بناتا ہے۔
 
 ---
 
-### 🚀 Deployment & Setup Guide
+## 📹 Module 1: Kiosk Scanner & Live Operations | ماڈیول 1: کیوسک اسکینر اور لائیو آپریشنز
+| Control / کنٹرول | Function / کام | System Impact / نظامی اثر |
+|---|---|---|
+| Facial Recognition Scanner Status | Shows `OFFLINE` until webcam is activated. | Prevents accidental check-ins. System awaits hardware initialization. |
+| Webcam Inactive / Start Preview | Initializes camera feed for high-precision verification scans. | Activates facial detection pipeline. Live feed enables real-time matching against enrolled profiles. |
+| Start / Pause / Stop | Controls scanning lifecycle. | `Start`: Begins continuous face detection. `Pause`: Freezes detection but keeps camera alive. `Stop`: Releases hardware resources and sets status to OFFLINE. |
+| Live Check-in Ticker | Real-time scrolling display of successful verifications. | Provides instant visual feedback for employees & HR. Updates lock console stats and attendance logs automatically. |
+| 🌓 ThemeCore Active | Dynamic UI theme engine. | Adjusts contrast, accent colors, and dashboard layout without affecting core logic. |
+| Initializing Local Filesystem Core | Boot sequence indicator. | Loads encrypted local databases, policy caches, and session states. Essential for offline operation. |
 
-| Step | Action | Details |
-|------|--------|---------|
-| **1️⃣** | 📦 Install Files | Deploy all HTML, JS, JSON, and icon files to web server or local directory |
-| **2️⃣** | 🔐 Set Master Passcode | Change default `admin1234` via Security Access Settings before first use |
-| **3️⃣** | 📷 Configure Webcam | Ensure browser permissions allow camera access for facial enrollment & scanning |
-| **4️⃣** | 🎨 Customize Theme | Set accent color, brand palette, and theme preference in System Settings |
-| **5️⃣** | 👥 Enroll Employees | Use "Enroll New Employee Profile" to add staff with facial recognition templates |
-| **6️⃣** | ⚙️ Configure Policies | Set shift times, grace periods, cutoff rules, and weekend days per organization policy |
-| **7️⃣** | 🔄 Enable PWA | Users can install app via browser prompt for offline-capable kiosk deployment |
-| **8️⃣** | 💾 Schedule Backups | Export Backup JSON regularly via System Datastore Utilities |
-
----
-
-### 🔧 Recommended Enhancements (Future Roadmap)
-
-| 🎯 Enhancement | 📋 Description | 🚦 Priority |
-|---------------|---------------|------------|
-| **🌐 Cloud Sync** | Optional encrypted cloud backup & multi-terminal sync | 🔶 Medium |
-| **📱 Mobile Companion App** | Native iOS/Android app for manager approvals & reports | 🔶 Medium |
-| **🤖 AI Analytics** | Predictive absenteeism alerts & attendance pattern insights | 🔷 Low |
-| **🔗 HRIS Integration** | Pre-built connectors for popular HR/payroll platforms | 🔶 Medium |
-| **🗣️ Voice Commands** | Hands-free kiosk operation via voice recognition | 🔷 Low |
-| **🌍 Multi-Language** | UI translation support for global deployments | 🔶 Medium |
-| **🔐 2FA/MFA** | Add TOTP or SMS-based second factor for admin access | 🔴 High |
-| **📊 Advanced Reporting** | Custom report builder with drag-and-drop fields | 🔶 Medium |
+**اردو:**  
+- **فیشل اسکینر اسٹیٹس:** ویب کیم ایکٹیویٹ ہونے تک `OFFLINE` رہتا ہے۔ غیر ارادی چیک ان سے بچاتا ہے۔  
+- **ویب کیم اسٹارٹ/پریویو:** کیمرہ فیڈ کو ہائی پریسیژن ویریفیکیشن کے لیے تیار کرتا ہے۔ فیشل ڈیٹکشن پائپ لائن فعال ہوتی ہے۔  
+- **اسٹارٹ/پاز/اسٹاپ:** اسکیننگ کے مراحل کو کنٹرول کرتا ہے۔ اسٹارٹ: مسلسل ڈیٹکشن، پاز: ڈیٹکشن روک کر کیمرہ فعال رکھتا ہے، اسٹاپ: ہارڈویئر ریسورسز آزاد کرتا ہے۔  
+- **لائیو چیک ان ٹکر:** کامیاب ویریفیکیشن کا ریئل ٹائم اسکرولنگ ڈسپلے۔ لاگ اینٹریز اور ڈیش بورڈ اسٹیٹس کو خودکار اپڈیٹ کرتا ہے۔  
+- **تھیم کور:** UI کی بصری ترتیب تبدیل کرتا ہے بغیر بیک اینڈ لاجک متاثر کیے۔  
+- **لوکل فائل سسٹم کور:** انسکرپٹڈ لوکل ڈیٹا بیس اور پالیسی کیش لوڈ کرتا ہے۔ آف لائن آپریشن کی بنیاد ہے۔
 
 ---
 
-### 👨‍💻 Created By
-| Yasin Ullah
+## 🛡️ Module 2: Security Monitor & Motion Tracking | ماڈیول 2: سیکیورٹی مانیٹر اور موشن ٹریکنگ
+| Setting / سیٹنگ | Function / کام | System Impact / نظامی اثر |
+|---|---|---|
+| Keep Camera Active & Detect Movement Clips | Continuously monitors frame changes for motion. | Enables security surveillance mode. Clips are stored locally for admin review. |
+| Auto-Download Motion Clips | Automatically exports recorded clips to local storage. | Prevents storage overflow. Ensures evidence retention without manual intervention. |
+| Motion Aggressiveness (%) | Sensitivity threshold for motion detection (0–100%). | Higher % = triggers on minor movements. Lower % = ignores ambient changes. Directly affects clip frequency and CPU load. |
+| Motion Stop Delay (Sec) | Time buffer before marking motion as "ended". | Prevents fragmented clips. Ensures continuous recording of single events. |
+| Start/Stop Continuous Recording | Toggles persistent video capture. | Useful for audits or high-security zones. Impacts local disk usage. |
+| Enable No-Sleep Mode | Prevents system/browser from sleeping. | Guarantees 24/7 uptime for kiosks. Critical for overnight shifts or remote locations. |
+| Save Motion Settings 🔒 | Locks configuration behind admin passcode. | Prevents unauthorized tampering with security parameters. |
+| Admin Movement Clips Viewer | Gallery of captured motion segments. | Centralized review hub. Links timestamps to attendance logs for anomaly detection. |
 
-<div align="center">
-
-**Your Development Team** – Aura Solutions  
-
-*Building secure, intelligent attendance solutions for modern workplaces*
-
-</div>
+**اردو:**  
+- **کیمرہ ایکٹیو رکھیں اور موشن کلپس ڈیٹیکٹ کریں:** فریم چینجز کی مسلسل نگرانی۔ سیکیورٹی سرویلنس موڈ فعال کرتا ہے۔  
+- **آٹو ڈاؤن لوڈ:** ریکارڈڈ کلپس خودکار لوکل اسٹوریج میں محفوظ۔ اسٹوریج اوور فلو سے بچاتا ہے۔  
+- **موشن ایگریسیونیٹس (%):** حساسیت کی حد۔ زیادہ % = معمولی حرکت پر ٹرگر، کم % = ماحولیاتی تبدیلیوں کو نظر انداز۔ CPU لوڈ اور کلپ فریکوئنسی پر اثر انداز۔  
+- **موشن اسٹاپ ڈیلے (سیکنڈ):** موشن ختم ہونے سے پہلے کا ٹائم بفر۔ کلپس کو ٹوٹنے سے بچاتا ہے۔  
+- **مسلسل ریکارڈنگ اسٹارٹ/اسٹاپ:** مستقل ویڈیو کیپچر۔ آڈٹ یا ہائی سیکیورٹی زونز کے لیے مفید۔ ڈسک اسپیس متاثر کرتا ہے۔  
+- **نو سلپ موڈ:** سسٹم/براؤزر کو سونے سے روکتا ہے۔ 24/7 اپ ٹائم یقینی بناتا ہے۔  
+- **سیٹنگز محفوظ کریں 🔒:** ایڈمن پاس کوڈ کے تحت ترتیبات کو لاک کرتا ہے۔ غیر مجاز ترمیم سے بچاتا ہے۔  
+- **ایڈمن موشن کلپس ویور:** کیپچرڈ سیگمنٹس کا مرکزی جائزہ ہب۔ غیر معمولی سرگرمیوں کی شناخت کے لیے ٹائم اسٹامپس سے لنک ہوتا ہے۔
 
 ---
 
-> ℹ️ *This report reflects all features, modules, and functionalities implemented in the Aura Facial Recognition Attendance Suite v3.0 as analyzed from the provided source files. The application is designed as a Progressive Web App with offline-first architecture, enterprise-grade security features, and a modular, extensible codebase ready for production deployment.* ✅
+## 📊 Module 3: Admin Terminal, Analytics & Reporting | ماڈیول 3: ایڈمن ٹرمینل، اینالیٹکس اور رپورٹنگ
+### 🔒 Lock Console Profiles (Real-Time Dashboard Stats)
+| Metric | Description | Impact |
+|---|---|---|
+| Enrolled / موجود / آن ٹائم / لیٹ / غیر حاضری / چھٹی / آج کے اوقات / پنڈنگ چیک آؤٹ | Live counters reflecting database state. | Drives executive decision-making. Updates automatically on every check-in/out or manual log entry. |
 
-> ⚠️ **Security Notice**: The default master passcode `admin1234` is visible in the source. **Change this immediately** before deploying to any production environment. Enable HTTPS for all deployments to protect biometric data in transit.
+### 📈 Visual Reporting & Chart Lab
+| Component | Function | System Impact |
+|---|---|---|
+| Weekly Attendance Distribution | Bar/Line graph of daily presence. | Identifies absenteeism trends. |
+| Department Distribution | Pie/Doughnut split by division. | Highlights departmental compliance gaps. |
+| Monthly Logs Heatmap | Color-coded grid showing activity density. | Visualizes peak vs off-peak hours. |
+| Executive KPI Summary | Aggregated metrics (Total Logs, Unique Employees, On-Time/Late Rates, Total Worked Time, Avg Session, Attendance Rate, Pending Checkouts). | Core HR analytics. Used for payroll, performance reviews, and policy adjustments. |
+| Chart Lab (Any Type) | Customizable visualizations: Bar, Line, Doughnut, Pie, Radar, Polar Area, Scatter, Bubble. | Flexible data exploration. Exports match selected filters. |
+| Infographic Insights | Auto-generated narrative summaries. | Simplifies complex data for management presentations. |
+
+### 🔍 Comprehensive Reporting Hub & Datatable Filters
+| Filter / Report Control | Function | Impact |
+|---|---|---|
+| Date Range (All/Today/Yesterday/7/30 Days) | Narrows log visibility. | Directly affects exported datasets and chart rendering. |
+| Department / Employee / Event Type / Policy Status | Multi-dimensional filtering. | Enables targeted audits (e.g., "Late logs for IT dept last 7 days"). |
+| Check-Out (-) Before Cutoff Logout | Flags premature exits. | Impacts compliance rate and payroll deductions. |
+| Add Retro Log ➕ | Manually inserts missing/historical entries. | Overrides auto-calculated session times. Triggers audit trail. |
+| Export CSV / Export Today Summary / Download JSON / Print Summary | Data extraction formats. | CSV for Excel, JSON for system integrations, PDF-ready print. |
+| Sort Output (Latest/Oldest/Alpha/Dept/Status) | Reorders datatable rows. | Improves readability without altering underlying data. |
+| Compliance Alerts | Real-time notifications for policy breaches. | Immediate HR intervention. Linked to shift rules and grace periods. |
+
+**اردو:**  
+- **لاک کنسول اسٹیٹس:** ریئل ٹائم کاؤنٹرز جو ڈیٹا بیس کی حالت عکاسی کرتے ہیں۔ ہر چیک ان/آؤٹ یا مینوئل انٹری پر خودکار اپڈیٹ۔  
+- **چارٹس اور رپورٹس:** ہفتہ وار حاضری، ڈیپارٹمنٹل تقسیم، ماہانہ ہیٹ میپ، ایگزیکٹو KPI (کل لاگز، یونیک ایمپلائیز، وقت پر/لیٹ ریٹ، کل ورکڈ ٹائم، اوسط سیشن، حاضری ریٹ، پنڈنگ چیک آؤٹ)۔ چارٹ لیب میں ہر قسم کی گرافکس بنائی جا سکتی ہیں۔  
+- **فِلٹرز اور رپورٹنگ ہب:** تاریخ، ڈیپارٹمنٹ، ایمپلائی، ایونٹ ٹائپ، پالیسی اسٹیٹس، کٹ آف سے پہلے چیک آؤٹ فلٹرز۔ ڈیٹا ایکسپورٹ (CSV, JSON, پرنٹ)، ترتیب (تازہ ترین/قدیم ترین/الفا/ڈیپارٹمنٹ/اسٹیٹس)۔  
+- **کمپلائنس الرٹس:** پالیسی خلاف ورزیوں کی فوری نوٹیفیکیشن۔ شفٹ رولز اور گریس پیریڈز سے لنکڈ۔  
+
+---
+
+## 👤 Module 4: Employee Management & Enrollment | ماڈیول 4: ایمپلائیز مینجمنٹ اور اندراج
+| Feature | Function | Impact |
+|---|---|---|
+| Enroll New Profile | Form: Name, ID, Dept, Role, Email, Phone, Status (Active/Suspended), Personal Shift Start, Personal Grace Minutes. | Creates core identity record. Determines policy application scope. |
+| Facial Recognition Enrollment Preview | 📷 Enrollment Camera: Start/Preview, Capture Via Webcam, Upload Portrait, Save Profile, Update Face, Cancel. | Binds biometric template to employee ID. Enables kiosk verification. `Update` replaces old template without altering logs. |
+| Manual Check-in Override | Select Profile → Check Type (In/Out) → Register. | Bypasses facial scan. Used for hardware failure or visitor/guest tracking. Logs as "Manual" in audit trail. |
+| Leave & Permission Manager | Employee, Type (Leave/Permission), Dates, Status (Approved/Pending/Rejected), Reason. | Modifies attendance calculations. Approved leaves reduce "Absentee" count and adjust worked hours. |
+| Profiles Records Directory | Filter: All Departments. Columns: ID, Name, Dept, Role, Shift, Email, Status, Date Enrolled, Action. | Central employee registry. `Action` buttons allow edit/suspend/deactivate. Drives dropdowns in reporting & leave modules. |
+
+**اردو:**  
+- **نیا پروفائل اندراج:** نام، آئی ڈی، ڈیپارٹمنٹ، رول، ای میل، فون، اسٹیٹس (ایکٹیو/سسپینڈڈ)، پرسنل شفٹ اسٹارٹ، پرسنل گریس منٹس۔ بنیادی شناختی ریکارڈ بناتا ہے۔  
+- **فیشل انرولمنٹ پریویو:** کیمرہ اسٹارٹ/پریویو، ویب کیم سے کیپچر، فوٹو اپ لوڈ، پروفائل محفوظ، چہرہ اپڈیٹ، منسوخ۔ بائیو میٹرک ٹیمپلیٹ کو آئی ڈی سے لنک کرتا ہے۔  
+- **مینوئل چیک ان اوور رائیڈ:** پروفائل منتخب → چیک ٹائپ → رجسٹر۔ فیشل اسکین کو بائی پاس کرتا ہے۔ آڈٹ ٹریل میں "Manual" لاگ ہوتا ہے۔  
+- **لیو اور پرمیشن مینیجر:** ایمپلائی، ٹائپ، تاریخیں، اسٹیٹس، وجہ۔ حاضری کیلکولیشنز کو متاثر کرتا ہے۔ منظور شدہ چھٹیاں غیر حاضری کاؤنٹر کم کرتی ہیں۔  
+- **پروفائلز ڈائریکٹری:** فلٹر: تمام ڈیپارٹمنٹس۔ کالمز: آئی ڈی، نام، ڈیپارٹمنٹ، رول، شفٹ، ای میل، اسٹیٹس، اندراج تاریخ، ایکشن۔ مرکزی ایمپلائی رجسٹری۔  
+
+---
+
+## ⚙️ Module 5: Policies, Shifts & Compliance Controls | ماڈیول 5: پالیسیز، شفٹس اور کمپلائنس کنٹرولز
+| Setting | Function | Impact |
+|---|---|---|
+| Liveness Challenge Anti-Spoofing | Level 0: Standard Match, Level 1: Passive Eye Blink, Level 2: Interactive Head Turn. | Prevents photo/mask spoofing. Higher levels increase security but require user cooperation during scan. |
+| Shift & Late Policy | Shift Start Time, Grace Period (Min), Min Session Minutes, Auto Check-Out Gap (Hrs), Logout Cutoff Time. | Defines "On-Time", "Late", "Exempt", "Before Cutoff". Auto check-out prevents dangling sessions. Cutoff enforces strict end-of-day logging. |
+| Enforce Logout Cutoff Rule | Toggle: After cutoff time, second scan logs as Check-Out. | Overrides manual check-in type. Ensures accurate daily totals. |
+| Weekend Days Selection | Sun–Sat multi-select. | Excludes weekends from attendance calculations and KPI rates. |
+| Apply Shift & Calendar Rules | Commits policy changes. | Triggers recalculation of historical logs if dates align. |
+| System Themes & Styling | Accent Color Brand Palette. | Visual customization only. No functional impact on data or policies. |
+
+**اردو:**  
+- **لایونیٹس چیلنج اینٹی اسپوفنگ:** لیول 0: اسٹینڈرڈ میچ، لیول 1: پیسو آئی بلنک، لیول 2: انٹرایکٹو ہیڈ ٹرن۔ فوٹو/ماسک اسپوفنگ سے بچاتا ہے۔ ہائی لیولز سیکیورٹی بڑھاتے ہیں مگر صارف کی تعاون طلب کرتے ہیں۔  
+- **شفٹ اور لیٹ پالیسی:** شفٹ اسٹارٹ ٹائم، گریس پیریڈ، کم از کم سیشن منٹس، آٹو چیک آؤٹ گیپ، لاگ آؤٹ کٹ آف ٹائم۔ "وقت پر"، "لیٹ"، "مستثنیٰ"، "کٹ آف سے پہلے" کی تعریف کرتا ہے۔  
+- **لاگ آؤٹ کٹ آف رول نافذ کریں:** کٹ آف کے بعد دوسرا اسکین خودکار چیک آؤٹ بناتا ہے۔ یومیہ ٹوٹلز کی درستگی یقینی بناتا ہے۔  
+- **ویک اینڈ ڈیز سلیکشن:** اتوار تا ہفتہ۔ حاضری کیلکولیشنز اور KPI ریٹس سے ویک اینڈ خارج کرتا ہے۔  
+- **پالیسیز اپلائی کریں:** تبدیلیاں کمٹ کرتا ہے۔ اگر تاریخیں ملتی ہوں تو تاریخی لاگز کی دوبارہ کیلکولیشن ٹرگر کرتا ہے۔  
+- **تھیمز اور اسٹائلنگ:** ایکسنٹ کلر برانڈ پیلیٹ۔ صرف بصری ترتیب، ڈیٹا یا پالیسیز پر کوئی اثر نہیں۔  
+
+---
+
+## 🗃️ Module 6: Data Management, Backup & Audit | ماڈیول 6: ڈیٹا مینجمنٹ، بیک اپ اور آڈٹ
+| Utility | Function | Impact |
+|---|---|---|
+| Export Backup JSON | Downloads full system state (profiles, logs, policies, settings). | Essential before major changes. Enables disaster recovery. |
+| Import Backup JSON | Restores system from saved JSON. | Overwrites current data. **Irreversible** without prior backup. |
+| Purge Local Database Indexes | Clears cached logs and temporary records. | Frees storage. Does not delete core profiles unless explicitly selected. |
+| System Audit Trail | Logs every admin action, policy change, and manual override. | Provides compliance proof. Exportable as CSV for HR/legal review. |
+| Corporate Calendars & Divisions | Manage Departments, Holidays Exclusions, Department Shift Templates, Save Policy. | Enables multi-location/multi-division compliance. Holidays adjust "On Leave" and "Absentee" logic. |
+| Security Access Settings | Change Dashboard Password / Update Passcode Key. | Secures admin gate. Invalidates old sessions. Required for role rotation. |
+| Retroactive Attendance Log Entry | Select Employee, Date, Time, Event Type, Policy Status, Session Minutes, Save. | Corrects missed scans or system downtime. Updates KPIs, worked hours, and compliance rates retroactively. |
+
+**اردو:**  
+- **بیک اپ JSON ایکسپورٹ:** مکمل سسٹم اسٹیٹ ڈاؤن لوڈ۔ بڑی تبدیلیوں سے پہلے لازمی۔ ڈیزاسٹر ریکوری کے لیے۔  
+- **بیک اپ JSON امپورٹ:** محفوظ JSON سے سسٹم بحال۔ موجودہ ڈیٹا اوور رائیٹ کرتا ہے۔ بغیر بیکاپ کے ناقابل واپسی۔  
+- **لوکل ڈیٹا بیس انڈیکسز صاف کریں:** کیشڈ لاگز اور عارضی ریکارڈز حذف۔ اسٹوریج آزاد کرتا ہے۔  
+- **سسٹم آڈٹ ٹریل:** ہر ایڈمن ایکشن، پالیسی تبدیلی، مینوئل اوور رائیڈ کا لاگ۔ کمپلائنس ثبوت فراہم کرتا ہے۔ CSV ایکسپورٹ۔  
+- **کارپوریٹ کیلنڈر اور ڈویژنز:** ڈیپارٹمنٹس، چھٹیاں، شفٹ ٹیمپلیٹس، پالیسی محفوظ۔ ملٹی لوکیشن کمپلائنس ممکن بناتا ہے۔  
+- **سیکیورٹی ایکسس سیٹنگز:** ڈیش بورڈ پاس ورڈ تبدیل/اپڈیٹ۔ ایڈمن گیٹ کو محفوظ کرتا ہے۔ پرانے سیشنز منسوخ۔  
+- **ریٹرو ایکٹیو لاگ انٹری:** ایمپلائی، تاریخ، وقت، ایونٹ ٹائپ، پالیسی اسٹیٹس، سیشن منٹس، محفوظ۔ چھوٹے ہوئے اسکینز یا سسٹم ڈاؤن ٹائم کو درست کرتا ہے۔ KPIs اور ورکڈ آورز کو ریٹرو ایکٹیولی اپڈیٹ کرتا ہے۔  
+
+---
+
+## 📋 Step-by-Step Usage Guide | 📋 قدم بہ قدم استعمال کی رہنمائی
+### 🟢 Initial Setup / ابتدائی سیٹ اپ
+1. Open `index.html` in a modern browser.  
+   `index.html` کو جدید براؤزر میں کھولیں۔  
+2. Click **Start Webcam** under Kiosk Scanner. Grant camera permissions.  
+   کیوسک اسکینر کے تحت **Start Webcam** پر کلک کریں۔ کیمرہ اجازت دیں۔  
+3. Enter default master passcode `admin1234` in **Administrative Access Gate** → Verify.  
+   ایڈمن گیٹ میں ڈیفالٹ پاس کوڈ `admin1234` ڈالیں → Verify کریں۔  
+4. Navigate to **Security Access Settings** → Update Passcode Key.  
+   سیکیورٹی سیٹنگز → پاس کوڈ کی اپڈیٹ کریں۔  
+
+### 👤 Enrolling Employees / ایمپلائیز کا اندراج
+1. Go to **Enroll New Employee Profile**. Fill details.  
+   نئے پروفائل فارم پر جائیں۔ تفصیلات بھریں۔  
+2. Click **Start Preview** → **Capture Via Webcam** (or Upload).  
+   پریویو اسٹارٹ → ویب کیم سے کیپچر (یا اپ لوڈ)۔  
+3. Click **Save Profile**. Verify in **Profiles Directory**.  
+   پروفائل محفوظ کریں۔ ڈائریکٹری میں تصدیق کریں۔  
+
+### 🔄 Daily Operations / روزمرہ آپریشنز
+1. Keep Kiosk Scanner **Active** during working hours.  
+   کام کے اوقات میں کیوسک اسکینر **Active** رکھیں۔  
+2. Employees face camera → System auto-checks in/out.  
+   ایمپلائیز کیمرے کی طرف دیکھیں → سسٹم خودکار چیک ان/آؤٹ کرے گا۔  
+3. Monitor **Live Check-in Ticker** and **Lock Console** stats.  
+   لائیو ٹکر اور کنسول اسٹیٹس مانیٹر کریں۔  
+4. Use **Security Monitor** for motion tracking if required.  
+   ضرورت ہو تو سیکیورٹی مانیٹر سے موشن ٹریکنگ استعمال کریں۔  
+
+### 📊 Reporting & Audits / رپورٹنگ اور آڈٹ
+1. Open **Admin Terminal** → **Analytics & Reports**.  
+   ایڈمن ٹرمینل → اینالیٹکس اینڈ رپورٹس کھولیں۔  
+2. Apply filters → Click **Apply Filters** → **Download JSON/Export CSV**.  
+   فلٹرز لگائیں → Apply → JSON/CSV ڈاؤن لوڈ کریں۔  
+3. Review **Compliance Alerts** and **Audit Trail** for anomalies.  
+   کمپلائنس الرٹس اور آڈٹ ٹریل کا جائزہ لیں۔  
+
+---
+
+## 🌍 Cross-Module Impact Summary | 🌍 کراس ماڈیول اثرات کا خلاصہ
+| Action | Affected Modules | Consequence |
+|---|---|---|
+| Change Shift Policy | Kiosk, Analytics, Leave Manager, Retro Log | Recalculates Late/On-Time status. Updates KPIs. Alters historical logs if dates match. |
+| Update Anti-Spoofing Level | Kiosk Scanner | Higher levels may increase false rejects but prevent spoofing. Requires user compliance. |
+| Purge Database | All Modules | Clears logs & clips. Core profiles remain. **Backup first.** |
+| Modify Master Passcode | Admin Gate, Security Settings | Invalidates existing admin sessions. Requires re-login. |
+| Add Holiday/Weekend | Analytics, Compliance, Leave Manager | Excludes days from attendance rates. Adjusts "On Leave" vs "Absentee" classification. |
+| Manual/Retro Log Entry | Analytics, Audit Trail, KPI Dashboard | Overrides auto-calculation. Triggers audit flag. Updates executive metrics instantly. |
+
+**اردو:**  
+| عمل | متاثرہ ماڈیولز | نتیجہ |
+|---|---|---|
+| شفٹ پالیسی تبدیل کریں | کیوسک، اینالیٹکس، لیو مینیجر، ریٹرو لاگ | لیٹ/وقت پر اسٹیٹس دوبارہ حساب۔ KPIs اپڈیٹ۔ تاریخی لاگز متاثر۔ |
+| اینٹی اسپوفنگ لیول اپڈیٹ | کیوسک اسکینر | ہائی لیولز سیکیورٹی بڑھاتے ہیں مگر صارف کی ضرورت۔ |
+| ڈیٹا بیس صاف کریں | تمام ماڈیولز | لاگز/کلپس حذف۔ پروفائلز محفوظ رہتے ہیں۔ **پہلے بیک اپ لیں۔** |
+| ماسٹر پاس کوڈ تبدیل کریں | ایڈمن گیٹ، سیکیورٹی سیٹنگز | موجودہ سیشنز منسوخ۔ دوبارہ لاگ ان ضروری۔ |
+| چھٹی/ویک اینڈ شامل کریں | اینالیٹکس، کمپلائنس، لیو مینیجر | حاضری ریٹس سے ایام خارج۔ "چھٹی" vs "غیر حاضری" کی درجہ بندی تبدیل۔ |
+| مینوئل/ریٹرو لاگ | اینالیٹکس، آڈٹ ٹریل، KPI ڈیش بورڈ | خودکار حساب کو اوور رائیڈ۔ آڈٹ فلیگ۔ ایگزیکٹو میٹرکس فوری اپڈیٹ۔ |
+
+---
+
+## 🛠️ Technical Setup & Requirements | 🛠️ تکنیکی سیٹ اپ اور تقاضے
+- **Browser:** Chrome 90+, Edge 90+, Firefox 88+ (WebRTC & LocalStorage required)  
+- **Camera:** 720p+ webcam with autofocus (recommended for Level 1/2 liveness)  
+- **Storage:** 500MB+ local disk for logs, motion clips, and JSON backups  
+- **Network:** Optional. Fully functional offline. Syncs only when manually exported/imported  
+- **Security:** All data encrypted locally. No cloud transmission. Passcode hashed in session storage.  
+- **Performance:** Optimized for low-CPU kiosks. Disable browser extensions that block camera access.  
+
+**اردو:**  
+- **براؤزر:** کروم 90+، ایج 90+، فائر فاکس 88+ (WebRTC اور لوکل اسٹوریج ضروری)  
+- **کیمرہ:** 720p+ ویب کیم، آٹو فوکس (لیول 1/2 کے لیے تجویز کردہ)  
+- **اسٹوریج:** 500MB+ لوکل ڈسک (لاگز، موشن کلپس، بیک اپ کے لیے)  
+- **نیٹ ورک:** اختیاری۔ مکمل آف لائن کام کرتا ہے۔ صرف مینوئل ایکسپورٹ/امپورٹ پر سنک ہوتا ہے  
+- **سیکیورٹی:** تمام ڈیٹا لوکل اینکرپٹڈ۔ کوئی کلاؤڈ ٹرانسمیشن نہیں۔ پاس کوڈ سیشن اسٹوریج میں ہیشڈ۔  
+- **کارکردگی:** کم CPU کیوسکس کے لیے آپٹیمائزڈ۔ کیمرہ بلاک کرنے والی ایکسٹینشنز بند کریں۔  
+
+---
+
+## 📞 Support & Maintenance | 📞 سپورٹ اور دیکھ بھال
+- 🔄 **Regular Backup:** Export JSON weekly. Store externally.  
+- 🧹 **Cache Management:** Purge indexes monthly if storage is constrained.  
+- 🔑 **Password Rotation:** Change master passcode quarterly.  
+- 📝 **Audit Review:** Export CSV monthly for compliance documentation.  
+- 🆘 **Troubleshooting:** If scanner fails → Clear browser cache → Reload → Re-grant camera → Verify passcode.  
+
+**اردو:**  
+- 🔄 **باقاعدہ بیک اپ:** ہفتہ وار JSON ایکسپورٹ کریں۔ بیرونی اسٹوریج میں محفوظ رکھیں۔  
+- 🧹 **کیش مینجمنٹ:** اسٹوریج کم ہو تو ماہانہ انڈیکسز صاف کریں۔  
+- 🔑 **پاس ورڈ روٹیشن:** ہر سہ ماہی ماسٹر پاس کوڈ تبدیل کریں۔  
+- 📝 **آڈٹ جائزہ:** کمپلائنس دستاویزات کے لیے ماہانہ CSV ایکسپورٹ کریں۔  
+- 🆘 **ٹربل شوٹنگ:** اسکینر فیل ہو تو → براؤزر کیش کلین → ریلوڈ → کیمرہ اجازت دیں → پاس کوڈ تصدیق کریں۔  
+
+---
+✅ **Document Version:** 3.0 | **Last Updated:** Current Release | **Client Ready**  
+✅ **یہ دستاویز مکمل، تازہ ترین اور کلائنٹ کے لیے تیار ہے۔**  
+
+*For further customization, API integration, or enterprise deployment support, contact your solution provider.*  
+*مزید کسٹمائزیشن، API انٹیگریشن یا انٹرپرائز ڈپلائمنٹ سپورٹ کے لیے اپنے سلوشن پرووائیڈر سے رابطہ کریں۔*

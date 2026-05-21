@@ -44,18 +44,18 @@
         }
 
         body.dark {
-            --bg: #0f172a;
-            --panel: #1e293b;
+            --bg: #020617;
+            --panel: #0f172a;
             --text: #f8fafc;
-            --muted: #94a3b8;
-            --muted-light: #475569;
+            --muted: #cbd5e1;
+            --muted-light: #94a3b8;
             --border: #334155;
-            --success: #10b981;
-            --success-bg: rgba(16, 185, 129, 0.1);
-            --warning: #f59e0b;
-            --warning-bg: rgba(245, 158, 11, 0.1);
-            --danger: #ef4444;
-            --danger-bg: rgba(239, 68, 68, 0.1);
+            --success: #34d399;
+            --success-bg: rgba(16, 185, 129, 0.2);
+            --warning: #fbbf24;
+            --warning-bg: rgba(245, 158, 11, 0.2);
+            --danger: #f87171;
+            --danger-bg: rgba(239, 68, 68, 0.2);
         }
 
         body.accent-indigo {
@@ -784,6 +784,31 @@
             background: var(--bg) !important;
         }
 
+        div.dt-button-background {
+            z-index: 2000 !important;
+            background: rgba(2, 6, 23, 0.52) !important;
+        }
+
+        div.dt-button-collection {
+            z-index: 2001 !important;
+            background: var(--panel) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 8px !important;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25) !important;
+            padding: 8px !important;
+            min-width: 220px;
+        }
+
+        div.dt-button-collection .dt-button {
+            width: 100%;
+            text-align: left !important;
+            margin: 0 0 6px 0 !important;
+        }
+
+        div.dt-button-collection .dt-button:last-child {
+            margin-bottom: 0 !important;
+        }
+
         .sub-nav {
             display: flex;
             margin-bottom: 16px;
@@ -879,6 +904,57 @@
             gap: 12px;
         }
 
+        .analytics-fill-card {
+            min-height: 320px;
+        }
+
+        .analytics-fill-block {
+            flex: 1;
+            min-height: clamp(220px, 32vh, 380px);
+            display: flex;
+            align-items: stretch;
+            justify-content: stretch;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        #analytics-chart-container svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .dept-layout {
+            display: grid;
+            grid-template-columns: minmax(180px, 1.1fr) minmax(170px, 1fr);
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .dept-canvas-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+        }
+
+        #dept-canvas {
+            width: min(100%, 320px) !important;
+            height: auto !important;
+            aspect-ratio: 1 / 1;
+            max-height: 100%;
+        }
+
+        .dept-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 12px;
+            line-height: 1.45;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
         .reporting-chart-card {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -930,6 +1006,52 @@
             .reporting-chart-grid {
                 grid-template-columns: 1fr;
             }
+
+            .analytics-fill-card {
+                min-height: 280px;
+            }
+
+            .analytics-fill-block {
+                min-height: 220px;
+            }
+
+            .dept-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .dept-legend {
+                max-height: 140px;
+            }
+        }
+
+        body.dark .tab-btn:hover {
+            background: rgba(148, 163, 184, 0.14);
+            color: var(--text);
+        }
+
+        body.dark .tab-btn.active {
+            color: #ffffff;
+            border: 1px solid var(--border);
+            box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.2);
+        }
+
+        body.dark .sub-nav {
+            background: linear-gradient(130deg, #0f172a, #1e293b);
+            box-shadow: 0 8px 24px rgba(2, 6, 23, 0.4);
+        }
+
+        body.dark .sub-tab-btn {
+            background: #0b1220;
+            color: #cbd5e1;
+        }
+
+        body.dark th {
+            background: #0b1220;
+            color: #e2e8f0;
+        }
+
+        body.dark .table-responsive {
+            background: #0f172a;
         }
 
         .theme-picker-group {
@@ -974,22 +1096,37 @@
         .heatmap-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
+            gap: 6px;
             width: 100%;
-            max-width: 280px;
-            margin: 0 auto;
+            max-width: none;
+            margin: 0;
+            flex: 1;
+            align-content: stretch;
+        }
+
+        .heatmap-fill {
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 12px;
         }
 
         .heatmap-day {
             aspect-ratio: 1;
-            border-radius: 3px;
+            border-radius: 6px;
             background: var(--border);
-            font-size: 9px;
+            font-size: clamp(10px, 1.05vw, 12px);
             font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--muted);
+        }
+
+        .heatmap-caption {
+            font-size: 11px;
+            color: var(--muted);
+            text-align: center;
         }
 
         .heatmap-day.val-1 {
@@ -1283,7 +1420,7 @@
                 <div class="input-group">
                     <label>Master Passcode</label>
                     <input type="password" id="admin-gate-pass" placeholder="Enter master key passcode"
-                        onkeydown="if(event.key==='Enter') verifyAdminCredentialGateAccess()">
+                        onkeydown="if(event.key==='Enter') verifyAdminCredentialGateAccess()" value="admin1234">
                 </div>
                 <div style="display:flex; align-items:center; gap:6px;">
                     <input type="checkbox" id="show-pass-check" onchange="toggleGatePasswordReveal()"
@@ -1363,28 +1500,25 @@
                         </div>
                     </div>
                     <div class="grid-2">
-                        <div class="card">
+                        <div class="card analytics-fill-card">
                             <h2>Weekly Attendance Distribution</h2>
-                            <div id="analytics-chart-container"
-                                style="min-height: 180px; display: flex; align-items: center; justify-content: center;">
+                            <div id="analytics-chart-container" class="analytics-fill-block">
                             </div>
                         </div>
-                        <div class="card">
+                        <div class="card analytics-fill-card">
                             <h2>Department Distribution</h2>
-                            <div
-                                style="display: flex; align-items: center; justify-content: center; min-height: 180px; gap: 16px;">
-                                <canvas id="dept-canvas" width="140" height="140"
-                                    style="max-width: 140px; max-height: 140px;"></canvas>
-                                <div id="dept-legend"
-                                    style="display: flex; flex-direction: column; gap: 4px; font-size: 11px;"></div>
+                            <div class="dept-layout analytics-fill-block">
+                                <div class="dept-canvas-wrap">
+                                    <canvas id="dept-canvas"></canvas>
+                                </div>
+                                <div id="dept-legend" class="dept-legend"></div>
                             </div>
                         </div>
                     </div>
                     <div class="grid-2">
-                        <div class="card">
+                        <div class="card analytics-fill-card">
                             <h2>Monthly Logs Heatmap</h2>
-                            <div id="heatmap-container"
-                                style="min-height: 140px; display: flex; flex-direction: column; justify-content: center; gap: 12px;">
+                            <div id="heatmap-container" class="heatmap-fill analytics-fill-block">
                             </div>
                         </div>
                         <div class="card">
@@ -2312,10 +2446,48 @@
         const reportsRowsPerPage = 10;
         let filteredReportsList = [];
         let reportsDataTable = null;
+        let monitorWarningShown = false;
+        let dashboardResizeTimer = null;
+        let currentPrimaryView = "kiosk";
+        let currentAdminSubTab = "reports";
+        const SESSION_STATE_STORAGE_KEY = "aura_session_state_v1";
         let empPage = 1;
         const empRowsPerPage = 10;
         let filteredEmpList = [];
         let directoryDataTable = null;
+        function readSessionState() {
+            try {
+                const raw = localStorage.getItem(SESSION_STATE_STORAGE_KEY);
+                if (!raw) return {};
+                const parsed = JSON.parse(raw);
+                return parsed && typeof parsed === "object" ? parsed : {};
+            } catch (_err) {
+                return {};
+            }
+        }
+        function writeSessionState(partialState) {
+            try {
+                const base = readSessionState();
+                const merged = { ...base, ...partialState };
+                localStorage.setItem(SESSION_STATE_STORAGE_KEY, JSON.stringify(merged));
+            } catch (_err) {
+                // Storage is best-effort only.
+            }
+        }
+        function destroyDataTableIfActive(tableSelector) {
+            if (window.jQuery && jQuery.fn && jQuery.fn.DataTable && jQuery.fn.DataTable.isDataTable(tableSelector)) {
+                jQuery(tableSelector).DataTable().destroy();
+            }
+        }
+        async function saveEmployeeRecordAndVerify(record) {
+            await writeDatabaseRecord("employees", record);
+            const savedRecords = await readAllDatabaseRecords("employees");
+            const savedRecord = savedRecords.find(emp => String(emp.id).toLowerCase() === String(record.id).toLowerCase());
+            if (!savedRecord) {
+                throw new Error("Employee profile was not persisted");
+            }
+            return savedRecord;
+        }
         if (window.DataTable && DataTable.ext) {
             DataTable.ext.errMode = "none";
         }
@@ -2358,7 +2530,7 @@
                 layout: {
                     topStart: {
                         buttons: [
-                            { extend: "colvis", text: "Column visibility" },
+                            { extend: "colvis", text: "Column visibility", collectionLayout: "fixed", background: false, popoverTitle: "Show or hide columns" },
                             { extend: "copyHtml5", text: "Copy", title: exportTitle, exportOptions: { columns: ":visible:not(:last-child)" } },
                             { extend: "excelHtml5", text: "Excel", title: exportTitle, exportOptions: { columns: ":visible:not(:last-child)" } },
                             { extend: "pdfHtml5", text: "PDF", title: exportTitle, exportOptions: { columns: ":visible:not(:last-child)" } },
@@ -2709,7 +2881,7 @@
                 layout: {
                     topStart: {
                         buttons: [
-                            { extend: "colvis", text: "Column visibility" },
+                            { extend: "colvis", text: "Column visibility", collectionLayout: "fixed", background: false, popoverTitle: "Show or hide columns" },
                             { extend: "copyHtml5", text: "Copy", title: "Comprehensive Report", exportOptions: { columns: ":visible" } },
                             { extend: "excelHtml5", text: "Excel", title: "Comprehensive Report", exportOptions: { columns: ":visible" } },
                             { extend: "pdfHtml5", text: "PDF", title: "Comprehensive Report", exportOptions: { columns: ":visible" } },
@@ -2870,6 +3042,12 @@
     
 
     
+
+    
+
+    
+
+    
 <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head><body>${summaryHtml}</body></html>`);
@@ -2913,24 +3091,29 @@
             });
         }
         function writeDatabaseRecord(storeName, valueObject) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 const txn = indexedDatabasePointer.transaction(storeName, "readwrite");
                 txn.objectStore(storeName).put(valueObject);
                 txn.oncomplete = () => resolve();
+                txn.onerror = () => reject(txn.error || new Error(`Failed to write to ${storeName}`));
+                txn.onabort = () => reject(txn.error || new Error(`Write aborted for ${storeName}`));
             });
         }
         function deleteDatabaseRecord(storeName, keyId) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 const txn = indexedDatabasePointer.transaction(storeName, "readwrite");
                 txn.objectStore(storeName).delete(keyId);
                 txn.oncomplete = () => resolve();
+                txn.onerror = () => reject(txn.error || new Error(`Failed to delete from ${storeName}`));
+                txn.onabort = () => reject(txn.error || new Error(`Delete aborted for ${storeName}`));
             });
         }
         function readAllDatabaseRecords(storeName) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 const txn = indexedDatabasePointer.transaction(storeName, "readonly");
                 const req = txn.objectStore(storeName).getAll();
                 req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => reject(req.error || new Error(`Failed to read from ${storeName}`));
             });
         }
         function readConfigKey(key) {
@@ -3006,12 +3189,13 @@
             const correctPasswordString = await readConfigKey("master_password");
             if (inputString === correctPasswordString) {
                 isDashboardAuthenticatedState = true;
+                writeSessionState({ isAdminAuthenticated: true });
                 ui.authGate.style.display = "none";
                 document.getElementById('admin-panel-content').style.display = "flex";
                 ui.passInput.value = "";
                 document.getElementById('show-pass-check').checked = false;
                 ui.passInput.type = "password";
-                switchSubTab('reports');
+                switchSubTab(currentAdminSubTab || 'reports');
                 triggerToast("Authentication Signature Verified", "success");
                 AudioEngine.play('success');
             } else {
@@ -3025,6 +3209,7 @@
         }
         function logoutAdminGate() {
             isDashboardAuthenticatedState = false;
+            writeSessionState({ isAdminAuthenticated: false });
             stopEnrollmentCamera();
             ui.authGate.style.display = "flex";
             document.getElementById('admin-panel-content').style.display = "none";
@@ -3977,7 +4162,7 @@
             const standardArrayPayload = Array.from(result.descriptor);
             const targetStatusString = document.getElementById('reg-employee-status').value;
             const originalRecord = existing.find(e => e.id === currentEditingEmployeeId);
-            await writeDatabaseRecord("employees", {
+            await saveEmployeeRecordAndVerify({
                 id: targetIdString,
                 name: targetLabelString,
                 descriptor: standardArrayPayload,
@@ -4014,11 +4199,17 @@
         }
         async function renderAdministrativeEmployeeDirectoryTable() {
             if (!isDashboardAuthenticatedState) return;
+            destroyDataTableIfActive("#employee-directory-table");
+            directoryDataTable = null;
             const listing = await readAllDatabaseRecords("employees");
             const searchQuery = document.getElementById('emp-search-name').value.toLowerCase().trim();
             const deptQuery = document.getElementById('emp-filter-dept').value;
             filteredEmpList = listing.filter(emp => {
-                if (searchQuery && !emp.name.toLowerCase().includes(searchQuery) && !emp.id.toLowerCase().includes(searchQuery) && !emp.role.toLowerCase().includes(searchQuery) && !emp.email.toLowerCase().includes(searchQuery)) return false;
+                const empName = (emp.name || "").toLowerCase();
+                const empId = (emp.id || "").toLowerCase();
+                const empRole = (emp.role || "").toLowerCase();
+                const empEmail = (emp.email || "").toLowerCase();
+                if (searchQuery && !empName.includes(searchQuery) && !empId.includes(searchQuery) && !empRole.includes(searchQuery) && !empEmail.includes(searchQuery)) return false;
                 if (deptQuery !== "all" && emp.department !== deptQuery) return false;
                 return true;
             });
@@ -4453,7 +4644,7 @@
                     const standardArrayPayload = Array.from(result.descriptor);
                     const targetStatus = document.getElementById('reg-employee-status').value;
                     const originalRecord = existing.find(e => e.id === currentEditingEmployeeId);
-                    await writeDatabaseRecord("employees", {
+                    await saveEmployeeRecordAndVerify({
                         id: targetId,
                         name: targetName,
                         descriptor: standardArrayPayload,
@@ -4702,7 +4893,7 @@
             }
             const originalRecord = existing.find(e => e.id === currentEditingEmployeeId);
             if (!originalRecord) return;
-            await writeDatabaseRecord("employees", {
+            await saveEmployeeRecordAndVerify({
                 id: targetIdString,
                 name: targetLabelString,
                 descriptor: originalRecord.descriptor,
@@ -4731,7 +4922,7 @@
             if (!emp) return;
             const newStatus = emp.status === "Banned" ? "Active" : "Banned";
             emp.status = newStatus;
-            await writeDatabaseRecord("employees", emp);
+            await saveEmployeeRecordAndVerify(emp);
             await rebuildComputationalMatchingGraph();
             await renderAdministrativeEmployeeDirectoryTable();
             populateManualOverrideDropdown();
@@ -4911,7 +5102,7 @@
                 `;
             });
             chartContainer.innerHTML = `
-                <svg viewBox="0 0 440 160" width="100%" height="160" style="font-family: var(--font-family);">
+                <svg viewBox="0 0 440 160" width="100%" height="100%" preserveAspectRatio="none" style="font-family: var(--font-family);">
                     <line x1="25" y1="20" x2="420" y2="20" stroke="var(--border)" stroke-width="1" />
                     <line x1="25" y1="75" x2="420" y2="75" stroke="var(--border)" stroke-width="1" />
                     <line x1="25" y1="130" x2="420" y2="130" stroke="var(--muted-light)" stroke-width="1" />
@@ -4926,9 +5117,20 @@
             const canvas = document.getElementById('dept-canvas');
             const legend = document.getElementById('dept-legend');
             if (!canvas || !legend) return;
+            const parentWidth = canvas.parentElement ? canvas.parentElement.clientWidth : 220;
+            const size = Math.max(180, Math.min(340, parentWidth - 4));
+            const pixelRatio = window.devicePixelRatio || 1;
+            canvas.width = Math.floor(size * pixelRatio);
+            canvas.height = Math.floor(size * pixelRatio);
+            canvas.style.width = `${size}px`;
+            canvas.style.height = `${size}px`;
             const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+            ctx.clearRect(0, 0, size, size);
             legend.innerHTML = "";
+            const center = size / 2;
+            const outerRadius = Math.max(58, (size / 2) - 12);
+            const innerRadius = Math.max(34, outerRadius * 0.58);
             const presentTodayNames = new Set(logsToday.filter(l => l.type === "Check-In").map(l => l.empId));
             const deptCounts = {};
             presentTodayNames.forEach(empId => {
@@ -4948,11 +5150,11 @@
             if (total === 0) {
                 ctx.fillStyle = borderCol;
                 ctx.beginPath();
-                ctx.arc(70, 70, 60, 0, Math.PI * 2);
+                ctx.arc(center, center, outerRadius, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.fillStyle = panelCol;
                 ctx.beginPath();
-                ctx.arc(70, 70, 40, 0, Math.PI * 2);
+                ctx.arc(center, center, innerRadius, 0, Math.PI * 2);
                 ctx.fill();
                 legend.innerHTML = '<span style="color:var(--muted)">0 Checked-in today</span>';
                 return;
@@ -4966,28 +5168,28 @@
                 const color = colors[idx % colors.length];
                 ctx.fillStyle = color;
                 ctx.beginPath();
-                ctx.moveTo(70, 70);
-                ctx.arc(70, 70, 60, startAngle, startAngle + sliceAngle);
+                ctx.moveTo(center, center);
+                ctx.arc(center, center, outerRadius, startAngle, startAngle + sliceAngle);
                 ctx.closePath();
                 ctx.fill();
                 startAngle += sliceAngle;
                 const div = document.createElement('div');
                 div.style.display = 'flex';
                 div.style.alignItems = 'center';
-                div.style.gap = '6px';
+                div.style.gap = '8px';
                 div.innerHTML = `<span style="width:8px; height:8px; background:${color}; border-radius:50%;"></span>
                                  <span>${key}: <strong>${count}</strong></span>`;
                 legend.appendChild(div);
             });
             ctx.fillStyle = panelCol;
             ctx.beginPath();
-            ctx.arc(70, 70, 36, 0, Math.PI * 2);
+            ctx.arc(center, center, innerRadius * 0.9, 0, Math.PI * 2);
             ctx.fill();
             ctx.fillStyle = textCol;
-            ctx.font = 'bold 12px sans-serif';
+            ctx.font = '700 13px sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(total, 70, 70);
+            ctx.fillText(total, center, center);
         }
         function drawMonthlyContributionHeatmap(logs) {
             const container = document.getElementById('heatmap-container');
@@ -5015,9 +5217,7 @@
                 grid.appendChild(div);
             }
             const label = document.createElement('div');
-            label.style.fontSize = '10px';
-            label.style.color = 'var(--muted)';
-            label.style.textAlign = 'center';
+            label.className = 'heatmap-caption';
             label.innerText = "Log volume for past 28 active operational days";
             container.appendChild(grid);
             container.appendChild(label);
@@ -5194,6 +5394,20 @@
             } else if (targetViewModeString === 'monitor') {
                 document.getElementById('view-monitor').classList.add('active');
                 document.getElementById('nav-monitor').classList.add('active');
+                if (!monitorWarningShown) {
+                    monitorWarningShown = true;
+                    const warningText = "Security Monitor uses continuous camera processing and can be memory intensive. Use a system with sufficient RAM and CPU for stable performance.";
+                    if (window.Swal && typeof window.Swal.fire === 'function') {
+                        window.Swal.fire({
+                            title: "Performance Notice",
+                            text: warningText,
+                            icon: "warning",
+                            confirmButtonText: "Understood"
+                        });
+                    } else {
+                        alert(warningText);
+                    }
+                }
             } else {
                 document.getElementById('view-admin').classList.add('active');
                 document.getElementById('nav-admin').classList.add('active');
@@ -5470,6 +5684,16 @@
             await renderAnalyticsDashboard();
             await loadAttendanceLedgingTicker();
         }
+        window.addEventListener('resize', () => {
+            clearTimeout(dashboardResizeTimer);
+            dashboardResizeTimer = setTimeout(() => {
+                const reportsSection = document.getElementById('sub-view-reports');
+                const adminView = document.getElementById('view-admin');
+                if (reportsSection && reportsSection.style.display === "flex" && adminView && adminView.classList.contains('active')) {
+                    renderAnalyticsDashboard();
+                }
+            }, 180);
+        });
         document.addEventListener('visibilitychange', async () => {
             if (document.visibilityState === 'visible' && wakeLockEnabled) {
                 await requestWakeLock();
@@ -5484,6 +5708,9 @@
         window.onload = compileApplicationCoreSubsystems;
     </script>
     
+
+
+
 
 
 
