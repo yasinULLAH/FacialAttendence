@@ -933,6 +933,8 @@
     
 
     
+
+    
 <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
@@ -1908,10 +1910,12 @@
         let motionRecordingStartAt = null;
         let motionLastDetectedAt = 0;
         let motionClipRecords = [];
+        let isMotionCheckProcessing = false;
 
         let manualRecordingInstance = null;
         let manualRecordingChunks = [];
         let manualRecordingStartAt = null;
+        let isInferenceProcessing = false;
 
         let wakeLockHandle = null;
         let wakeLockEnabled = false;
@@ -2224,8 +2228,8 @@
             motionPrevFrameData = null;
             if (!motionSampleCanvas) {
                 motionSampleCanvas = document.createElement('canvas');
-                motionSampleCanvas.width = 160;
-                motionSampleCanvas.height = 120;
+                motionSampleCanvas.width = 96;
+                motionSampleCanvas.height = 72;
                 motionSampleCtx = motionSampleCanvas.getContext('2d', { willReadFrequently: true });
             }
             motionDetectionIntervalId = setInterval(async () => {
@@ -2236,42 +2240,50 @@
                 if (manualRecordingInstance) {
                     return;
                 }
-
-                motionSampleCtx.drawImage(ui.video, 0, 0, motionSampleCanvas.width, motionSampleCanvas.height);
-                const currentFrame = motionSampleCtx.getImageData(0, 0, motionSampleCanvas.width, motionSampleCanvas.height).data;
-
-                if (!motionPrevFrameData) {
-                    motionPrevFrameData = currentFrame;
+                if (isMotionCheckProcessing) {
                     return;
                 }
+                isMotionCheckProcessing = true;
 
-                let changed = 0;
-                let compared = 0;
-                for (let i = 0; i < currentFrame.length; i += 16) {
-                    const diffR = Math.abs(currentFrame[i] - motionPrevFrameData[i]);
-                    const diffG = Math.abs(currentFrame[i + 1] - motionPrevFrameData[i + 1]);
-                    const diffB = Math.abs(currentFrame[i + 2] - motionPrevFrameData[i + 2]);
-                    const avg = (diffR + diffG + diffB) / 3;
-                    if (avg > 26) changed++;
-                    compared++;
-                }
-                motionPrevFrameData = currentFrame;
-                const motionPercent = compared ? (changed / compared) * 100 : 0;
-                const threshold = Math.max(0.5, Number(motionAggressiveness) || 3);
-                const nowTs = Date.now();
+                try {
+                    motionSampleCtx.drawImage(ui.video, 0, 0, motionSampleCanvas.width, motionSampleCanvas.height);
+                    const currentFrame = motionSampleCtx.getImageData(0, 0, motionSampleCanvas.width, motionSampleCanvas.height).data;
 
-                if (motionPercent >= threshold) {
-                    motionLastDetectedAt = nowTs;
-                    if (!motionRecordingInstance) {
-                        await startMotionRecordingSession();
+                    if (!motionPrevFrameData) {
+                        motionPrevFrameData = currentFrame;
+                        return;
                     }
-                } else if (motionRecordingInstance) {
-                    const idleMs = Math.max(1, Number(motionIdleSeconds) || 2) * 1000;
-                    if (nowTs - motionLastDetectedAt >= idleMs) {
-                        stopMotionRecordingSession();
+
+                    let changed = 0;
+                    let compared = 0;
+                    for (let i = 0; i < currentFrame.length; i += 24) {
+                        const diffR = Math.abs(currentFrame[i] - motionPrevFrameData[i]);
+                        const diffG = Math.abs(currentFrame[i + 1] - motionPrevFrameData[i + 1]);
+                        const diffB = Math.abs(currentFrame[i + 2] - motionPrevFrameData[i + 2]);
+                        const avg = (diffR + diffG + diffB) / 3;
+                        if (avg > 26) changed++;
+                        compared++;
                     }
+                    motionPrevFrameData = currentFrame;
+                    const motionPercent = compared ? (changed / compared) * 100 : 0;
+                    const threshold = Math.max(0.5, Number(motionAggressiveness) || 3);
+                    const nowTs = Date.now();
+
+                    if (motionPercent >= threshold) {
+                        motionLastDetectedAt = nowTs;
+                        if (!motionRecordingInstance) {
+                            await startMotionRecordingSession();
+                        }
+                    } else if (motionRecordingInstance) {
+                        const idleMs = Math.max(1, Number(motionIdleSeconds) || 2) * 1000;
+                        if (nowTs - motionLastDetectedAt >= idleMs) {
+                            stopMotionRecordingSession();
+                        }
+                    }
+                } finally {
+                    isMotionCheckProcessing = false;
                 }
-            }, 350);
+            }, 650);
         }
 
         function stopMotionTrackingLoop() {
@@ -3307,96 +3319,105 @@
         function initiateContinuousInferenceEngineLoop() {
             if (inferenceIntervalId) clearInterval(inferenceIntervalId);
             const renderResolutionDimensions = { width: ui.canvas.width, height: ui.canvas.height };
+            const intervalMs = (motionTrackingEnabled || manualRecordingInstance || motionRecordingInstance) ? 650 : 300;
             inferenceIntervalId = setInterval(async () => {
                 if (!isCameraActive || isCameraPaused) return;
-                const rawInferenceFrameDetections = await faceapi.detectAllFaces(ui.video, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.4 }))
-                    .withFaceLandmarks()
-                    .withFaceDescriptors();
-                const parsedResultsCollection = faceapi.resizeResults(rawInferenceFrameDetections, renderResolutionDimensions);
+                if (isInferenceProcessing) return;
+                isInferenceProcessing = true;
+                try {
+                    const rawInferenceFrameDetections = await faceapi.detectAllFaces(ui.video, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.4 }))
+                        .withFaceLandmarks()
+                        .withFaceDescriptors();
+                    const parsedResultsCollection = faceapi.resizeResults(rawInferenceFrameDetections, renderResolutionDimensions);
 
-                if (!applicationFaceMatcherRuntime) {
-                    let tempDetections = [];
-                    parsedResultsCollection.forEach(det => {
-                        tempDetections.push({
-                            box: det.detection.box,
-                            label: "Register profiles inside Admin Terminal to scan",
-                            color: "rgba(100, 116, 139, 0.9)"
+                    if (!applicationFaceMatcherRuntime) {
+                        let tempDetections = [];
+                        parsedResultsCollection.forEach(det => {
+                            tempDetections.push({
+                                box: det.detection.box,
+                                label: "Register profiles inside Admin Terminal to scan",
+                                color: "rgba(100, 116, 139, 0.9)"
+                            });
                         });
-                    });
-                    latestFaceDetections = tempDetections;
-                    return;
-                }
+                        latestFaceDetections = tempDetections;
+                        return;
+                    }
 
-                let tempDetections = [];
-                parsedResultsCollection.forEach(faceObject => {
-                    const matchScoreResolution = applicationFaceMatcherRuntime.findBestMatch(faceObject.descriptor);
-                    const assignedStringId = matchScoreResolution.label;
-                    let outputInterfaceDisplayString = "Unregistered Profile";
-                    let activeHexChromeStrokeColor = "rgba(239, 68, 68, 0.9)";
-                    if (assignedStringId !== 'unknown') {
-                        const emp = precompiledEmployeesList.find(e => e.id === assignedStringId);
-                        const displayName = emp ? emp.name : assignedStringId;
-                        const displayDept = emp ? ` (${emp.department})` : "";
-                        if (emp && emp.status === "Banned") {
-                            outputInterfaceDisplayString = `${displayName} - ACCESS SUSPENDED`;
-                            activeHexChromeStrokeColor = "rgba(239, 68, 68, 0.9)";
-                        } else {
-                            if (!livenessTrackingCache.has(assignedStringId)) {
-                                const targetChallenge = Math.random() > 0.5 ? "left" : "right";
-                                livenessTrackingCache.set(assignedStringId, {
-                                    blinkPassed: false,
-                                    turnPassed: false,
-                                    challenge: targetChallenge
-                                });
-                            }
-                            const tracker = livenessTrackingCache.get(assignedStringId);
-                            const meanEar = (processEyeAspectRatioMetric(faceObject.landmarks.getLeftEye()) + processEyeAspectRatioMetric(faceObject.landmarks.getRightEye())) / 2;
-                            if (meanEar < 0.23) {
-                                tracker.blinkPassed = true;
-                            }
-                            const symmetry = calculateHeadTurnRatio(faceObject.landmarks);
-                            if (tracker.challenge === "left" && symmetry < 0.6) {
-                                tracker.turnPassed = true;
-                            } else if (tracker.challenge === "right" && symmetry > 1.6) {
-                                tracker.turnPassed = true;
-                            }
-
-                            if (livenessChallengeMode === "none") {
-                                outputInterfaceDisplayString = `${displayName}${displayDept} - Verified`;
-                                activeHexChromeStrokeColor = "rgba(16, 185, 129, 0.9)";
-                                registerVerifiedAttendanceEvent(assignedStringId);
-                            } else if (livenessChallengeMode === "blink") {
-                                if (tracker.blinkPassed) {
-                                    outputInterfaceDisplayString = `${displayName}${displayDept} - Verified`;
-                                    activeHexChromeStrokeColor = "rgba(16, 185, 129, 0.9)";
-                                    registerVerifiedAttendanceEvent(assignedStringId);
-                                } else {
-                                    outputInterfaceDisplayString = `${displayName} - Please Blink Eyes`;
-                                    activeHexChromeStrokeColor = "rgba(245, 158, 11, 0.9)";
+                    let tempDetections = [];
+                    parsedResultsCollection.forEach(faceObject => {
+                        const matchScoreResolution = applicationFaceMatcherRuntime.findBestMatch(faceObject.descriptor);
+                        const assignedStringId = matchScoreResolution.label;
+                        let outputInterfaceDisplayString = "Unregistered Profile";
+                        let activeHexChromeStrokeColor = "rgba(239, 68, 68, 0.9)";
+                        if (assignedStringId !== 'unknown') {
+                            const emp = precompiledEmployeesList.find(e => e.id === assignedStringId);
+                            const displayName = emp ? emp.name : assignedStringId;
+                            const displayDept = emp ? ` (${emp.department})` : "";
+                            if (emp && emp.status === "Banned") {
+                                outputInterfaceDisplayString = `${displayName} - ACCESS SUSPENDED`;
+                                activeHexChromeStrokeColor = "rgba(239, 68, 68, 0.9)";
+                            } else {
+                                if (!livenessTrackingCache.has(assignedStringId)) {
+                                    const targetChallenge = Math.random() > 0.5 ? "left" : "right";
+                                    livenessTrackingCache.set(assignedStringId, {
+                                        blinkPassed: false,
+                                        turnPassed: false,
+                                        challenge: targetChallenge
+                                    });
                                 }
-                            } else if (livenessChallengeMode === "challenge") {
-                                if (tracker.blinkPassed && tracker.turnPassed) {
+                                const tracker = livenessTrackingCache.get(assignedStringId);
+                                const meanEar = (processEyeAspectRatioMetric(faceObject.landmarks.getLeftEye()) + processEyeAspectRatioMetric(faceObject.landmarks.getRightEye())) / 2;
+                                if (meanEar < 0.23) {
+                                    tracker.blinkPassed = true;
+                                }
+                                const symmetry = calculateHeadTurnRatio(faceObject.landmarks);
+                                if (tracker.challenge === "left" && symmetry < 0.6) {
+                                    tracker.turnPassed = true;
+                                } else if (tracker.challenge === "right" && symmetry > 1.6) {
+                                    tracker.turnPassed = true;
+                                }
+
+                                if (livenessChallengeMode === "none") {
                                     outputInterfaceDisplayString = `${displayName}${displayDept} - Verified`;
                                     activeHexChromeStrokeColor = "rgba(16, 185, 129, 0.9)";
                                     registerVerifiedAttendanceEvent(assignedStringId);
-                                } else if (!tracker.blinkPassed) {
-                                    outputInterfaceDisplayString = `${displayName} - Blink Eyes First`;
-                                    activeHexChromeStrokeColor = "rgba(245, 158, 11, 0.9)";
-                                } else {
-                                    outputInterfaceDisplayString = `${displayName} - Turn Head ${tracker.challenge.toUpperCase()}`;
-                                    activeHexChromeStrokeColor = "rgba(245, 158, 11, 0.9)";
+                                } else if (livenessChallengeMode === "blink") {
+                                    if (tracker.blinkPassed) {
+                                        outputInterfaceDisplayString = `${displayName}${displayDept} - Verified`;
+                                        activeHexChromeStrokeColor = "rgba(16, 185, 129, 0.9)";
+                                        registerVerifiedAttendanceEvent(assignedStringId);
+                                    } else {
+                                        outputInterfaceDisplayString = `${displayName} - Please Blink Eyes`;
+                                        activeHexChromeStrokeColor = "rgba(245, 158, 11, 0.9)";
+                                    }
+                                } else if (livenessChallengeMode === "challenge") {
+                                    if (tracker.blinkPassed && tracker.turnPassed) {
+                                        outputInterfaceDisplayString = `${displayName}${displayDept} - Verified`;
+                                        activeHexChromeStrokeColor = "rgba(16, 185, 129, 0.9)";
+                                        registerVerifiedAttendanceEvent(assignedStringId);
+                                    } else if (!tracker.blinkPassed) {
+                                        outputInterfaceDisplayString = `${displayName} - Blink Eyes First`;
+                                        activeHexChromeStrokeColor = "rgba(245, 158, 11, 0.9)";
+                                    } else {
+                                        outputInterfaceDisplayString = `${displayName} - Turn Head ${tracker.challenge.toUpperCase()}`;
+                                        activeHexChromeStrokeColor = "rgba(245, 158, 11, 0.9)";
+                                    }
                                 }
                             }
                         }
-                    }
-                    tempDetections.push({
-                        box: faceObject.detection.box,
-                        label: outputInterfaceDisplayString,
-                        color: activeHexChromeStrokeColor
+                        tempDetections.push({
+                            box: faceObject.detection.box,
+                            label: outputInterfaceDisplayString,
+                            color: activeHexChromeStrokeColor
+                        });
                     });
-                });
-                latestFaceDetections = tempDetections;
-            }, 250);
+                    latestFaceDetections = tempDetections;
+                } catch (_err) {
+                    // suppress intermittent inference frame errors
+                } finally {
+                    isInferenceProcessing = false;
+                }
+            }, intervalMs);
         }
 
         async function registerVerifiedAttendanceEvent(empId) {
@@ -4699,10 +4720,18 @@
             }
         });
 
+        window.addEventListener('beforeunload', (event) => {
+            if (manualRecordingInstance || motionRecordingInstance || motionClipRecords.length > 0) {
+                event.preventDefault();
+                event.returnValue = "Recording/clips are in temporary memory. Leaving now may lose unsaved clips.";
+            }
+        });
+
         window.onload = compileApplicationCoreSubsystems;
 
         
     </script>
+
 
 
 

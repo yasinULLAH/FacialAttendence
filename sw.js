@@ -61,11 +61,11 @@ if (workbox) {
     },
     {
         "url": "index.html",
-        "revision": "d1f74fe2ca12214f98df16c56f3060ec"
+        "revision": "663b4434ff30b03f2594ea318180f5fc"
     },
     {
         "url": "index.php",
-        "revision": "411d95925e16336abf50a8eb28766b88"
+        "revision": "5e9c6d668c1927b3a137d668af4f2c0f"
     },
     {
         "url": "manifest.json",
@@ -77,7 +77,7 @@ if (workbox) {
     },
     {
         "url": "offline.html",
-        "revision": "32f8cd42dbbe5dcb561dae06182f8687"
+        "revision": "9fb934bd1ca82461e56951a76c8612f1"
     },
     {
         "url": "pwa-register.js",
@@ -85,7 +85,7 @@ if (workbox) {
     },
     {
         "url": "sw.js",
-        "revision": "1a48f0330acc383b6febf05ca249b04a"
+        "revision": "9af12d3c3a09c011cd9fedc9dca94e61"
     }
 ]);
 
