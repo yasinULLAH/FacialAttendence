@@ -298,8 +298,8 @@ if (isset($_GET['action'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#4f46e5">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    
+    
     <link rel="apple-touch-icon" href="icon.svg">
     <title>Aura Facial Recognition Attendance Suite</title>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
@@ -1211,6 +1211,10 @@ if (isset($_GET['action'])) {
             }
         }
     </style>
+
+    
+<link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 
 <body>
@@ -3498,14 +3502,10 @@ if (isset($_GET['action'])) {
 
         window.onload = compileApplicationCoreSubsystems;
 
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('SW success:', reg.scope))
-                    .catch(err => console.error('SW fail:', err));
-            });
-        }
+        
     </script>
+
+<script type="module" src="./pwa-register.js"></script>
 </body>
 
 </html>
