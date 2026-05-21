@@ -405,6 +405,7 @@
             z-index: 10;
             padding: 24px;
             text-align: center;
+            padding-top: 0px;
         }
 
         .placeholder-icon {
@@ -3237,6 +3238,8 @@
                 ${comprehensiveReportRows.length > 200 ? `<p style="font-size:11px;">Showing first 200 rows in print preview. Use DataTable PDF/Excel/CSV for full exports.</p>` : ''}
             `;
             printWindow.document.write(`<html><head><title>Comprehensive Report</title>
+
+    
 
     
 
@@ -6651,6 +6654,7 @@
         window.onload = compileApplicationCoreSubsystems;
     </script>
     
+
 
 
 
