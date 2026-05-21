@@ -338,11 +338,15 @@
         .camera-container {
             position: relative;
             width: 100%;
-            padding-top: 75%;
+            aspect-ratio: 4/3;
+            height: auto;
             background-color: #020617;
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         video {
@@ -1406,6 +1410,7 @@
                             </button>
                         </div>
                         <div class="camera-controls-bar">
+                            <select id="kiosk-camera-select" class="control-btn" style="max-width: 120px; text-overflow: ellipsis; border: 1px solid var(--border); background: var(--panel);" onchange="restartCameraStream('kiosk')"></select>
                             <button id="btn-cam-start" class="control-btn control-btn-start"
                                 onclick="startCameraStream()" title="Start/Resume Camera">
                                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -1904,7 +1909,7 @@
                             <div class="input-group" style="margin-top: 4px;">
                                 <label>Facial Recognition Enrollment Preview</label>
                                 <div class="camera-container"
-                                    style="padding-top: 56.25%; margin-top: 4px; border-radius: 6px;">
+                                    style="aspect-ratio: 16/9; height: auto; margin-top: 4px; border-radius: 6px;">
                                     <video id="webcam-enroll-stream" autoplay loop muted playsinline></video>
                                     <div id="enroll-camera-placeholder" class="camera-placeholder-overlay"
                                         style="background: var(--bg);">
@@ -1915,6 +1920,7 @@
                                         <button class="btn btn-secondary" onclick="startEnrollmentCamera()"
                                             style="padding: 4px 10px; font-size: 11px; margin-top: 4px;">Start
                                             Preview</button>
+                                        <select id="enroll-camera-select" style="margin-top: 4px; max-width: 140px; font-size: 11px; padding: 4px; border-radius: 4px; border: 1px solid var(--border);" onchange="restartCameraStream('enroll')"></select>
                                     </div>
                                 </div>
                             </div>
@@ -3190,6 +3196,8 @@
     
 
     
+
+    
 <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head><body>${summaryHtml}</body></html>`);
@@ -3428,15 +3436,23 @@
             }
             ui.banner.innerText = "Starting hardware scanning array connections...";
             try {
+                const selectEl = document.getElementById('kiosk-camera-select');
+                const videoConstraints = { width: { ideal: 640 }, height: { ideal: 480 } };
+                if (selectEl && selectEl.value) {
+                    videoConstraints.deviceId = { exact: selectEl.value };
+                } else {
+                    videoConstraints.facingMode = "user";
+                }
                 const captureStream = await navigator.mediaDevices.getUserMedia({
                     audio: false,
-                    video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }
+                    video: videoConstraints
                 });
                 ui.video.srcObject = captureStream;
                 ui.video.onloadedmetadata = () => {
                     ui.video.play().then(async () => {
                         isCameraActive = true;
                         isCameraPaused = false;
+                        populateCameraDevices('kiosk-camera-select');
                         executeCanvasBoundingSynchronization();
                         ui.banner.innerText = "Scanner online. Position face in scanner.";
                         initiateContinuousInferenceEngineLoop();
@@ -3755,14 +3771,22 @@
         async function startEnrollmentCamera() {
             if (isEnrollCameraActive) return;
             try {
+                const selectEl = document.getElementById('enroll-camera-select');
+                const videoConstraints = { width: { ideal: 640 }, height: { ideal: 480 } };
+                if (selectEl && selectEl.value) {
+                    videoConstraints.deviceId = { exact: selectEl.value };
+                } else {
+                    videoConstraints.facingMode = "user";
+                }
                 const captureStream = await navigator.mediaDevices.getUserMedia({
                     audio: false,
-                    video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }
+                    video: videoConstraints
                 });
                 ui.videoEnroll.srcObject = captureStream;
                 ui.videoEnroll.onloadedmetadata = () => {
                     ui.videoEnroll.play().then(() => {
                         isEnrollCameraActive = true;
+                        populateCameraDevices('enroll-camera-select');
                         ui.enrollPlaceholder.style.opacity = '0';
                         ui.enrollPlaceholder.style.pointerEvents = 'none';
                         ui.captureBtn.disabled = false;
@@ -3772,6 +3796,32 @@
                 };
             } catch (err) {
                 triggerToast("Webcam access failed", "error");
+            }
+        }
+        async function populateCameraDevices(selectId) {
+            const selectEl = document.getElementById(selectId);
+            if (!selectEl) return;
+            const currentVal = selectEl.value;
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            selectEl.innerHTML = '';
+            videoDevices.forEach((device, index) => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.text = device.label || `Camera ${index + 1}`;
+                selectEl.appendChild(option);
+            });
+            if (currentVal && Array.from(selectEl.options).some(opt => opt.value === currentVal)) {
+                selectEl.value = currentVal;
+            }
+        }
+        async function restartCameraStream(type) {
+            if (type === 'kiosk') {
+                stopCameraStream();
+                await startCameraStream();
+            } else if (type === 'enroll') {
+                stopEnrollmentCamera();
+                await startEnrollmentCamera();
             }
         }
         function stopEnrollmentCamera() {
@@ -6200,6 +6250,7 @@
         window.onload = compileApplicationCoreSubsystems;
     </script>
     
+
 
 
 
