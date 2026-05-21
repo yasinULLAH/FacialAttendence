@@ -2699,6 +2699,8 @@
         let precompiledProfilesRegistry = [];
         let precompiledEmployeesList = [];
         const transactionThrottleMap = new Map();
+        const recognitionPresenceMap = new Map();
+        const RECOGNITION_PRESENCE_RESET_MS = 15000;
         let livenessChallengeMode = "none";
         const livenessTrackingCache = new Map();
         let isDashboardAuthenticatedState = false;
@@ -3313,6 +3315,8 @@
     
 
     
+
+    
 <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head><body>${summaryHtml}</body></html>`);
@@ -3653,6 +3657,7 @@
                 stopManualContinuousRecording(true, false);
                 isCameraActive = false;
                 isCameraPaused = false;
+                recognitionPresenceMap.clear();
                 latestFaceDetections = [];
                 updateCameraControlsUI();
                 ui.banner.innerText = "Scanning framework offline.";
@@ -5485,9 +5490,9 @@
             ctx.fillText(label, labelX + textPadding, labelY + 14);
         }
         function startRenderLoop() {
+            const ctx = ui.canvas.getContext('2d');
             function render() {
                 if (isCameraActive && !isCameraPaused) {
-                    const ctx = ui.canvas.getContext('2d');
                     ctx.clearRect(0, 0, ui.canvas.width, ui.canvas.height);
                     scanLinePos += scanLineSpeed * scanLineDirection;
                     if (scanLinePos >= ui.canvas.height) {
@@ -5520,13 +5525,16 @@
         function initiateContinuousInferenceEngineLoop() {
             if (inferenceIntervalId) clearInterval(inferenceIntervalId);
             const renderResolutionDimensions = { width: ui.canvas.width, height: ui.canvas.height };
-            const intervalMs = (motionTrackingEnabled || manualRecordingInstance || motionRecordingInstance) ? 650 : 300;
+            const isLowPowerDevice = typeof navigator !== "undefined" && Number(navigator.hardwareConcurrency || 0) > 0 && Number(navigator.hardwareConcurrency) <= 4;
+            const intervalMs = (motionTrackingEnabled || manualRecordingInstance || motionRecordingInstance)
+                ? (isLowPowerDevice ? 950 : 800)
+                : (isLowPowerDevice ? 700 : 520);
             inferenceIntervalId = setInterval(async () => {
                 if (!isCameraActive || isCameraPaused) return;
                 if (isInferenceProcessing) return;
                 isInferenceProcessing = true;
                 try {
-                    const rawInferenceFrameDetections = await faceapi.detectAllFaces(ui.video, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.4 }))
+                    const rawInferenceFrameDetections = await faceapi.detectAllFaces(ui.video, new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.45 }))
                         .withFaceLandmarks()
                         .withFaceDescriptors();
                     const parsedResultsCollection = faceapi.resizeResults(rawInferenceFrameDetections, renderResolutionDimensions);
@@ -5619,6 +5627,11 @@
         }
         async function registerVerifiedAttendanceEvent(empId) {
             const timestamp = Date.now();
+            const presence = recognitionPresenceMap.get(empId) || { lastSeenAt: 0 };
+            const timeSinceLastSeen = timestamp - Number(presence.lastSeenAt || 0);
+            presence.lastSeenAt = timestamp;
+            recognitionPresenceMap.set(empId, presence);
+            if (timeSinceLastSeen < RECOGNITION_PRESENCE_RESET_MS) return;
             const suppressionCooldownPeriod = 20000;
             if (transactionThrottleMap.has(empId)) {
                 const historicalTime = transactionThrottleMap.get(empId);
@@ -6925,6 +6938,7 @@
         window.onload = compileApplicationCoreSubsystems;
     </script>
     
+
 
 
 
