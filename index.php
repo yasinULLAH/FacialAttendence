@@ -1,3 +1,296 @@
+<?php
+session_start();
+header("Access-Control-Allow-Origin: *");
+define('DB_HOST', 'localhost');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+define('DB_NAME', 'facial_attendance_db');
+
+try {
+    $pdo = new PDO("mysql:host=" . DB_HOST, DB_USER, DB_PASS);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->exec("CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` CHARACTER SET utf8 COLLATE utf8_general_ci");
+} catch (PDOException $e) {
+    if (isset($_GET['action'])) {
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);
+        exit;
+    }
+}
+
+$db = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
+$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+$db->exec("CREATE TABLE IF NOT EXISTS system_config (
+    cfg_key VARCHAR(100) PRIMARY KEY,
+    cfg_val TEXT
+) ENGINE=InnoDB");
+
+$db->exec("CREATE TABLE IF NOT EXISTS departments (
+    name VARCHAR(100) PRIMARY KEY
+) ENGINE=InnoDB");
+
+$db->exec("CREATE TABLE IF NOT EXISTS holidays (
+    date DATE PRIMARY KEY,
+    name VARCHAR(100)
+) ENGINE=InnoDB");
+
+$db->exec("CREATE TABLE IF NOT EXISTS employees (
+    id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(100),
+    descriptor TEXT,
+    department VARCHAR(100),
+    role VARCHAR(100),
+    email VARCHAR(100),
+    phone VARCHAR(50),
+    status VARCHAR(20),
+    joined BIGINT
+) ENGINE=InnoDB");
+
+$db->exec("CREATE TABLE IF NOT EXISTS attendance_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    empId VARCHAR(50),
+    name VARCHAR(100),
+    department VARCHAR(100),
+    role VARCHAR(100),
+    timestamp BIGINT,
+    dateString VARCHAR(20),
+    timeString VARCHAR(20),
+    type VARCHAR(20),
+    status VARCHAR(20)
+) ENGINE=InnoDB");
+
+$stmt = $db->prepare("SELECT COUNT(*) FROM system_config WHERE cfg_key = 'master_password'");
+$stmt->execute();
+if ($stmt->fetchColumn() == 0) {
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('master_password', 'admin1234')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('liveness_level', 'none')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('theme_color', 'indigo')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('theme_mode', 'light')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('shift_start_time', '09:00')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('shift_grace_minutes', '15')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('weekend_days', '[0, 6]')")->execute();
+
+    $defaults = ["Administration", "Engineering", "Sales", "Marketing", "Human Resources", "Finance", "Operations"];
+    foreach ($defaults as $d) {
+        $db->prepare("INSERT IGNORE INTO departments (name) VALUES (?)")->execute([$d]);
+    }
+}
+
+if (isset($_GET['action'])) {
+    header('Content-Type: application/json');
+    $action = $_GET['action'];
+
+    if ($action === 'get_config') {
+        $stmt = $db->query("SELECT * FROM system_config");
+        $config = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $config[$row['cfg_key']] = $row['cfg_val'];
+        }
+        echo json_encode($config);
+        exit;
+    }
+
+    if ($action === 'save_config') {
+        $data = json_decode(file_get_contents('php://input'), true);
+        if ($data) {
+            foreach ($data as $key => $val) {
+                if ($key === 'weekend_days' && is_array($val)) {
+                    $val = json_encode($val);
+                }
+                $stmt = $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES (?, ?) ON DUPLICATE KEY UPDATE cfg_val = ?");
+                $stmt->execute([$key, $val, $val]);
+            }
+            echo json_encode(['success' => true]);
+        }
+        exit;
+    }
+
+    if ($action === 'verify_login') {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $pass = isset($data['password']) ? $data['password'] : '';
+        $stmt = $db->prepare("SELECT cfg_val FROM system_config WHERE cfg_key = 'master_password'");
+        $stmt->execute();
+        $real = $stmt->fetchColumn();
+        if ($pass === $real) {
+            $_SESSION['admin_authenticated'] = true;
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false]);
+        }
+        exit;
+    }
+
+    if ($action === 'check_session') {
+        echo json_encode(['authenticated' => isset($_SESSION['admin_authenticated'])]);
+        exit;
+    }
+
+    if ($action === 'logout') {
+        unset($_SESSION['admin_authenticated']);
+        echo json_encode(['success' => true]);
+        exit;
+    }
+
+    if ($action === 'get_employees') {
+        $stmt = $db->query("SELECT * FROM employees");
+        $emps = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($emps as &$emp) {
+            $emp['descriptor'] = json_decode($emp['descriptor'], true);
+            $emp['joined'] = (int)$emp['joined'];
+        }
+        echo json_encode($emps);
+        exit;
+    }
+
+    if ($action === 'save_employee') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
+        }
+        $data = json_decode(file_get_contents('php://input'), true);
+        if ($data) {
+            $stmt = $db->prepare("INSERT INTO employees (id, name, descriptor, department, role, email, phone, status, joined) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) 
+                ON DUPLICATE KEY UPDATE name = ?, descriptor = ?, department = ?, role = ?, email = ?, phone = ?, status = ?");
+            $desc = json_encode($data['descriptor']);
+            $stmt->execute([
+                $data['id'], $data['name'], $desc, $data['department'], $data['role'], $data['email'], $data['phone'], $data['status'], $data['joined'],
+                $data['name'], $desc, $data['department'], $data['role'], $data['email'], $data['phone'], $data['status']
+            ]);
+            echo json_encode(['success' => true]);
+        }
+        exit;
+    }
+
+    if ($action === 'delete_employee') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
+        }
+        $id = isset($_GET['id']) ? $_GET['id'] : '';
+        $stmt = $db->prepare("DELETE FROM employees WHERE id = ?");
+        $stmt->execute([$id]);
+        echo json_encode(['success' => true]);
+        exit;
+    }
+
+    if ($action === 'get_logs') {
+        $stmt = $db->query("SELECT * FROM attendance_logs");
+        $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($logs as &$log) {
+            $log['id'] = (int)$log['id'];
+            $log['timestamp'] = (int)$log['timestamp'];
+        }
+        echo json_encode($logs);
+        exit;
+    }
+
+    if ($action === 'save_log') {
+        $data = json_decode(file_get_contents('php://input'), true);
+        if ($data) {
+            $stmt = $db->prepare("INSERT INTO attendance_logs (empId, name, department, role, timestamp, dateString, timeString, type, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $data['empId'], $data['name'], $data['department'], $data['role'], $data['timestamp'], $data['dateString'], $data['timeString'], $data['type'], $data['status']
+            ]);
+            echo json_encode(['success' => true]);
+        }
+        exit;
+    }
+
+    if ($action === 'update_log') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
+        }
+        $data = json_decode(file_get_contents('php://input'), true);
+        if ($data && isset($data['id'])) {
+            $stmt = $db->prepare("UPDATE attendance_logs SET empId = ?, name = ?, department = ?, role = ?, timestamp = ?, dateString = ?, timeString = ?, type = ?, status = ? WHERE id = ?");
+            $stmt->execute([
+                $data['empId'], $data['name'], $data['department'], $data['role'], $data['timestamp'], $data['dateString'], $data['timeString'], $data['type'], $data['status'], $data['id']
+            ]);
+            echo json_encode(['success' => true]);
+        }
+        exit;
+    }
+
+    if ($action === 'delete_log') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
+        }
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $stmt = $db->prepare("DELETE FROM attendance_logs WHERE id = ?");
+        $stmt->execute([$id]);
+        echo json_encode(['success' => true]);
+        exit;
+    }
+
+    if ($action === 'get_departments') {
+        $stmt = $db->query("SELECT * FROM departments");
+        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        exit;
+    }
+
+    if ($action === 'save_department') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
+        }
+        $data = json_decode(file_get_contents('php://input'), true);
+        if ($data && isset($data['name'])) {
+            $stmt = $db->prepare("INSERT IGNORE INTO departments (name) VALUES (?)");
+            $stmt->execute([$data['name']]);
+            echo json_encode(['success' => true]);
+        }
+        exit;
+    }
+
+    if ($action === 'delete_department') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
+        }
+        $name = isset($_GET['name']) ? $_GET['name'] : '';
+        $stmt = $db->prepare("DELETE FROM departments WHERE name = ?");
+        $stmt->execute([$name]);
+        echo json_encode(['success' => true]);
+        exit;
+    }
+
+    if ($action === 'get_holidays') {
+        $stmt = $db->query("SELECT * FROM holidays");
+        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        exit;
+    }
+
+    if ($action === 'save_holiday') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
+        }
+        $data = json_decode(file_get_contents('php://input'), true);
+        if ($data && isset($data['date']) && isset($data['name'])) {
+            $stmt = $db->prepare("INSERT IGNORE INTO holidays (date, name) VALUES (?, ?)");
+            $stmt->execute([$data['date'], $data['name']]);
+            echo json_encode(['success' => true]);
+        }
+        exit;
+    }
+
+    if ($action === 'delete_holiday') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
+        }
+        $date = isset($_GET['date']) ? $_GET['date'] : '';
+        $stmt = $db->prepare("DELETE FROM holidays WHERE date = ?");
+        $stmt->execute([$date]);
+        echo json_encode(['success' => true]);
+        exit;
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -361,7 +654,7 @@
 
         .camera-controls-bar {
             position: absolute;
-            bottom: -2px;
+            bottom: 12px;
             left: 50%;
             transform: translateX(-50%);
             background: var(--panel);
@@ -954,7 +1247,7 @@
         </div>
     </header>
     <main>
-        <div id="system-alert-banner">Initializing System Local Filesystem Core...</div>
+        <div id="system-alert-banner">Initializing System Server Datastore Core...</div>
 
         <div id="view-kiosk" class="view-section active">
             <div class="grid-2">
@@ -1461,6 +1754,75 @@
     <script>
         const CDN_MODELS_PATH = 'https://justadudewhohacks.github.io/face-api.js/models';
 
+        async function readAllDatabaseRecords(storeName) {
+            let act = storeName;
+            if (storeName === 'attendance_logs') act = 'logs';
+            const res = await fetch(`index.php?action=get_${act}`);
+            return await res.json();
+        }
+
+        async function writeDatabaseRecord(storeName, valueObject) {
+            if (storeName === 'system_config') {
+                await writeConfigKey(valueObject.key, valueObject.value);
+                return;
+            }
+            let act = storeName;
+            if (storeName === 'attendance_logs') act = 'log';
+            else if (storeName === 'employees') act = 'employee';
+            else if (storeName === 'departments') act = 'department';
+            else if (storeName === 'holidays') act = 'holiday';
+
+            let method = 'save';
+            if (storeName === 'attendance_logs' && valueObject.id) {
+                method = 'update';
+            }
+
+            const res = await fetch(`index.php?action=${method}_${act}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(valueObject)
+            });
+            return await res.json();
+        }
+
+        async function deleteDatabaseRecord(storeName, keyId) {
+            let act = storeName;
+            let paramKey = 'id';
+            if (storeName === 'attendance_logs') {
+                act = 'log';
+            } else if (storeName === 'employees') {
+                act = 'employee';
+            } else if (storeName === 'departments') {
+                act = 'department';
+                paramKey = 'name';
+            } else if (storeName === 'holidays') {
+                act = 'holiday';
+                paramKey = 'date';
+            }
+
+            const res = await fetch(`index.php?action=delete_${act}&${paramKey}=${encodeURIComponent(keyId)}`);
+            return await res.json();
+        }
+
+        async function readConfigKey(key) {
+            const res = await fetch('index.php?action=get_config');
+            const config = await res.json();
+            if (key === 'weekend_days' && typeof config[key] === 'string') {
+                return JSON.parse(config[key]);
+            }
+            return config[key] || null;
+        }
+
+        async function writeConfigKey(key, value) {
+            const payload = {};
+            payload[key] = value;
+            await fetch('index.php?action=save_config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        }
+
         const AudioEngine = {
             ctx: null,
             init() {
@@ -1547,7 +1909,6 @@
             btnStop: document.getElementById('btn-cam-stop')
         };
 
-        let indexedDatabasePointer = null;
         let applicationFaceMatcherRuntime = null;
         let precompiledProfilesRegistry = [];
         let precompiledEmployeesList = [];
@@ -1580,103 +1941,15 @@
         const empRowsPerPage = 10;
         let filteredEmpList = [];
 
-        function initializeDatabaseCoreSubsystems() {
-            return new Promise((resolve, reject) => {
-                const openRequest = indexedDB.open("EnterpriseBiometricKioskCoreDB", 4);
-                openRequest.onupgradeneeded = (e) => {
-                    const db = e.target.result;
-                    if (!db.objectStoreNames.contains("employees")) {
-                        db.createObjectStore("employees", { keyPath: "id" });
-                    }
-                    if (!db.objectStoreNames.contains("attendance_logs")) {
-                        db.createObjectStore("attendance_logs", { keyPath: "id", autoIncrement: true });
-                    }
-                    if (!db.objectStoreNames.contains("system_config")) {
-                        db.createObjectStore("system_config", { keyPath: "key" });
-                    }
-                    if (!db.objectStoreNames.contains("departments")) {
-                        db.createObjectStore("departments", { keyPath: "name" });
-                    }
-                    if (!db.objectStoreNames.contains("holidays")) {
-                        db.createObjectStore("holidays", { keyPath: "date" });
-                    }
-                };
-                openRequest.onsuccess = (e) => { indexedDatabasePointer = e.target.result; resolve(); };
-                openRequest.onerror = (e) => reject(e.target.error);
-            });
-        }
-
-        function writeDatabaseRecord(storeName, valueObject) {
-            return new Promise((resolve) => {
-                const txn = indexedDatabasePointer.transaction(storeName, "readwrite");
-                txn.objectStore(storeName).put(valueObject);
-                txn.oncomplete = () => resolve();
-            });
-        }
-
-        function deleteDatabaseRecord(storeName, keyId) {
-            return new Promise((resolve) => {
-                const txn = indexedDatabasePointer.transaction(storeName, "readwrite");
-                txn.objectStore(storeName).delete(keyId);
-                txn.oncomplete = () => resolve();
-            });
-        }
-
-        function readAllDatabaseRecords(storeName) {
-            return new Promise((resolve) => {
-                const txn = indexedDatabasePointer.transaction(storeName, "readonly");
-                const req = txn.objectStore(storeName).getAll();
-                req.onsuccess = () => resolve(req.result || []);
-            });
-        }
-
-        function readConfigKey(key) {
-            return new Promise((resolve) => {
-                const txn = indexedDatabasePointer.transaction("system_config", "readonly");
-                const req = txn.objectStore("system_config").get(key);
-                req.onsuccess = () => resolve(req.result ? req.result.value : null);
-            });
-        }
-
-        async function seedDatabaseDefaults() {
-            const checkPass = await readConfigKey("master_password");
-            if (!checkPass) {
-                await writeDatabaseRecord("system_config", { key: "master_password", value: "admin1234" });
-            }
-
-            const checkLiveness = await readConfigKey("liveness_level");
-            if (!checkLiveness) {
-                await writeDatabaseRecord("system_config", { key: "liveness_level", value: "none" });
-            }
-
-            const checkTheme = await readConfigKey("theme_color");
-            if (!checkTheme) {
-                await writeDatabaseRecord("system_config", { key: "theme_color", value: "indigo" });
-            }
-
-            const checkMode = await readConfigKey("theme_mode");
-            if (!checkMode) {
-                await writeDatabaseRecord("system_config", { key: "theme_mode", value: "light" });
-            }
-
-            const depts = await readAllDatabaseRecords("departments");
-            if (depts.length === 0) {
-                const defaults = ["Administration", "Engineering", "Sales", "Marketing", "Human Resources", "Finance", "Operations"];
-                for (const d of defaults) {
-                    await writeDatabaseRecord("departments", { name: d });
-                }
-            }
-
-            const weekends = await readConfigKey("weekend_days");
-            if (!weekends) {
-                await writeDatabaseRecord("system_config", { key: "weekend_days", value: [0, 6] });
-            }
-        }
-
         async function verifyAdminCredentialGateAccess() {
             const inputString = ui.passInput.value;
-            const correctPasswordString = await readConfigKey("master_password");
-            if (inputString === correctPasswordString) {
+            const res = await fetch('index.php?action=verify_login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: inputString })
+            });
+            const result = await res.json();
+            if (result.success) {
                 isDashboardAuthenticatedState = true;
                 ui.authGate.style.display = "none";
                 document.getElementById('admin-panel-content').style.display = "flex";
@@ -1697,7 +1970,8 @@
             ui.passInput.type = check.checked ? "text" : "password";
         }
 
-        function logoutAdminGate() {
+        async function logoutAdminGate() {
+            await fetch('index.php?action=logout');
             isDashboardAuthenticatedState = false;
             stopEnrollmentCamera();
             ui.authGate.style.display = "flex";
@@ -1713,7 +1987,7 @@
                 triggerToast("Passcode must be 4+ characters", "error");
                 return;
             }
-            await writeDatabaseRecord("system_config", { key: "master_password", value: targetString });
+            await writeConfigKey("master_password", targetString);
             ui.newPassInput.value = "";
             triggerToast("Admin Passcode Updated", "success");
             AudioEngine.play('success');
@@ -1919,12 +2193,9 @@
 
         async function purgeSystemLocalMemoryStore() {
             if (confirm("Danger: Wiping all local records and logs. Continue?")) {
-                const txnEmps = indexedDatabasePointer.transaction("employees", "readwrite");
-                txnEmps.objectStore("employees").clear();
-                const txnLogs = indexedDatabasePointer.transaction("attendance_logs", "readwrite");
-                txnLogs.objectStore("attendance_logs").clear();
-                const txnHols = indexedDatabasePointer.transaction("holidays", "readwrite");
-                txnHols.objectStore("holidays").clear();
+                await fetch('index.php?action=delete_employee&id=all');
+                await fetch('index.php?action=delete_log&id=all');
+                await fetch('index.php?action=delete_holiday&date=all');
                 precompiledEmployeesList = [];
                 precompiledProfilesRegistry = [];
                 applicationFaceMatcherRuntime = null;
@@ -1942,8 +2213,9 @@
         async function compileApplicationCoreSubsystems() {
             try {
                 startRenderLoop();
-                await initializeDatabaseCoreSubsystems();
-                await seedDatabaseDefaults();
+                const checkSessionRes = await fetch('index.php?action=check_session');
+                const checkSession = await checkSessionRes.json();
+                isDashboardAuthenticatedState = checkSession.authenticated;
 
                 const accentColor = await readConfigKey("theme_color");
                 applyAccentColor(accentColor);
@@ -2617,8 +2889,8 @@
             const graceVal = parseInt(document.getElementById('settings-grace-minutes').value, 10);
             shiftStartTime = timeVal;
             shiftGraceMinutes = graceVal;
-            await writeDatabaseRecord("system_config", { key: "shift_start_time", value: timeVal });
-            await writeDatabaseRecord("system_config", { key: "shift_grace_minutes", value: graceVal });
+            await writeConfigKey("shift_start_time", timeVal);
+            await writeConfigKey("shift_grace_minutes", graceVal);
 
             const wkChecked = [];
             for (let i = 0; i < 7; i++) {
@@ -2627,7 +2899,7 @@
                 }
             }
             weekendDays = wkChecked;
-            await writeDatabaseRecord("system_config", { key: "weekend_days", value: wkChecked });
+            await writeConfigKey("weekend_days", wkChecked);
 
             triggerToast("Policies Updated", "success");
             AudioEngine.play('success');
@@ -3106,7 +3378,7 @@
         async function saveLivenessSettings() {
             const level = document.getElementById('settings-liveness-level').value;
             livenessChallengeMode = level;
-            await writeDatabaseRecord("system_config", { key: "liveness_level", value: level });
+            await writeConfigKey("liveness_level", level);
             triggerToast("Anti-Spoofing Rules Saved", "success");
             AudioEngine.play('success');
         }
@@ -3117,17 +3389,17 @@
             document.querySelectorAll('.color-dot').forEach(dot => dot.classList.remove('active'));
             const activeDot = document.getElementById(`dot-${color}`);
             if (activeDot) activeDot.classList.add('active');
-            await writeDatabaseRecord("system_config", { key: "theme_color", value: color });
+            await writeConfigKey("theme_color", color);
         }
 
         async function toggleTheme() {
             const isDark = document.body.classList.contains('dark');
             if (isDark) {
                 document.body.classList.remove('dark');
-                await writeDatabaseRecord("system_config", { key: "theme_mode", value: "light" });
+                await writeConfigKey("theme_mode", "light");
             } else {
                 document.body.classList.add('dark');
-                await writeDatabaseRecord("system_config", { key: "theme_mode", value: "dark" });
+                await writeConfigKey("theme_mode", "dark");
             }
         }
 
