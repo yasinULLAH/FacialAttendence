@@ -21,6 +21,7 @@
     <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.print.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/3.2.6/js/buttons.colVis.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -776,6 +777,56 @@
             flex-direction: column;
             width: 100%;
             gap: 8px;
+        }
+
+        .audit-toolbar {
+            display: grid;
+            grid-template-columns: 1.2fr repeat(3, minmax(130px, 1fr)) auto auto;
+            gap: 8px;
+            width: 100%;
+            align-items: end;
+        }
+
+        .audit-table td {
+            vertical-align: top;
+            white-space: normal;
+            line-height: 1.35;
+        }
+
+        .audit-action-label {
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: capitalize;
+        }
+
+        .audit-summary {
+            color: var(--text);
+            font-size: 12px;
+            word-break: break-word;
+        }
+
+        .audit-detail-box {
+            margin-top: 4px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg);
+            padding: 6px;
+            font-size: 11px;
+            color: var(--muted);
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        .audit-badge {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-size: 10px;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            background: var(--bg);
         }
 
         div.dt-container .dt-buttons {
@@ -2157,12 +2208,54 @@
                     </div>
                     <div class="card">
                         <h2>System Audit Trail</h2>
-                        <div style="display:flex; gap:8px; margin-bottom:8px;">
-                            <button class="btn btn-secondary" onclick="exportAuditTrailCSV()">Export Audit CSV</button>
+                        <div class="audit-toolbar" style="margin-bottom:8px;">
+                            <div class="datatable-search-wrapper">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input type="text" id="audit-search-input" class="datatable-search-input"
+                                    placeholder="Search action, summary, or details..." oninput="renderAuditTrail()">
+                            </div>
+                            <div class="input-group" style="width:auto;">
+                                <label>Action</label>
+                                <select id="audit-filter-action" onchange="renderAuditTrail()">
+                                    <option value="all">All Actions</option>
+                                </select>
+                            </div>
+                            <div class="input-group" style="width:auto;">
+                                <label>Range</label>
+                                <select id="audit-filter-range" onchange="renderAuditTrail()">
+                                    <option value="all">All Time</option>
+                                    <option value="today">Today</option>
+                                    <option value="week">Last 7 Days</option>
+                                    <option value="month">Last 30 Days</option>
+                                </select>
+                            </div>
+                            <div class="input-group" style="width:auto;">
+                                <label>Sort</label>
+                                <select id="audit-sort-order" onchange="renderAuditTrail()">
+                                    <option value="newest">Newest First</option>
+                                    <option value="oldest">Oldest First</option>
+                                    <option value="action_asc">Action A-Z</option>
+                                    <option value="action_desc">Action Z-A</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-secondary" onclick="exportAuditTrailCSV()">Export Audit XLSX</button>
                             <button class="btn btn-secondary" onclick="renderAuditTrail()">Refresh</button>
                         </div>
-                        <div id="audit-log-list-container"
-                            style="display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto;">
+                        <div id="audit-log-list-container" class="table-responsive" style="max-height:320px;">
+                            <table id="audit-trail-table" class="audit-table" style="width:100%;">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width:170px;">Timestamp</th>
+                                        <th style="min-width:170px;">Action</th>
+                                        <th style="min-width:260px;">Summary</th>
+                                        <th style="min-width:360px;">Detail</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="audit-log-table-body"></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -3058,6 +3151,10 @@
                 ${comprehensiveReportRows.length > 200 ? `<p style="font-size:11px;">Showing first 200 rows in print preview. Use DataTable PDF/Excel/CSV for full exports.</p>` : ''}
             `;
             printWindow.document.write(`<html><head><title>Comprehensive Report</title>
+    
+
+    
+
     
 
     
@@ -4101,27 +4198,40 @@
             });
         }
         async function renderAuditTrail() {
-            const container = document.getElementById('audit-log-list-container');
-            if (!container) return;
+            const tbody = document.getElementById('audit-log-table-body');
+            if (!tbody) return;
             const audits = await readAllDatabaseRecords("audit_logs");
-            audits.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-            container.innerHTML = "";
-            if (!audits.length) {
-                container.innerHTML = '<div style="font-size:11px; color:var(--muted); border:1px solid var(--border); border-radius:6px; padding:8px;">No audit records yet.</div>';
+            const normalizedRows = buildAuditNormalizedRows(audits);
+            refreshAuditActionFilterOptions(normalizedRows);
+            const filteredRows = getFilteredAuditRows(normalizedRows);
+            tbody.innerHTML = "";
+            if (!filteredRows.length) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted);">No audit records match your filters.</td></tr>';
                 return;
             }
-            audits.slice(0, 100).forEach(item => {
-                const dt = new Date(item.timestamp || Date.now());
-                const row = document.createElement('div');
-                row.style = "background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:8px; display:flex; flex-direction:column; gap:4px;";
-                row.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; gap:8px; font-size:11px;">
-                        <strong>${item.action || "event"}</strong>
-                        <span style="color:var(--muted);">${dt.toLocaleDateString()} ${dt.toLocaleTimeString()}</span>
-                    </div>
-                    <div style="font-size:11px; color:var(--muted); word-break:break-word;">${item.detail || "-"}</div>
+            filteredRows.slice(0, 600).forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div>${escapeAuditHtml(row.dateLabel)}</div>
+                        <div style="font-size:11px; color:var(--muted);">${escapeAuditHtml(row.timeLabel)}</div>
+                    </td>
+                    <td>
+                        <div class="audit-action-label">${escapeAuditHtml(row.actionLabel)}</div>
+                        <div style="margin-top:4px;"><span class="audit-badge">${escapeAuditHtml(row.action)}</span></div>
+                    </td>
+                    <td>
+                        <div class="audit-summary">${escapeAuditHtml(row.summary)}</div>
+                        <div style="font-size:11px; color:var(--muted); margin-top:4px;">Actor: ${escapeAuditHtml(row.actor || "-")}</div>
+                    </td>
+                    <td>
+                        <details>
+                            <summary class="audit-badge" style="cursor:pointer;">View detail</summary>
+                            <pre class="audit-detail-box">${escapeAuditHtml(row.detailPretty)}</pre>
+                        </details>
+                    </td>
                 `;
-                container.appendChild(row);
+                tbody.appendChild(tr);
             });
         }
         async function exportAuditTrailCSV() {
@@ -4130,24 +4240,312 @@
                 triggerToast("Audit trail is empty", "warning");
                 return;
             }
-            audits.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Timestamp,Date,Time,Action,Detail\n";
-            audits.forEach(item => {
-                const dt = new Date(item.timestamp || Date.now());
-                const dateVal = dt.toISOString().split('T')[0];
-                const timeVal = dt.toTimeString().split(' ')[0];
-                csvContent += `"${item.timestamp || ''}","${dateVal}","${timeVal}","${item.action || ''}","${(item.detail || '').replace(/"/g, '""')}"\n`;
+            if (!window.ExcelJS) {
+                triggerToast("Excel export engine failed to load", "error");
+                return;
+            }
+            const rows = getFilteredAuditRows(buildAuditNormalizedRows(audits));
+            if (!rows.length) {
+                triggerToast("No filtered audit records available for export", "warning");
+                return;
+            }
+            const workbook = new ExcelJS.Workbook();
+            workbook.creator = "Aura Facial Recognition";
+            workbook.created = new Date();
+
+            const trailSheet = workbook.addWorksheet("Audit Trail");
+            trailSheet.columns = [
+                { header: "Timestamp", key: "timestampLabel", width: 22 },
+                { header: "Date", key: "dateLabel", width: 14 },
+                { header: "Time", key: "timeLabel", width: 12 },
+                { header: "Action Key", key: "action", width: 28 },
+                { header: "Action", key: "actionLabel", width: 28 },
+                { header: "Actor", key: "actor", width: 26 },
+                { header: "Summary", key: "summary", width: 50 },
+                { header: "Detail", key: "detailPretty", width: 80 }
+            ];
+            rows.forEach(row => {
+                trailSheet.addRow({
+                    timestampLabel: row.timestampLabel,
+                    dateLabel: row.dateLabel,
+                    timeLabel: row.timeLabel,
+                    action: row.action,
+                    actionLabel: row.actionLabel,
+                    actor: row.actor,
+                    summary: row.summary,
+                    detailPretty: row.detailPretty
+                });
             });
-            const encodedUri = encodeURI(csvContent);
+            styleAuditWorksheet(trailSheet, trailSheet.columnCount);
+            trailSheet.getColumn("summary").alignment = { vertical: "top", wrapText: true };
+            trailSheet.getColumn("detailPretty").alignment = { vertical: "top", wrapText: true };
+
+            const summarySheet = workbook.addWorksheet("Summary");
+            const actionCounts = buildAuditActionCounts(rows);
+            const actors = new Set(rows.map(row => row.actor).filter(Boolean));
+            summarySheet.columns = [
+                { header: "Metric", key: "metric", width: 32 },
+                { header: "Value", key: "value", width: 30 }
+            ];
+            summarySheet.addRow({ metric: "Generated At", value: new Date().toLocaleString() });
+            summarySheet.addRow({ metric: "Exported Rows", value: rows.length });
+            summarySheet.addRow({ metric: "Unique Actions", value: actionCounts.length });
+            summarySheet.addRow({ metric: "Unique Actors", value: actors.size });
+            summarySheet.addRow({ metric: "Range Start", value: rows[rows.length - 1].timestampLabel });
+            summarySheet.addRow({ metric: "Range End", value: rows[0].timestampLabel });
+            summarySheet.addRow({});
+            summarySheet.addRow({ metric: "Top Action", value: actionCounts[0] ? `${actionCounts[0].actionLabel} (${actionCounts[0].count})` : "-" });
+            styleAuditWorksheet(summarySheet, 2);
+
+            const actionPivotSheet = workbook.addWorksheet("Pivot Actions");
+            const dayKeys = [...new Set(rows.map(row => row.dateISO))].sort();
+            const actionLabels = [...new Set(rows.map(row => row.actionLabel))].sort((a, b) => a.localeCompare(b));
+            const actionHeader = ["Action", ...dayKeys, "Total"];
+            actionPivotSheet.addRow(actionHeader);
+            actionLabels.forEach(label => {
+                const values = dayKeys.map(day => rows.filter(row => row.actionLabel === label && row.dateISO === day).length);
+                const total = values.reduce((sum, value) => sum + value, 0);
+                actionPivotSheet.addRow([label, ...values, total]);
+            });
+            const actionTotalsByDay = dayKeys.map(day => rows.filter(row => row.dateISO === day).length);
+            actionPivotSheet.addRow(["Grand Total", ...actionTotalsByDay, rows.length]);
+            styleAuditWorksheet(actionPivotSheet, actionHeader.length);
+            autoSizeAuditWorksheet(actionPivotSheet, 12, 28);
+
+            const actorPivotSheet = workbook.addWorksheet("Pivot Actors");
+            const actorMap = new Map();
+            rows.forEach(row => {
+                const actorKey = row.actor || "Unknown";
+                if (!actorMap.has(actorKey)) actorMap.set(actorKey, { actor: actorKey, total: 0, actions: {} });
+                const bucket = actorMap.get(actorKey);
+                bucket.total += 1;
+                bucket.actions[row.actionLabel] = (bucket.actions[row.actionLabel] || 0) + 1;
+            });
+            const topActions = actionCounts.slice(0, 8).map(item => item.actionLabel);
+            const actorHeader = ["Actor", ...topActions, "Total"];
+            actorPivotSheet.addRow(actorHeader);
+            [...actorMap.values()]
+                .sort((a, b) => b.total - a.total)
+                .forEach(item => {
+                    const cells = topActions.map(action => item.actions[action] || 0);
+                    actorPivotSheet.addRow([item.actor, ...cells, item.total]);
+                });
+            styleAuditWorksheet(actorPivotSheet, actorHeader.length);
+            autoSizeAuditWorksheet(actorPivotSheet, 12, 32);
+
+            const chartDataSheet = workbook.addWorksheet("Chart Data");
+            chartDataSheet.columns = [
+                { header: "Date", key: "dateISO", width: 14 },
+                { header: "Events", key: "events", width: 14 },
+                { header: "Employee Events", key: "employeeEvents", width: 18 },
+                { header: "Attendance Events", key: "attendanceEvents", width: 18 },
+                { header: "Security Events", key: "securityEvents", width: 16 }
+            ];
+            dayKeys.forEach(day => {
+                const dayRows = rows.filter(row => row.dateISO === day);
+                chartDataSheet.addRow({
+                    dateISO: day,
+                    events: dayRows.length,
+                    employeeEvents: dayRows.filter(row => row.action.includes("employee")).length,
+                    attendanceEvents: dayRows.filter(row => row.action.includes("attendance")).length,
+                    securityEvents: dayRows.filter(row => row.action.includes("security") || row.action.includes("motion")).length
+                });
+            });
+            styleAuditWorksheet(chartDataSheet, 5);
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            });
+            const blobUrl = URL.createObjectURL(blob);
             const anchor = document.createElement("a");
-            anchor.setAttribute("href", encodedUri);
-            anchor.setAttribute("download", `audit_trail_${Math.floor(Date.now() / 1000)}.csv`);
+            anchor.setAttribute("href", blobUrl);
+            anchor.setAttribute("download", `audit_trail_${Math.floor(Date.now() / 1000)}.xlsx`);
             document.body.appendChild(anchor);
             anchor.click();
             document.body.removeChild(anchor);
-            triggerToast("Audit CSV Exported", "success");
+            URL.revokeObjectURL(blobUrl);
+            triggerToast("Audit XLSX Exported", "success");
             AudioEngine.play('success');
+        }
+        function parseAuditDetail(detail) {
+            if (detail === null || detail === undefined) return null;
+            if (typeof detail === "object") return detail;
+            const raw = String(detail).trim();
+            if (!raw) return null;
+            try {
+                return JSON.parse(raw);
+            } catch (_err) {
+                return raw;
+            }
+        }
+        function escapeAuditHtml(value) {
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        function formatAuditActionLabel(action) {
+            return String(action || "event")
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, ch => ch.toUpperCase());
+        }
+        function resolveAuditActor(detailObj) {
+            if (!detailObj || typeof detailObj !== "object") return "";
+            const id = detailObj.empId || detailObj.id || detailObj.employeeId || "";
+            const name = detailObj.name || detailObj.employeeName || "";
+            if (id && name) return `${name} (${id})`;
+            if (name) return name;
+            if (id) return id;
+            return "";
+        }
+        function summarizeAuditRecord(action, detailObj, detailPretty) {
+            if (detailObj && typeof detailObj === "object") {
+                if ((action || "").includes("employee_profile")) {
+                    return `${detailObj.name || "Employee"} (${detailObj.id || "-"}) profile updated`;
+                }
+                if (action === "attendance_logged") {
+                    return `${detailObj.eventType || "Event"} ${detailObj.status ? `(${detailObj.status})` : ""} for ${detailObj.empId || detailObj.name || "employee"}`.trim();
+                }
+                if (action === "leave_request_saved") {
+                    return `${detailObj.type || "Request"} for ${detailObj.empId || detailObj.name || "employee"} from ${detailObj.dateFrom || "-"} to ${detailObj.dateTo || "-"}`;
+                }
+                if (action === "department_shift_policy_saved") {
+                    return `Shift policy saved for ${detailObj.department || "department"} at ${detailObj.shiftTime || "-"} (+${detailObj.grace ?? "-"}m)`;
+                }
+                if (action === "department_shift_policy_deleted") {
+                    return `Shift policy removed for ${detailObj.department || "department"}`;
+                }
+            }
+            const compact = String(detailPretty || "-").replace(/\s+/g, " ").trim();
+            return compact.length > 140 ? `${compact.slice(0, 140)}...` : compact;
+        }
+        function buildAuditNormalizedRows(audits) {
+            return [...audits]
+                .map(item => {
+                    const ts = Number(item.timestamp || Date.now());
+                    const dt = new Date(ts);
+                    const detailObj = parseAuditDetail(item.detail);
+                    const detailPretty = detailObj && typeof detailObj === "object"
+                        ? JSON.stringify(detailObj, null, 2)
+                        : (detailObj ? String(detailObj) : "-");
+                    const action = String(item.action || "event");
+                    return {
+                        timestamp: ts,
+                        timestampLabel: `${dt.toLocaleDateString()} ${dt.toLocaleTimeString()}`,
+                        dateISO: dt.toISOString().split("T")[0],
+                        dateLabel: dt.toLocaleDateString(),
+                        timeLabel: dt.toLocaleTimeString(),
+                        action,
+                        actionLabel: formatAuditActionLabel(action),
+                        actor: resolveAuditActor(detailObj),
+                        summary: summarizeAuditRecord(action, detailObj, detailPretty),
+                        detailPretty,
+                        searchText: `${action} ${formatAuditActionLabel(action)} ${detailPretty} ${resolveAuditActor(detailObj)}`.toLowerCase()
+                    };
+                });
+        }
+        function refreshAuditActionFilterOptions(rows) {
+            const filterEl = document.getElementById("audit-filter-action");
+            if (!filterEl) return;
+            const currentValue = filterEl.value || "all";
+            const options = [...new Set(rows.map(row => row.action))].sort((a, b) => a.localeCompare(b));
+            filterEl.innerHTML = '<option value="all">All Actions</option>';
+            options.forEach(action => {
+                const option = document.createElement("option");
+                option.value = action;
+                option.innerText = formatAuditActionLabel(action);
+                filterEl.appendChild(option);
+            });
+            filterEl.value = options.includes(currentValue) ? currentValue : "all";
+        }
+        function matchesAuditRange(timestamp, rangeKey) {
+            if (rangeKey === "all") return true;
+            const now = new Date();
+            const start = new Date();
+            if (rangeKey === "today") {
+                start.setHours(0, 0, 0, 0);
+            } else if (rangeKey === "week") {
+                start.setDate(now.getDate() - 7);
+            } else if (rangeKey === "month") {
+                start.setDate(now.getDate() - 30);
+            } else {
+                return true;
+            }
+            return timestamp >= start.getTime();
+        }
+        function getFilteredAuditRows(rows) {
+            const search = (document.getElementById("audit-search-input")?.value || "").toLowerCase().trim();
+            const action = document.getElementById("audit-filter-action")?.value || "all";
+            const range = document.getElementById("audit-filter-range")?.value || "all";
+            const sort = document.getElementById("audit-sort-order")?.value || "newest";
+            const filtered = rows.filter(row => {
+                if (action !== "all" && row.action !== action) return false;
+                if (!matchesAuditRange(row.timestamp, range)) return false;
+                if (search && !row.searchText.includes(search)) return false;
+                return true;
+            });
+            if (sort === "oldest") {
+                filtered.sort((a, b) => a.timestamp - b.timestamp);
+            } else if (sort === "action_asc") {
+                filtered.sort((a, b) => a.actionLabel.localeCompare(b.actionLabel) || (b.timestamp - a.timestamp));
+            } else if (sort === "action_desc") {
+                filtered.sort((a, b) => b.actionLabel.localeCompare(a.actionLabel) || (b.timestamp - a.timestamp));
+            } else {
+                filtered.sort((a, b) => b.timestamp - a.timestamp);
+            }
+            return filtered;
+        }
+        function styleAuditWorksheet(sheet, totalColumns) {
+            sheet.views = [{ state: "frozen", ySplit: 1 }];
+            const header = sheet.getRow(1);
+            header.font = { bold: true, color: { argb: "FFFFFFFF" } };
+            header.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FF334155" }
+            };
+            header.alignment = { vertical: "middle", horizontal: "center" };
+            header.height = 20;
+            if (totalColumns > 0) {
+                sheet.autoFilter = {
+                    from: { row: 1, column: 1 },
+                    to: { row: 1, column: totalColumns }
+                };
+            }
+            sheet.eachRow((row, rowNumber) => {
+                row.alignment = { vertical: "top", wrapText: rowNumber > 1 };
+                row.eachCell(cell => {
+                    cell.border = {
+                        top: { style: "thin", color: { argb: "FFE2E8F0" } },
+                        left: { style: "thin", color: { argb: "FFE2E8F0" } },
+                        bottom: { style: "thin", color: { argb: "FFE2E8F0" } },
+                        right: { style: "thin", color: { argb: "FFE2E8F0" } }
+                    };
+                });
+            });
+        }
+        function autoSizeAuditWorksheet(sheet, minWidth = 10, maxWidth = 60) {
+            sheet.columns.forEach(column => {
+                let maxLength = 0;
+                column.eachCell({ includeEmpty: true }, cell => {
+                    const cellValue = cell.value === null || cell.value === undefined ? "" : String(cell.value);
+                    maxLength = Math.max(maxLength, cellValue.length);
+                });
+                column.width = Math.max(minWidth, Math.min(maxWidth, maxLength + 2));
+            });
+        }
+        function buildAuditActionCounts(rows) {
+            const map = new Map();
+            rows.forEach(row => {
+                if (!map.has(row.actionLabel)) {
+                    map.set(row.actionLabel, { actionLabel: row.actionLabel, count: 0 });
+                }
+                map.get(row.actionLabel).count += 1;
+            });
+            return [...map.values()].sort((a, b) => b.count - a.count);
         }
         async function captureAndSerializeTopology() {
             const targetLabelString = ui.regName.value.trim();
@@ -5771,6 +6169,8 @@
         window.onload = compileApplicationCoreSubsystems;
     </script>
     
+
+
 
 
 
