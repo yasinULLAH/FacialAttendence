@@ -2210,6 +2210,17 @@
                                     Enforce logout cutoff rule (after this time, second scan logs Check-Out)
                                 </label>
                             </div>
+                            <div style="display:flex; gap: 8px; align-items:center; margin:4px 0;">
+                                <input type="checkbox" id="settings-kiosk-shift-lock-enabled" style="width:auto;">
+                                <label for="settings-kiosk-shift-lock-enabled"
+                                    style="text-transform:none; letter-spacing:0; font-size:12px; margin:0;">
+                                    Enforce kiosk camera lock after shift+grace window (admin password required to start after lock)
+                                </label>
+                            </div>
+                            <div class="input-group" style="margin-top: 4px;">
+                                <label>Kiosk Lock Extra Window (Hours)</label>
+                                <input type="number" id="settings-kiosk-shift-lock-extension-hours" value="2" min="0" max="12" step="0.25">
+                            </div>
                             <div class="input-group">
                                 <label>Weekend Days Selection</label>
                                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
@@ -2567,6 +2578,97 @@
             dt.setHours(h || 0, m || 0, 0, 0);
             return dt;
         }
+        function resolveNumericMinutes(value, fallbackValue) {
+            const parsed = parseInt(value, 10);
+            if (Number.isFinite(parsed) && parsed >= 0) return parsed;
+            return Number.isFinite(parseInt(fallbackValue, 10)) ? parseInt(fallbackValue, 10) : 0;
+        }
+        function resolveNumericHours(value, fallbackValue) {
+            const parsed = parseFloat(value);
+            if (Number.isFinite(parsed) && parsed >= 0) return parsed;
+            return Number.isFinite(parseFloat(fallbackValue)) ? parseFloat(fallbackValue) : 0;
+        }
+        function buildKioskShiftLockCutoffFromShift(baseDate, shiftTime, graceMinutes) {
+            const safeShiftTime = shiftTime || shiftStartTime || "09:00";
+            const grace = resolveNumericMinutes(graceMinutes, shiftGraceMinutes);
+            const extensionHours = resolveNumericHours(kioskShiftLockExtensionHours, 2);
+            const dt = parseTimeToDate(baseDate, safeShiftTime);
+            dt.setMinutes(dt.getMinutes() + grace + Math.round(extensionHours * 60));
+            return dt;
+        }
+        function getKioskShiftLockCutoffDate(referenceDate = new Date()) {
+            const candidates = [];
+            candidates.push(buildKioskShiftLockCutoffFromShift(referenceDate, shiftStartTime, shiftGraceMinutes));
+            precompiledShiftPoliciesList.forEach(policy => {
+                const policyShift = policy && policy.shiftStartTime ? policy.shiftStartTime : shiftStartTime;
+                const policyGrace = (policy && policy.shiftGraceMinutes !== undefined && policy.shiftGraceMinutes !== null)
+                    ? policy.shiftGraceMinutes
+                    : shiftGraceMinutes;
+                candidates.push(buildKioskShiftLockCutoffFromShift(referenceDate, policyShift, policyGrace));
+            });
+            precompiledEmployeesList
+                .filter(emp => emp && !emp.deletedAt && emp.status !== "Banned" && emp.shiftStartTime)
+                .forEach(emp => {
+                    candidates.push(buildKioskShiftLockCutoffFromShift(referenceDate, emp.shiftStartTime, emp.shiftGraceMinutes));
+                });
+            const latestTs = Math.max(...candidates.map(d => d.getTime()));
+            return new Date(latestTs);
+        }
+        function isKioskShiftLockOverrideActive(nowTs = Date.now()) {
+            return nowTs < Number(kioskShiftLockOverrideUntilTs || 0);
+        }
+        function isKioskShiftLockActive(nowDate = new Date()) {
+            if (!kioskShiftLockEnabled) return false;
+            if (isKioskShiftLockOverrideActive(nowDate.getTime())) return false;
+            const cutoff = getKioskShiftLockCutoffDate(nowDate);
+            return nowDate.getTime() > cutoff.getTime();
+        }
+        async function enforceKioskShiftLockForStartIfNeeded() {
+            if (!isKioskShiftLockActive(new Date())) return true;
+            const cutoff = getKioskShiftLockCutoffDate(new Date());
+            const ok = await requireAdminPassword("start kiosk camera after shift lock window");
+            if (!ok) {
+                triggerToast("Camera start blocked after shift lock window", "warning");
+                AudioEngine.play('warning');
+                speakText("Camera start blocked. Admin password required.");
+                ui.banner.innerText = `Camera locked after ${cutoff.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. Admin authorization required.`;
+                return false;
+            }
+            kioskShiftLockOverrideUntilTs = Date.now() + (10 * 60 * 1000);
+            triggerToast("Admin camera override active for 10 minutes", "success");
+            AudioEngine.play('success');
+            await logAuditEvent("kiosk_shift_lock_override_granted", {
+                overrideMinutes: 10,
+                cutoffTime: cutoff.toISOString()
+            });
+            return true;
+        }
+        async function evaluateKioskShiftLockRuntime() {
+            if (!isCameraActive || isCameraPaused || !kioskShiftLockEnabled) return;
+            if (isKioskShiftLockActive(new Date())) {
+                stopCameraStream();
+                const cutoff = getKioskShiftLockCutoffDate(new Date());
+                triggerToast("Camera auto-stopped: shift lock window reached", "warning");
+                AudioEngine.play('warning');
+                speakText("Camera stopped. Shift lock time reached.");
+                await logAuditEvent("kiosk_camera_auto_stopped_by_shift_lock", {
+                    cutoffTime: cutoff.toISOString()
+                });
+            }
+        }
+        function startKioskShiftLockMonitor() {
+            if (kioskShiftLockMonitorIntervalId) return;
+            kioskShiftLockMonitorIntervalId = setInterval(() => {
+                evaluateKioskShiftLockRuntime().catch(() => {
+                    // Keep monitor resilient.
+                });
+            }, 15000);
+        }
+        function stopKioskShiftLockMonitor() {
+            if (!kioskShiftLockMonitorIntervalId) return;
+            clearInterval(kioskShiftLockMonitorIntervalId);
+            kioskShiftLockMonitorIntervalId = null;
+        }
         async function showConfirmDialog(options) {
             if (window.Swal && typeof window.Swal.fire === 'function') {
                 const result = await window.Swal.fire({
@@ -2721,6 +2823,10 @@
         let checkoutGapHours = 2;
         let logoutCutoffEnabled = false;
         let logoutCutoffTime = "15:00";
+        let kioskShiftLockEnabled = false;
+        let kioskShiftLockExtensionHours = 2;
+        let kioskShiftLockOverrideUntilTs = 0;
+        let kioskShiftLockMonitorIntervalId = null;
         let motionTrackingEnabled = false;
         let motionAggressiveness = 3;
         let motionAutoDownload = false;
@@ -3321,6 +3427,8 @@
     
 
     
+
+    
 <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head><body>${summaryHtml}</body></html>`);
@@ -3466,6 +3574,14 @@
             if (!logoutCutoff) {
                 await writeDatabaseRecord("system_config", { key: "logout_cutoff_time", value: "15:00" });
             }
+            const kioskLockEnabledCfg = await readConfigKey("kiosk_shift_lock_enabled");
+            if (kioskLockEnabledCfg === null || kioskLockEnabledCfg === undefined) {
+                await writeDatabaseRecord("system_config", { key: "kiosk_shift_lock_enabled", value: "0" });
+            }
+            const kioskLockHoursCfg = await readConfigKey("kiosk_shift_lock_extension_hours");
+            if (kioskLockHoursCfg === null || kioskLockHoursCfg === undefined) {
+                await writeDatabaseRecord("system_config", { key: "kiosk_shift_lock_extension_hours", value: 2 });
+            }
             const motionEnabledCfg = await readConfigKey("motion_tracking_enabled");
             if (motionEnabledCfg === null || motionEnabledCfg === undefined) {
                 await writeDatabaseRecord("system_config", { key: "motion_tracking_enabled", value: "0" });
@@ -3573,6 +3689,8 @@
         async function startCameraStream() {
             if (isCameraActive) {
                 if (isCameraPaused) {
+                    const canResume = await enforceKioskShiftLockForStartIfNeeded();
+                    if (!canResume) return;
                     ui.video.play();
                     isCameraPaused = false;
                     initiateContinuousInferenceEngineLoop();
@@ -3585,6 +3703,8 @@
                 }
                 return;
             }
+            const canStart = await enforceKioskShiftLockForStartIfNeeded();
+            if (!canStart) return;
             ui.banner.innerText = "Starting hardware scanning array connections...";
             AudioEngine.init();
             if ('speechSynthesis' in window) {
@@ -4491,6 +4611,14 @@
                     logoutCutoffTime = savedCutoffTime;
                     document.getElementById('settings-logout-cutoff-time').value = savedCutoffTime;
                 }
+                const savedKioskLockEnabled = await readConfigKey("kiosk_shift_lock_enabled");
+                kioskShiftLockEnabled = String(savedKioskLockEnabled) === "1";
+                document.getElementById('settings-kiosk-shift-lock-enabled').checked = kioskShiftLockEnabled;
+                const savedKioskLockHours = await readConfigKey("kiosk_shift_lock_extension_hours");
+                if (savedKioskLockHours !== null && savedKioskLockHours !== undefined && savedKioskLockHours !== "") {
+                    kioskShiftLockExtensionHours = resolveNumericHours(savedKioskLockHours, 2);
+                }
+                document.getElementById('settings-kiosk-shift-lock-extension-hours').value = kioskShiftLockExtensionHours;
                 const savedMotionEnabled = await readConfigKey("motion_tracking_enabled");
                 motionTrackingEnabled = String(savedMotionEnabled) === "1";
                 document.getElementById('settings-motion-enabled').checked = motionTrackingEnabled;
@@ -4536,6 +4664,7 @@
                 updateCameraControlsUI();
                 updateManualRecordingButtons();
                 updateWakeLockButton();
+                startKioskShiftLockMonitor();
                 renderMovementClipsList();
                 setupMonitorFieldGuards();
                 await loadAttendanceLedgingTicker();
@@ -6152,8 +6281,15 @@
             const gapVal = (Number.isFinite(gapValRaw) && gapValRaw >= 0.25) ? gapValRaw : 2;
             const cutoffEnabledVal = document.getElementById('settings-logout-cutoff-enabled').checked;
             const cutoffTimeVal = document.getElementById('settings-logout-cutoff-time').value;
+            const kioskLockEnabledVal = document.getElementById('settings-kiosk-shift-lock-enabled').checked;
+            const kioskLockHoursRaw = parseFloat(document.getElementById('settings-kiosk-shift-lock-extension-hours').value);
+            const kioskLockHoursVal = (Number.isFinite(kioskLockHoursRaw) && kioskLockHoursRaw >= 0 && kioskLockHoursRaw <= 12) ? kioskLockHoursRaw : 2;
             if (Number.isNaN(graceVal) || graceVal < 0 || Number.isNaN(minSessionVal) || minSessionVal < 30 || !cutoffTimeVal) {
                 triggerToast("Grace and minimum session values are invalid", "warning");
+                return;
+            }
+            if (Number.isNaN(kioskLockHoursRaw) || kioskLockHoursRaw < 0 || kioskLockHoursRaw > 12) {
+                triggerToast("Kiosk lock extra window must be between 0 and 12 hours", "warning");
                 return;
             }
             shiftStartTime = timeVal;
@@ -6162,12 +6298,16 @@
             checkoutGapHours = gapVal;
             logoutCutoffEnabled = cutoffEnabledVal;
             logoutCutoffTime = cutoffTimeVal;
+            kioskShiftLockEnabled = kioskLockEnabledVal;
+            kioskShiftLockExtensionHours = kioskLockHoursVal;
             await writeDatabaseRecord("system_config", { key: "shift_start_time", value: timeVal });
             await writeDatabaseRecord("system_config", { key: "shift_grace_minutes", value: graceVal });
             await writeDatabaseRecord("system_config", { key: "minimum_session_minutes", value: minSessionVal });
             await writeDatabaseRecord("system_config", { key: "checkout_gap_hours", value: gapVal });
             await writeDatabaseRecord("system_config", { key: "logout_cutoff_enabled", value: cutoffEnabledVal ? "1" : "0" });
             await writeDatabaseRecord("system_config", { key: "logout_cutoff_time", value: cutoffTimeVal });
+            await writeDatabaseRecord("system_config", { key: "kiosk_shift_lock_enabled", value: kioskLockEnabledVal ? "1" : "0" });
+            await writeDatabaseRecord("system_config", { key: "kiosk_shift_lock_extension_hours", value: kioskLockHoursVal });
             const wkChecked = [];
             for (let i = 0; i < 7; i++) {
                 if (document.getElementById(`wk-${i}`).checked) {
@@ -6178,7 +6318,18 @@
             await writeDatabaseRecord("system_config", { key: "weekend_days", value: wkChecked });
             triggerToast("Policies Updated", "success");
             AudioEngine.play('success');
-            await logAuditEvent("global_shift_policy_updated", { timeVal, graceVal, minSessionVal, gapVal, cutoffEnabledVal, cutoffTimeVal, weekendDays: wkChecked });
+            await logAuditEvent("global_shift_policy_updated", {
+                timeVal,
+                graceVal,
+                minSessionVal,
+                gapVal,
+                cutoffEnabledVal,
+                cutoffTimeVal,
+                weekendDays: wkChecked,
+                kioskLockEnabledVal,
+                kioskLockHoursVal
+            });
+            await evaluateKioskShiftLockRuntime();
             await renderAnalyticsDashboard();
         }
         async function saveMotionTrackingSettings() {
@@ -6949,6 +7100,7 @@
         window.onload = compileApplicationCoreSubsystems;
     </script>
     
+
 
 
 
