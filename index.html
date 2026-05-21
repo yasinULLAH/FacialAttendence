@@ -101,7 +101,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden;
+            overflow-x: auto;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
@@ -286,6 +286,7 @@
         .view-section {
             display: none;
             width: 100%;
+            min-width: 0;
         }
 
         .view-section.active {
@@ -294,10 +295,19 @@
             gap: 16px;
         }
 
+        .sub-view-section {
+            min-width: 0;
+        }
+
+        .employee-directory-layout {
+            min-width: 0;
+        }
+
         .grid-2 {
             display: flex;
             flex-direction: column;
             gap: 16px;
+            min-width: 0;
         }
 
         .card {
@@ -310,6 +320,7 @@
             flex-direction: column;
             gap: 16px;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            min-width: 0;
         }
 
         h2 {
@@ -543,6 +554,7 @@
 
         .table-responsive {
             width: 100%;
+            max-width: 100%;
             overflow-x: auto;
             border: 1px solid var(--border);
             border-radius: 8px;
@@ -768,6 +780,11 @@
 
         div.dt-container .dt-buttons {
             margin-bottom: 8px;
+        }
+
+        div.dt-container {
+            width: 100%;
+            max-width: 100%;
         }
 
         div.dt-container .dt-button {
@@ -1207,8 +1224,12 @@
 
             .grid-2 {
                 display: grid;
-                grid-template-columns: 1.2fr 0.8fr;
+                grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
                 gap: 24px;
+            }
+
+            .employee-directory-layout {
+                grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
             }
 
             .card {
@@ -1499,7 +1520,7 @@
                             <div id="stat-open-sessions" class="metric-value">0</div>
                         </div>
                     </div>
-                    <div class="grid-2">
+                    <div class="grid-2 employee-directory-layout">
                         <div class="card analytics-fill-card">
                             <h2>Weekly Attendance Distribution</h2>
                             <div id="analytics-chart-container" class="analytics-fill-block">
@@ -3037,6 +3058,10 @@
                 ${comprehensiveReportRows.length > 200 ? `<p style="font-size:11px;">Showing first 200 rows in print preview. Use DataTable PDF/Excel/CSV for full exports.</p>` : ''}
             `;
             printWindow.document.write(`<html><head><title>Comprehensive Report</title>
+    
+
+    
+
     
 
     
@@ -5742,6 +5767,8 @@
         window.onload = compileApplicationCoreSubsystems;
     </script>
     
+
+
 
 
 
