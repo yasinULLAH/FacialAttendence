@@ -1404,6 +1404,8 @@
                         <span>Facial Recognition Scanner</span>
                         <span id="camera-status-pill"
                             style="font-size: 9px; padding: 2px 6px; border-radius: 4px; background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); font-weight: 700;">OFFLINE</span>
+                        <span id="wakelock-status-pill"
+                            style="font-size: 9px; padding: 2px 6px; border-radius: 4px; background: var(--panel); color: var(--muted); border: 1px solid var(--border); font-weight: 700; margin-left: 6px;">No-Sleep: Inactive</span>
                     </h2>
                     <div class="camera-container">
                         <video id="webcam-stream" autoplay loop muted playsinline></video>
@@ -1901,7 +1903,7 @@
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                                 <div class="input-group">
                                     <label>Department</label>
-                                    <select id="reg-employee-dept"></select>
+                                    <select id="reg-employee-dept" onchange="updateRegisterShiftDropdown()"></select>
                                 </div>
                                 <div class="input-group">
                                     <label>Role / Title</label>
@@ -1936,7 +1938,13 @@
                                 <div class="input-group">
                                     <label>Personal Grace Minutes (Optional)</label>
                                     <input type="number" id="reg-employee-shift-grace" min="0"
-                                        placeholder="Uses department/global when blank">
+                                        placeholder="Uses shift/global when blank">
+                                </div>
+                                <div class="input-group">
+                                    <label>Assigned Shift (Optional)</label>
+                                    <select id="reg-employee-assigned-shift">
+                                        <option value="">None (Default / Global)</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="input-group" style="margin-top: 4px;">
@@ -2058,6 +2066,10 @@
                                     <select id="emp-filter-dept" onchange="empSearchChange()" style="width: 150px;">
                                         <option value="all">All Departments</option>
                                     </select>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:6px; margin-left: 10px;">
+                                    <input type="checkbox" id="emp-show-deleted" onchange="empSearchChange()" style="width:auto; margin:0;">
+                                    <label for="emp-show-deleted" style="margin:0; text-transform:none; font-size:12px; font-weight:500; cursor:pointer; color:var(--text);">Show Deleted</label>
                                 </div>
                             </div>
                             <div class="table-responsive">
@@ -2185,7 +2197,10 @@
                             </div>
                             <button class="btn btn-secondary" onclick="saveShiftPolicySettings()">Apply Shift & Calendar
                                 Rules</button>
-                            <h2 style="margin-top: 10px;">Admin Movement Clips</h2>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                                <h2>Admin Movement Clips</h2>
+                                <button class="btn btn-danger" style="padding:4px 8px; font-size:11px; border-radius:4px;" onclick="clearAllMovementClips()">Clear All Clips</button>
+                            </div>
                             <div id="movement-clip-list"
                                 style="display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto; border:1px solid var(--border); border-radius:6px; padding:8px; background:var(--bg); font-size:12px;">
                                 <span style="color:var(--muted);">No movement clips captured yet.</span>
@@ -2224,18 +2239,74 @@
                                     style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; margin-top: 4px; padding-right: 4px;">
                                 </div>
                             </div>
-                            <div class="input-group" style="margin-top: 8px;">
-                                <label>Department Shift Templates</label>
-                                <div style="display:grid; grid-template-columns: 1fr 0.8fr 0.8fr; gap:6px;">
-                                    <select id="settings-shift-policy-dept"></select>
-                                    <input type="time" id="settings-shift-policy-time" value="09:00">
-                                    <input type="number" id="settings-shift-policy-grace" min="0" value="15"
-                                        placeholder="Grace">
+                            <div class="input-group" style="margin-top: 8px; border: 1px solid var(--border); padding: 10px; border-radius: 6px;">
+                                <label style="font-weight: 700; font-size: 13px;">Manage Shift Policies</label>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-top: 4px;">
+                                    <div class="input-group">
+                                        <label style="font-size: 11px;">Department</label>
+                                        <select id="settings-shift-policy-dept" style="width: 100%;"></select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label style="font-size: 11px;">Shift Title</label>
+                                        <input type="text" id="settings-shift-policy-name" placeholder="Morning Shift" style="width: 100%;">
+                                    </div>
                                 </div>
-                                <button class="btn btn-secondary" style="margin-top:6px;"
-                                    onclick="saveDepartmentShiftPolicy()">Save Department Shift Policy</button>
+                                <div style="display:grid; grid-template-columns: 1fr; gap:6px; margin-top: 6px;">
+                                    <div class="input-group">
+                                        <label style="font-size: 11px;">Shift Start Time</label>
+                                        <input type="time" id="settings-shift-policy-time" value="09:00" style="width: 100%;">
+                                    </div>
+                                </div>
+                                <div style="display:flex; gap: 6px; align-items:center; margin: 8px 0;">
+                                    <input type="checkbox" id="settings-shift-policy-custom" style="width:auto; margin:0;" onchange="toggleCustomShiftSettingsPanel()">
+                                    <label for="settings-shift-policy-custom" style="text-transform:none; letter-spacing:0; font-size:11px; margin:0; cursor:pointer; color:var(--text);">
+                                        Customize shift rules (otherwise inherits global settings)
+                                    </label>
+                                </div>
+                                <div id="custom-shift-settings-panel" style="display:none; border: 1px dashed var(--border); padding: 8px; border-radius: 6px; margin-bottom: 8px; background: rgba(0,0,0,0.02);">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                                        <div class="input-group">
+                                            <label style="font-size: 10px;">Grace Period (Min)</label>
+                                            <input type="number" id="settings-shift-policy-grace" min="0" value="15">
+                                        </div>
+                                        <div class="input-group">
+                                            <label style="font-size: 10px;">Min Session (Min)</label>
+                                            <input type="number" id="settings-shift-policy-min-session" min="30" value="480">
+                                        </div>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px;">
+                                        <div class="input-group">
+                                            <label style="font-size: 10px;">Checkout Gap (Hrs)</label>
+                                            <input type="number" id="settings-shift-policy-gap" min="0.25" step="0.25" value="2">
+                                        </div>
+                                        <div class="input-group">
+                                            <label style="font-size: 10px;">Logout Cutoff Time</label>
+                                            <input type="time" id="settings-shift-policy-cutoff-time" value="15:00">
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; gap: 6px; align-items:center; margin: 6px 0;">
+                                        <input type="checkbox" id="settings-shift-policy-cutoff-enabled" style="width:auto; margin:0;" checked>
+                                        <label for="settings-shift-policy-cutoff-enabled" style="text-transform:none; letter-spacing:0; font-size:10px; margin:0; cursor:pointer; color:var(--text);">
+                                            Enforce logout cutoff rule
+                                        </label>
+                                    </div>
+                                    <div class="input-group">
+                                        <label style="font-size: 10px; margin-bottom: 2px;">Weekend Days Selection</label>
+                                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                            <label style="display:flex; align-items:center; gap:2px; text-transform:none; font-size:10px; font-weight:500; cursor:pointer; color:var(--text);"><input type="checkbox" id="wk-shift-0" value="0" style="width:auto;" checked> Sun</label>
+                                            <label style="display:flex; align-items:center; gap:2px; text-transform:none; font-size:10px; font-weight:500; cursor:pointer; color:var(--text);"><input type="checkbox" id="wk-shift-1" value="1" style="width:auto;"> Mon</label>
+                                            <label style="display:flex; align-items:center; gap:2px; text-transform:none; font-size:10px; font-weight:500; cursor:pointer; color:var(--text);"><input type="checkbox" id="wk-shift-2" value="2" style="width:auto;"> Tue</label>
+                                            <label style="display:flex; align-items:center; gap:2px; text-transform:none; font-size:10px; font-weight:500; cursor:pointer; color:var(--text);"><input type="checkbox" id="wk-shift-3" value="3" style="width:auto;"> Wed</label>
+                                            <label style="display:flex; align-items:center; gap:2px; text-transform:none; font-size:10px; font-weight:500; cursor:pointer; color:var(--text);"><input type="checkbox" id="wk-shift-4" value="4" style="width:auto;"> Thu</label>
+                                            <label style="display:flex; align-items:center; gap:2px; text-transform:none; font-size:10px; font-weight:500; cursor:pointer; color:var(--text);"><input type="checkbox" id="wk-shift-5" value="5" style="width:auto;"> Fri</label>
+                                            <label style="display:flex; align-items:center; gap:2px; text-transform:none; font-size:10px; font-weight:500; cursor:pointer; color:var(--text);"><input type="checkbox" id="wk-shift-6" value="6" style="width:auto;" checked> Sat</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-secondary" style="margin-top:2px; width: 100%;"
+                                    onclick="saveDepartmentShiftPolicy()">Save Shift Policy</button>
                                 <div id="shift-policy-list-container"
-                                    style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; margin-top: 6px; padding-right: 4px;">
+                                    style="display: flex; flex-direction: column; gap: 4px; max-height: 150px; overflow-y: auto; margin-top: 6px; padding-right: 4px;">
                                 </div>
                             </div>
                             <h2 style="margin-top: 10px;">System Datastore Utilities</h2>
@@ -2352,6 +2423,21 @@
                 <button class="btn btn-secondary" onclick="closeRetroactiveModal()">Cancel</button>
                 <button class="btn btn-primary" onclick="commitRetroactiveAttendanceLog()">Save Attendance
                     Record</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="import-conflict-modal" style="display:none; z-index: 1050;">
+        <div class="modal-card" style="max-width: 500px; width: 90%;">
+            <h2>Import Conflict Detected</h2>
+            <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">
+                The following employee profiles already exist in the local database. How would you like to resolve these conflicts?
+            </p>
+            <div id="import-conflict-list" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; padding: 8px; background: var(--bg); margin-bottom: 16px; font-size: 12px; display: flex; flex-direction: column; gap: 4px;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button class="btn btn-primary" id="btn-import-overwrite" style="width: 100%;">Overwrite Existing Profiles</button>
+                <button class="btn btn-secondary" id="btn-import-skip" style="width: 100%;">Skip Duplicates (Import New Only)</button>
+                <button class="btn btn-danger" id="btn-import-cancel" style="width: 100%;">Cancel Import</button>
             </div>
         </div>
     </div>
@@ -2581,6 +2667,7 @@
         let shiftGraceMinutes = 15;
         let minimumSessionMinutes = 480;
         let weekendDays = [0, 6];
+        let precompiledShiftPoliciesList = [];
         let checkoutGapHours = 2;
         let logoutCutoffEnabled = false;
         let logoutCutoffTime = "15:00";
@@ -3158,6 +3245,12 @@
     
 
     
+
+    
+
+    
+
+    
 <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head><body>${summaryHtml}</body></html>`);
@@ -3167,7 +3260,7 @@
         }
         function initializeDatabaseCoreSubsystems() {
             return new Promise((resolve, reject) => {
-                const openRequest = indexedDB.open("EnterpriseFaceKioskCoreDB", 6);
+                const openRequest = indexedDB.open("EnterpriseFaceKioskCoreDB", 7);
                 openRequest.onupgradeneeded = (e) => {
                     const db = e.target.result;
                     if (!db.objectStoreNames.contains("employees")) {
@@ -3188,8 +3281,35 @@
                     if (!db.objectStoreNames.contains("leave_requests")) {
                         db.createObjectStore("leave_requests", { keyPath: "id", autoIncrement: true });
                     }
-                    if (!db.objectStoreNames.contains("shift_policies")) {
-                        db.createObjectStore("shift_policies", { keyPath: "department" });
+                    if (db.objectStoreNames.contains("shift_policies")) {
+                        const transaction = e.target.transaction;
+                        const oldStore = transaction.objectStore("shift_policies");
+                        const cursorReq = oldStore.openCursor();
+                        const oldRecords = [];
+                        cursorReq.onsuccess = (event) => {
+                            const cursor = event.target.result;
+                            if (cursor) {
+                                oldRecords.push(cursor.value);
+                                cursor.continue();
+                            } else {
+                                db.deleteObjectStore("shift_policies");
+                                const newStore = db.createObjectStore("shift_policies", { keyPath: "id", autoIncrement: true });
+                                oldRecords.forEach(rec => {
+                                    newStore.add({
+                                        department: rec.department,
+                                        name: "Default Shift",
+                                        shiftStartTime: rec.shiftStartTime || "09:00",
+                                        shiftGraceMinutes: Number.isFinite(parseInt(rec.shiftGraceMinutes, 10)) ? parseInt(rec.shiftGraceMinutes, 10) : 15,
+                                        customSettingsEnabled: false
+                                    });
+                                });
+                            }
+                        };
+                    } else {
+                        db.createObjectStore("shift_policies", { keyPath: "id", autoIncrement: true });
+                    }
+                    if (!db.objectStoreNames.contains("security_clips")) {
+                        db.createObjectStore("security_clips", { keyPath: "id" });
                     }
                     if (!db.objectStoreNames.contains("audit_logs")) {
                         db.createObjectStore("audit_logs", { keyPath: "id", autoIncrement: true });
@@ -3270,7 +3390,7 @@
             }
             const logoutCutoffEnabledCfg = await readConfigKey("logout_cutoff_enabled");
             if (logoutCutoffEnabledCfg === null || logoutCutoffEnabledCfg === undefined) {
-                await writeDatabaseRecord("system_config", { key: "logout_cutoff_enabled", value: "0" });
+                await writeDatabaseRecord("system_config", { key: "logout_cutoff_enabled", value: "1" });
             }
             const logoutCutoff = await readConfigKey("logout_cutoff_time");
             if (!logoutCutoff) {
@@ -3550,7 +3670,7 @@
             recorder.ondataavailable = ev => {
                 if (ev.data && ev.data.size > 0) motionRecordingChunks.push(ev.data);
             };
-            recorder.onstop = () => {
+            recorder.onstop = async () => {
                 const endedAt = Date.now();
                 const blob = new Blob(motionRecordingChunks, { type: mimeType || 'video/webm' });
                 const url = URL.createObjectURL(blob);
@@ -3563,12 +3683,20 @@
                     blob: blob,
                     url: url
                 };
+                await writeDatabaseRecord("security_clips", {
+                    id: clip.id,
+                    mode: clip.mode,
+                    startedAt: clip.startedAt,
+                    endedAt: clip.endedAt,
+                    durationSec: clip.durationSec,
+                    blob: blob
+                });
                 motionClipRecords.unshift(clip);
                 renderMovementClipsList();
                 if (motionAutoDownload) {
                     downloadMovementClipById(clip.id);
                 } else {
-                    triggerToast("Motion clip saved in memory", "success");
+                    triggerToast("Motion clip saved", "success");
                 }
                 clonedStream.getTracks().forEach(track => track.stop());
                 motionRecordingChunks = [];
@@ -3604,7 +3732,10 @@
                         <strong>${clip.mode} Clip</strong>
                         <span style="color:var(--muted); font-size:11px;">${startTime} - ${clip.durationSec}s</span>
                     </div>
-                    <button class="btn btn-secondary" style="padding:4px 8px; font-size:10px; border-radius:4px;" onclick="downloadMovementClipById('${clip.id}')">Download</button>
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn btn-secondary" style="padding:4px 8px; font-size:10px; border-radius:4px;" onclick="downloadMovementClipById('${clip.id}')">Download</button>
+                        <button class="btn btn-danger" style="padding:4px 8px; font-size:10px; border-radius:4px;" onclick="deleteMovementClipById('${clip.id}')">Delete</button>
+                    </div>
                 `;
                 ui.movementClipList.appendChild(row);
             });
@@ -3618,6 +3749,32 @@
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+        }
+        async function deleteMovementClipById(clipId) {
+            if (!confirm("Delete this security clip?")) return;
+            await deleteDatabaseRecord("security_clips", clipId);
+            const idx = motionClipRecords.findIndex(c => c.id === clipId);
+            if (idx !== -1) {
+                const c = motionClipRecords[idx];
+                if (c.url) URL.revokeObjectURL(c.url);
+                motionClipRecords.splice(idx, 1);
+            }
+            renderMovementClipsList();
+            triggerToast("Clip deleted", "success");
+        }
+        async function clearAllMovementClips() {
+            if (!confirm("Are you sure you want to clear all movement clips from local database?")) return;
+            const txn = indexedDatabasePointer.transaction("security_clips", "readwrite");
+            const store = txn.objectStore("security_clips");
+            store.clear();
+            txn.oncomplete = () => {
+                motionClipRecords.forEach(c => {
+                    if (c.url) URL.revokeObjectURL(c.url);
+                });
+                motionClipRecords = [];
+                renderMovementClipsList();
+                triggerToast("All movement clips cleared", "success");
+            };
         }
         async function startManualContinuousRecording(enforcePassword = true) {
             if (enforcePassword) {
@@ -3639,7 +3796,7 @@
             recorder.ondataavailable = ev => {
                 if (ev.data && ev.data.size > 0) manualRecordingChunks.push(ev.data);
             };
-            recorder.onstop = () => {
+            recorder.onstop = async () => {
                 const endedAt = Date.now();
                 const blob = new Blob(manualRecordingChunks, { type: mimeType || 'video/webm' });
                 const url = URL.createObjectURL(blob);
@@ -3652,6 +3809,14 @@
                     blob: blob,
                     url: url
                 };
+                await writeDatabaseRecord("security_clips", {
+                    id: clip.id,
+                    mode: clip.mode,
+                    startedAt: clip.startedAt,
+                    endedAt: clip.endedAt,
+                    durationSec: clip.durationSec,
+                    blob: blob
+                });
                 motionClipRecords.unshift(clip);
                 renderMovementClipsList();
                 if (motionAutoDownload) {
@@ -3708,17 +3873,41 @@
             try {
                 await wakeLockHandle.release();
             } catch (err) {
-                // ignore release issues
             }
             wakeLockHandle = null;
             updateWakeLockButton();
         }
         function updateWakeLockButton() {
-            if (!ui.wakeLockToggleBtn) return;
-            if (wakeLockEnabled) {
-                ui.wakeLockToggleBtn.textContent = "Disable No-Sleep Mode";
-            } else {
-                ui.wakeLockToggleBtn.textContent = "Enable No-Sleep Mode";
+            if (ui.wakeLockToggleBtn) {
+                if (wakeLockEnabled) {
+                    ui.wakeLockToggleBtn.textContent = "Disable No-Sleep Mode";
+                } else {
+                    ui.wakeLockToggleBtn.textContent = "Enable No-Sleep Mode";
+                }
+            }
+            const statusPill = document.getElementById('wakelock-status-pill');
+            if (statusPill) {
+                if (!('wakeLock' in navigator)) {
+                    statusPill.textContent = "No-Sleep: Unsupported";
+                    statusPill.style.background = "var(--danger-bg)";
+                    statusPill.style.color = "var(--danger)";
+                    statusPill.style.borderColor = "var(--danger)";
+                } else if (wakeLockHandle) {
+                    statusPill.textContent = "No-Sleep: Active";
+                    statusPill.style.background = "var(--success-bg)";
+                    statusPill.style.color = "var(--success)";
+                    statusPill.style.borderColor = "var(--success)";
+                } else if (wakeLockEnabled) {
+                    statusPill.textContent = "No-Sleep: Unverified";
+                    statusPill.style.background = "var(--warning-bg)";
+                    statusPill.style.color = "var(--warning)";
+                    statusPill.style.borderColor = "var(--warning)";
+                } else {
+                    statusPill.textContent = "No-Sleep: Inactive";
+                    statusPill.style.background = "var(--panel)";
+                    statusPill.style.color = "var(--muted)";
+                    statusPill.style.borderColor = "var(--border)";
+                }
             }
         }
         async function toggleSleepPrevention(enforcePassword = true) {
@@ -3847,53 +4036,95 @@
             reader.onload = async (e) => {
                 try {
                     const dataset = JSON.parse(e.target.result);
+                    const existingEmployees = await readAllDatabaseRecords("employees");
+                    const duplicates = [];
                     if (dataset.emps) {
-                        for (const item of dataset.emps) {
-                            await writeDatabaseRecord("employees", item);
-                        }
+                        dataset.emps.forEach(importedEmp => {
+                            const match = existingEmployees.find(emp => String(emp.id).toLowerCase() === String(importedEmp.id).toLowerCase());
+                            if (match) {
+                                duplicates.push({ imported: importedEmp, existing: match });
+                            }
+                        });
                     }
-                    if (dataset.logs) {
-                        for (const item of dataset.logs) {
-                            await writeDatabaseRecord("attendance_logs", item);
+                    const doImport = async (overwrite) => {
+                        if (dataset.emps) {
+                            for (const item of dataset.emps) {
+                                const isDup = duplicates.some(d => String(d.imported.id).toLowerCase() === String(item.id).toLowerCase());
+                                if (isDup) {
+                                    if (overwrite) {
+                                        await writeDatabaseRecord("employees", item);
+                                    }
+                                } else {
+                                    await writeDatabaseRecord("employees", item);
+                                }
+                            }
                         }
-                    }
-                    if (dataset.depts) {
-                        for (const item of dataset.depts) {
-                            await writeDatabaseRecord("departments", item);
+                        if (dataset.logs) {
+                            for (const item of dataset.logs) {
+                                await writeDatabaseRecord("attendance_logs", item);
+                            }
                         }
-                    }
-                    if (dataset.holidays) {
-                        for (const item of dataset.holidays) {
-                            await writeDatabaseRecord("holidays", item);
+                        if (dataset.depts) {
+                            for (const item of dataset.depts) {
+                                await writeDatabaseRecord("departments", item);
+                            }
                         }
-                    }
-                    if (dataset.leaveRequests) {
-                        for (const item of dataset.leaveRequests) {
-                            await writeDatabaseRecord("leave_requests", item);
+                        if (dataset.holidays) {
+                            for (const item of dataset.holidays) {
+                                await writeDatabaseRecord("holidays", item);
+                            }
                         }
-                    }
-                    if (dataset.shiftPolicies) {
-                        for (const item of dataset.shiftPolicies) {
-                            await writeDatabaseRecord("shift_policies", item);
+                        if (dataset.leaveRequests) {
+                            for (const item of dataset.leaveRequests) {
+                                await writeDatabaseRecord("leave_requests", item);
+                            }
                         }
-                    }
-                    if (dataset.auditLogs) {
-                        for (const item of dataset.auditLogs) {
-                            await writeDatabaseRecord("audit_logs", item);
+                        if (dataset.shiftPolicies) {
+                            for (const item of dataset.shiftPolicies) {
+                                await writeDatabaseRecord("shift_policies", item);
+                            }
                         }
+                        if (dataset.auditLogs) {
+                            for (const item of dataset.auditLogs) {
+                                await writeDatabaseRecord("audit_logs", item);
+                            }
+                        }
+                        triggerToast("Registry Backup Synchronized", "success");
+                        AudioEngine.play('success');
+                        await rebuildComputationalMatchingGraph();
+                        await renderAdministrativeEmployeeDirectoryTable();
+                        populateManualOverrideDropdown();
+                        populateLeaveRequestDropdown();
+                        await renderLeaveRequests();
+                        await renderDepartmentShiftPolicies();
+                        await renderAuditTrail();
+                        suggestNextEmployeeId();
+                        await syncActiveFiltersList();
+                        await logAuditEvent("backup_imported_json");
+                    };
+                    if (duplicates.length > 0) {
+                        const modal = document.getElementById('import-conflict-modal');
+                        const list = document.getElementById('import-conflict-list');
+                        list.innerHTML = '';
+                        duplicates.forEach(d => {
+                            list.innerHTML += `<div style="padding: 4px; border-bottom: 1px solid var(--border);"><strong>${d.imported.name} (${d.imported.id})</strong> - Dept: ${d.imported.department}</div>`;
+                        });
+                        modal.style.display = 'flex';
+                        document.getElementById('btn-import-overwrite').onclick = async () => {
+                            modal.style.display = 'none';
+                            await doImport(true);
+                        };
+                        document.getElementById('btn-import-skip').onclick = async () => {
+                            modal.style.display = 'none';
+                            await doImport(false);
+                        };
+                        document.getElementById('btn-import-cancel').onclick = () => {
+                            modal.style.display = 'none';
+                            triggerToast("Import cancelled by user", "warning");
+                        };
+                    } else {
+                        await doImport(false);
                     }
-                    triggerToast("Registry Backup Synchronized", "success");
-                    AudioEngine.play('success');
-                    await rebuildComputationalMatchingGraph();
-                    await renderAdministrativeEmployeeDirectoryTable();
-                    populateManualOverrideDropdown();
-                    populateLeaveRequestDropdown();
-                    await renderLeaveRequests();
-                    await renderDepartmentShiftPolicies();
-                    await renderAuditTrail();
-                    suggestNextEmployeeId();
-                    await syncActiveFiltersList();
-                    await logAuditEvent("backup_imported_json");
                 } catch (err) {
                     triggerToast("File format invalid", "error");
                     AudioEngine.play('error');
@@ -4008,6 +4239,16 @@
                     faceapi.nets.faceRecognitionNet.loadFromUri(CDN_MODELS_PATH)
                 ]);
                 await rebuildComputationalMatchingGraph();
+                const storedClips = await readAllDatabaseRecords("security_clips");
+                motionClipRecords = storedClips.map(c => ({
+                    id: c.id,
+                    mode: c.mode,
+                    startedAt: c.startedAt,
+                    endedAt: c.endedAt,
+                    durationSec: c.durationSec,
+                    blob: c.blob,
+                    url: URL.createObjectURL(c.blob)
+                })).sort((a, b) => b.startedAt - a.startedAt);
                 ui.banner.innerText = "Facial recognition core loaded. System online.";
                 updateCameraControlsUI();
                 updateManualRecordingButtons();
@@ -4039,8 +4280,9 @@
         async function rebuildComputationalMatchingGraph() {
             await loadEmployeesListFromDB();
             precompiledProfilesRegistry = [];
-            if (precompiledEmployeesList.length > 0) {
-                precompiledEmployeesList.forEach(record => {
+            const activeEmployees = precompiledEmployeesList.filter(e => !e.deletedAt);
+            if (activeEmployees.length > 0) {
+                activeEmployees.forEach(record => {
                     const floatArray = new Float32Array(record.descriptor);
                     precompiledProfilesRegistry.push(new faceapi.LabeledFaceDescriptors(record.id, [floatArray]));
                 });
@@ -4146,52 +4388,139 @@
                 // Non-blocking by design.
             }
         }
+        function resolveAllShiftParametersSync(employee, policies, globalParams) {
+            let resolved = {
+                shiftStartTime: globalParams.shiftStartTime,
+                shiftGraceMinutes: globalParams.shiftGraceMinutes,
+                minimumSessionMinutes: globalParams.minimumSessionMinutes,
+                checkoutGapHours: globalParams.checkoutGapHours,
+                logoutCutoffEnabled: globalParams.logoutCutoffEnabled,
+                logoutCutoffTime: globalParams.logoutCutoffTime,
+                weekendDays: globalParams.weekendDays
+            };
+            if (employee && employee.department) {
+                const deptShift = policies.find(p => p.department === employee.department);
+                if (deptShift) {
+                    resolved.shiftStartTime = deptShift.shiftStartTime || resolved.shiftStartTime;
+                    if (deptShift.customSettingsEnabled) {
+                        resolved.shiftGraceMinutes = (deptShift.shiftGraceMinutes !== undefined && deptShift.shiftGraceMinutes !== null) ? deptShift.shiftGraceMinutes : resolved.shiftGraceMinutes;
+                        resolved.minimumSessionMinutes = (deptShift.minimumSessionMinutes !== undefined && deptShift.minimumSessionMinutes !== null) ? deptShift.minimumSessionMinutes : resolved.minimumSessionMinutes;
+                        resolved.checkoutGapHours = (deptShift.checkoutGapHours !== undefined && deptShift.checkoutGapHours !== null) ? deptShift.checkoutGapHours : resolved.checkoutGapHours;
+                        resolved.logoutCutoffEnabled = (deptShift.logoutCutoffEnabled !== undefined && deptShift.logoutCutoffEnabled !== null) ? deptShift.logoutCutoffEnabled : resolved.logoutCutoffEnabled;
+                        resolved.logoutCutoffTime = deptShift.logoutCutoffTime || resolved.logoutCutoffTime;
+                        resolved.weekendDays = deptShift.weekendDays || resolved.weekendDays;
+                    } else {
+                        resolved.shiftGraceMinutes = (deptShift.shiftGraceMinutes !== undefined && deptShift.shiftGraceMinutes !== null) ? deptShift.shiftGraceMinutes : resolved.shiftGraceMinutes;
+                    }
+                }
+            }
+            if (employee && employee.assignedShiftId) {
+                const assignedShift = policies.find(p => p.id === employee.assignedShiftId);
+                if (assignedShift) {
+                    resolved.shiftStartTime = assignedShift.shiftStartTime || resolved.shiftStartTime;
+                    if (assignedShift.customSettingsEnabled) {
+                        resolved.shiftGraceMinutes = (assignedShift.shiftGraceMinutes !== undefined && assignedShift.shiftGraceMinutes !== null) ? assignedShift.shiftGraceMinutes : resolved.shiftGraceMinutes;
+                        resolved.minimumSessionMinutes = (assignedShift.minimumSessionMinutes !== undefined && assignedShift.minimumSessionMinutes !== null) ? assignedShift.minimumSessionMinutes : resolved.minimumSessionMinutes;
+                        resolved.checkoutGapHours = (assignedShift.checkoutGapHours !== undefined && assignedShift.checkoutGapHours !== null) ? assignedShift.checkoutGapHours : resolved.checkoutGapHours;
+                        resolved.logoutCutoffEnabled = (assignedShift.logoutCutoffEnabled !== undefined && assignedShift.logoutCutoffEnabled !== null) ? assignedShift.logoutCutoffEnabled : resolved.logoutCutoffEnabled;
+                        resolved.logoutCutoffTime = assignedShift.logoutCutoffTime || resolved.logoutCutoffTime;
+                        resolved.weekendDays = assignedShift.weekendDays || resolved.weekendDays;
+                    } else {
+                        resolved.shiftGraceMinutes = (assignedShift.shiftGraceMinutes !== undefined && assignedShift.shiftGraceMinutes !== null) ? assignedShift.shiftGraceMinutes : resolved.shiftGraceMinutes;
+                    }
+                }
+            }
+            if (employee) {
+                if (employee.shiftStartTime) {
+                    resolved.shiftStartTime = employee.shiftStartTime;
+                }
+                if (employee.shiftGraceMinutes !== undefined && employee.shiftGraceMinutes !== null) {
+                    resolved.shiftGraceMinutes = employee.shiftGraceMinutes;
+                }
+            }
+            return resolved;
+        }
+        function resolveAllShiftParametersForEmployee(employee) {
+            const globalParams = {
+                shiftStartTime: shiftStartTime,
+                shiftGraceMinutes: shiftGraceMinutes,
+                minimumSessionMinutes: minimumSessionMinutes,
+                checkoutGapHours: checkoutGapHours,
+                logoutCutoffEnabled: logoutCutoffEnabled,
+                logoutCutoffTime: logoutCutoffTime,
+                weekendDays: weekendDays
+            };
+            return resolveAllShiftParametersSync(employee, precompiledShiftPoliciesList, globalParams);
+        }
         async function resolveShiftPolicyForEmployee(empId, fallbackDept = "") {
-            let policyStart = shiftStartTime;
-            let policyGrace = shiftGraceMinutes;
-            const policies = await readAllDatabaseRecords("shift_policies");
-            const employee = precompiledEmployeesList.find(e => e.id === empId);
-            const dept = employee ? employee.department : fallbackDept;
-            const deptPolicy = policies.find(p => p.department === dept);
-            if (deptPolicy && deptPolicy.shiftStartTime) {
-                policyStart = deptPolicy.shiftStartTime;
-            }
-            if (deptPolicy && Number.isFinite(parseInt(deptPolicy.shiftGraceMinutes, 10))) {
-                policyGrace = parseInt(deptPolicy.shiftGraceMinutes, 10);
-            }
-            if (employee && employee.shiftStartTime) {
-                policyStart = employee.shiftStartTime;
-            }
-            if (employee && Number.isFinite(parseInt(employee.shiftGraceMinutes, 10))) {
-                policyGrace = parseInt(employee.shiftGraceMinutes, 10);
-            }
-            return { shiftStartTime: policyStart, shiftGraceMinutes: policyGrace };
+            const employee = precompiledEmployeesList.find(e => e.id === empId) || { department: fallbackDept };
+            const resolved = resolveAllShiftParametersForEmployee(employee);
+            return { shiftStartTime: resolved.shiftStartTime, shiftGraceMinutes: resolved.shiftGraceMinutes };
+        }
+        function toggleCustomShiftSettingsPanel() {
+            const isCustom = document.getElementById('settings-shift-policy-custom').checked;
+            document.getElementById('custom-shift-settings-panel').style.display = isCustom ? 'block' : 'none';
         }
         async function saveDepartmentShiftPolicy() {
             const department = document.getElementById('settings-shift-policy-dept').value;
+            const shiftName = document.getElementById('settings-shift-policy-name').value.trim();
             const shiftTime = document.getElementById('settings-shift-policy-time').value;
-            const grace = parseInt(document.getElementById('settings-shift-policy-grace').value, 10);
-            if (!department || !shiftTime || Number.isNaN(grace) || grace < 0) {
-                triggerToast("Department shift policy fields are invalid", "warning");
+            const customEnabled = document.getElementById('settings-shift-policy-custom').checked;
+            if (!department || !shiftName || !shiftTime) {
+                triggerToast("Department, shift name, and shift time are required", "warning");
                 return;
+            }
+            let grace = null;
+            let minSession = null;
+            let gap = null;
+            let cutoffTime = null;
+            let cutoffEnabled = true;
+            let weekendChecked = [];
+            if (customEnabled) {
+                grace = parseInt(document.getElementById('settings-shift-policy-grace').value, 10);
+                minSession = parseInt(document.getElementById('settings-shift-policy-min-session').value, 10);
+                gap = parseFloat(document.getElementById('settings-shift-policy-gap').value);
+                cutoffTime = document.getElementById('settings-shift-policy-cutoff-time').value;
+                cutoffEnabled = document.getElementById('settings-shift-policy-cutoff-enabled').checked;
+                if (Number.isNaN(grace) || grace < 0 || Number.isNaN(minSession) || minSession < 30 || !cutoffTime || Number.isNaN(gap) || gap < 0.25) {
+                    triggerToast("Custom shift parameter values are invalid", "warning");
+                    return;
+                }
+                for (let i = 0; i < 7; i++) {
+                    if (document.getElementById(`wk-shift-${i}`).checked) {
+                        weekendChecked.push(i);
+                    }
+                }
+            } else {
+                grace = parseInt(document.getElementById('settings-shift-policy-grace').value, 10);
+                if (Number.isNaN(grace) || grace < 0) {
+                    grace = 15;
+                }
             }
             await writeDatabaseRecord("shift_policies", {
                 department: department,
+                name: shiftName,
                 shiftStartTime: shiftTime,
-                shiftGraceMinutes: grace
+                customSettingsEnabled: customEnabled,
+                shiftGraceMinutes: grace,
+                minimumSessionMinutes: minSession,
+                checkoutGapHours: gap,
+                logoutCutoffEnabled: cutoffEnabled,
+                logoutCutoffTime: cutoffTime,
+                weekendDays: customEnabled ? weekendChecked : null
             });
             await renderDepartmentShiftPolicies();
-            triggerToast(`Shift template saved for ${department}`, "success");
+            triggerToast(`Shift '${shiftName}' saved for ${department}`, "success");
             AudioEngine.play('success');
-            await logAuditEvent("department_shift_policy_saved", { department, shiftTime, grace });
+            await logAuditEvent("department_shift_policy_saved", { department, shiftName, shiftTime });
         }
-        async function deleteDepartmentShiftPolicy(department) {
-            if (!confirm(`Delete shift policy for ${department}?`)) return;
-            await deleteDatabaseRecord("shift_policies", department);
+        async function deleteDepartmentShiftPolicy(id) {
+            if (!confirm(`Delete this shift policy?`)) return;
+            await deleteDatabaseRecord("shift_policies", id);
             await renderDepartmentShiftPolicies();
-            triggerToast(`Shift policy removed for ${department}`, "warning");
+            triggerToast(`Shift policy removed`, "warning");
             AudioEngine.play('warning');
-            await logAuditEvent("department_shift_policy_deleted", { department });
+            await logAuditEvent("department_shift_policy_deleted", { id });
         }
         async function renderDepartmentShiftPolicies() {
             const listContainer = document.getElementById('shift-policy-list-container');
@@ -4199,6 +4528,7 @@
             if (!listContainer || !deptSelect) return;
             const departments = await readAllDatabaseRecords("departments");
             const policies = await readAllDatabaseRecords("shift_policies");
+            precompiledShiftPoliciesList = policies;
             const previous = deptSelect.value;
             deptSelect.innerHTML = "";
             departments.forEach(d => {
@@ -4215,11 +4545,25 @@
             policies.sort((a, b) => a.department.localeCompare(b.department)).forEach(policy => {
                 const div = document.createElement('div');
                 div.style = "display:flex; justify-content:space-between; align-items:center; background:var(--bg); border:1px solid var(--border); padding:6px 10px; border-radius:6px; font-size:12px; gap:6px;";
+                const details = policy.customSettingsEnabled ? "Custom Rules" : `Grace: +${policy.shiftGraceMinutes}m`;
                 div.innerHTML = `
-                    <span><strong>${policy.department}</strong> - ${policy.shiftStartTime} (+${policy.shiftGraceMinutes}m)</span>
-                    <button class="btn btn-danger" style="padding:2px 6px; font-size:10px; border-radius:4px;" onclick="deleteDepartmentShiftPolicy('${policy.department.replace(/'/g, "\\'")}')">Drop</button>
+                    <span><strong>${policy.department}</strong> - ${policy.name} (${policy.shiftStartTime}, ${details})</span>
+                    <button class="btn btn-danger" style="padding:2px 6px; font-size:10px; border-radius:4px;" onclick="deleteDepartmentShiftPolicy(${policy.id})">Drop</button>
                 `;
                 listContainer.appendChild(div);
+            });
+        }
+        async function updateRegisterShiftDropdown() {
+            const selectEl = document.getElementById('reg-employee-assigned-shift');
+            if (!selectEl) return;
+            const dept = document.getElementById('reg-employee-dept').value;
+            selectEl.innerHTML = '<option value="">None (Default / Global)</option>';
+            const policies = await readAllDatabaseRecords("shift_policies");
+            policies.filter(p => p.department === dept).forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.innerText = `${p.name} (${p.shiftStartTime})`;
+                selectEl.appendChild(opt);
             });
         }
         async function renderComplianceAlerts(logs, employees) {
@@ -4666,6 +5010,7 @@
                     status: targetStatusString,
                     shiftStartTime: personalShiftStart || null,
                     shiftGraceMinutes: personalShiftGrace,
+                    assignedShiftId: document.getElementById('reg-employee-assigned-shift').value ? parseInt(document.getElementById('reg-employee-assigned-shift').value, 10) : null,
                     joined: originalRecord ? (originalRecord.joined || Date.now()) : Date.now()
                 });
                 await rebuildComputationalMatchingGraph();
@@ -4709,7 +5054,9 @@
             const listing = await readAllDatabaseRecords("employees");
             const searchQuery = document.getElementById('emp-search-name').value.toLowerCase().trim();
             const deptQuery = document.getElementById('emp-filter-dept').value;
+            const showDeleted = document.getElementById('emp-show-deleted').checked;
             filteredEmpList = listing.filter(emp => {
+                if (!showDeleted && emp.deletedAt) return false;
                 const empName = (emp.name || "").toLowerCase();
                 const empId = (emp.id || "").toLowerCase();
                 const empRole = (emp.role || "").toLowerCase();
@@ -4738,11 +5085,27 @@
             pagedEmps.forEach(employee => {
                 const joinedDate = employee.joined ? new Date(employee.joined).toLocaleDateString() : "-";
                 const isBanned = employee.status === "Banned";
-                const statusBadge = isBanned
+                let statusBadge = isBanned
                     ? `<span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; background:var(--danger-bg); color:var(--danger); border:1px solid var(--danger);">Suspended</span>`
                     : `<span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; background:var(--success-bg); color:var(--success); border:1px solid var(--success);">Active</span>`;
+                if (employee.deletedAt) {
+                    statusBadge = `<span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; background:var(--muted-bg); color:var(--muted); border:1px solid var(--muted);">Deleted</span>`;
+                }
                 const shiftText = employee.shiftStartTime ? `${employee.shiftStartTime} (+${Number.isFinite(parseInt(employee.shiftGraceMinutes, 10)) ? employee.shiftGraceMinutes : shiftGraceMinutes}m)` : "Dept/Global";
                 const tr = document.createElement('tr');
+                if (employee.deletedAt) {
+                    tr.style.opacity = '0.65';
+                }
+                let actionButtons = '';
+                if (employee.deletedAt) {
+                    actionButtons = `<button class="btn btn-primary" style="padding:4px 8px; font-size:11px; border-radius:4px;" onclick="restoreEmployeeProfile('${employee.id}')">Restore</button>`;
+                } else {
+                    actionButtons = `
+                        <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px; border-radius:4px;" onclick="startEditEmployee('${employee.id}')">Edit</button>
+                        <button class="btn" style="padding:4px 8px; font-size:11px; border-radius:4px; background:${isBanned ? 'var(--success-bg)' : 'var(--warning-bg)'}; color:${isBanned ? 'var(--success)' : 'var(--warning)'}; border:1px solid ${isBanned ? 'var(--success)' : 'var(--warning)'};" onclick="toggleBanEmployee('${employee.id}')">${isBanned ? 'Activate' : 'Suspend'}</button>
+                        <button class="btn btn-danger" style="padding:4px 8px; font-size:11px; border-radius: 4px;" onclick="removeProfileTemplateRecord('${employee.id}')">Delete</button>
+                    `;
+                }
                 tr.innerHTML = `
                     <td style="font-weight:700; color: var(--primary); font-family:monospace;">${employee.id}</td>
                     <td style="font-weight:600; color: var(--text);">${employee.name}</td>
@@ -4754,9 +5117,7 @@
                     <td style="color:var(--muted);">${joinedDate}</td>
                     <td>
                         <div style="display:flex; gap:6px;">
-                            <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px; border-radius:4px;" onclick="startEditEmployee('${employee.id}')">Edit</button>
-                            <button class="btn" style="padding:4px 8px; font-size:11px; border-radius:4px; background:${isBanned ? 'var(--success-bg)' : 'var(--warning-bg)'}; color:${isBanned ? 'var(--success)' : 'var(--warning)'}; border:1px solid ${isBanned ? 'var(--success)' : 'var(--warning)'};" onclick="toggleBanEmployee('${employee.id}')">${isBanned ? 'Activate' : 'Suspend'}</button>
-                            <button class="btn btn-danger" style="padding:4px 8px; font-size:11px; border-radius: 4px;" onclick="removeProfileTemplateRecord('${employee.id}')">Delete</button>
+                            ${actionButtons}
                         </div>
                     </td>
                 `;
@@ -4768,8 +5129,13 @@
             refreshDataTablesButtons();
         }
         async function removeProfileTemplateRecord(nameId) {
-            if (confirm(`Confirm action: Drop template for ID [${nameId}]?`)) {
-                await deleteDatabaseRecord("employees", nameId);
+            if (confirm(`Confirm action: Soft-delete profile for ID [${nameId}]?`)) {
+                const existing = await readAllDatabaseRecords("employees");
+                const emp = existing.find(e => e.id === nameId);
+                if (emp) {
+                    emp.deletedAt = Date.now();
+                    await saveEmployeeRecordAndVerify(emp);
+                }
                 await rebuildComputationalMatchingGraph();
                 await renderAdministrativeEmployeeDirectoryTable();
                 populateManualOverrideDropdown();
@@ -4777,8 +5143,24 @@
                 suggestNextEmployeeId();
                 await syncActiveFiltersList();
                 await logAuditEvent("employee_profile_deleted", { id: nameId });
-                triggerToast("Face Template Deleted", "warning");
+                triggerToast("Profile soft-deleted successfully", "warning");
                 AudioEngine.play('warning');
+            }
+        }
+        async function restoreEmployeeProfile(nameId) {
+            const existing = await readAllDatabaseRecords("employees");
+            const emp = existing.find(e => e.id === nameId);
+            if (emp) {
+                delete emp.deletedAt;
+                await saveEmployeeRecordAndVerify(emp);
+                await rebuildComputationalMatchingGraph();
+                await renderAdministrativeEmployeeDirectoryTable();
+                populateManualOverrideDropdown();
+                populateLeaveRequestDropdown();
+                await syncActiveFiltersList();
+                await logAuditEvent("employee_profile_restored", { id: nameId });
+                triggerToast("Profile restored successfully", "success");
+                AudioEngine.play('success');
             }
         }
         const evaluateEuclideanPointsDistance = (pt1, pt2) => Math.sqrt(Math.pow(pt1.x - pt2.x, 2) + Math.pow(pt1.y - pt2.y, 2));
@@ -4980,25 +5362,19 @@
             }, suppressionCooldownPeriod);
         }
         async function calculateCheckInStatus(empId, empDept, now) {
-            const policy = await resolveShiftPolicyForEmployee(empId, empDept);
-            const [shiftH, shiftM] = policy.shiftStartTime.split(':').map(Number);
+            const employee = precompiledEmployeesList.find(e => e.id === empId);
+            const resolved = resolveAllShiftParametersForEmployee(employee || { department: empDept });
+            const [shiftH, shiftM] = resolved.shiftStartTime.split(':').map(Number);
             const shiftLimit = new Date(now);
-            shiftLimit.setHours(shiftH, (shiftM || 0) + (parseInt(policy.shiftGraceMinutes, 10) || 0), 0, 0);
+            shiftLimit.setHours(shiftH, (shiftM || 0) + (parseInt(resolved.shiftGraceMinutes, 10) || 0), 0, 0);
             return now.getTime() > shiftLimit.getTime() ? "Late" : "On-Time";
         }
-        function isBeforeLogoutCutoff(now) {
-            if (!logoutCutoffEnabled) return false;
-            const cutoffDate = parseTimeToDate(now, logoutCutoffTime || "15:00");
-            return now.getTime() < cutoffDate.getTime();
-        }
-        function isAfterLogoutCutoff(now) {
-            if (!logoutCutoffEnabled) return false;
-            const cutoffDate = parseTimeToDate(now, logoutCutoffTime || "15:00");
-            return now.getTime() >= cutoffDate.getTime();
-        }
-        function calculateCheckoutStatus(now, useBeforeCutoffTag = false) {
-            if (useBeforeCutoffTag && isBeforeLogoutCutoff(now)) {
-                return "Before-Cutoff";
+        function calculateCheckoutStatus(now, useBeforeCutoffTag = false, resolvedCutoffEnabled = logoutCutoffEnabled, resolvedCutoffTime = logoutCutoffTime) {
+            if (useBeforeCutoffTag && resolvedCutoffEnabled) {
+                const cutoffDate = parseTimeToDate(now, resolvedCutoffTime || "15:00");
+                if (now.getTime() < cutoffDate.getTime()) {
+                    return "Before-Cutoff";
+                }
             }
             return "-";
         }
@@ -5011,10 +5387,17 @@
             if (lastLog.type === "Check-Out") {
                 return { eventType: "Check-In", reason: "post-checkout-reentry" };
             }
-            const requiredGapHours = Math.max(0.25, Number(checkoutGapHours) || 2);
+            const employee = precompiledEmployeesList.find(e => e.id === empId);
+            const resolved = resolveAllShiftParametersForEmployee(employee || { department: lastLog.department });
+            const requiredGapHours = Math.max(0.25, Number(resolved.checkoutGapHours) || 2);
             const elapsedHours = (now.getTime() - Number(lastLog.timestamp || 0)) / 3600000;
             const canAutoCheckoutByGap = elapsedHours >= requiredGapHours;
-            if (canAutoCheckoutByGap || isAfterLogoutCutoff(now)) {
+            let isAfterCutoff = false;
+            if (resolved.logoutCutoffEnabled) {
+                const cutoffDate = parseTimeToDate(now, resolved.logoutCutoffTime || "15:00");
+                isAfterCutoff = now.getTime() >= cutoffDate.getTime();
+            }
+            if (canAutoCheckoutByGap || isAfterCutoff) {
                 return { eventType: "Check-Out", status: "-", reason: "auto-checkout" };
             }
             const confirmed = await showConfirmDialog({
@@ -5031,7 +5414,7 @@
             }
             return {
                 eventType: "Check-Out",
-                status: calculateCheckoutStatus(now, true),
+                status: calculateCheckoutStatus(now, true, resolved.logoutCutoffEnabled, resolved.logoutCutoffTime),
                 reason: "manual-early-checkout"
             };
         }
@@ -5042,13 +5425,15 @@
             const logsToday = allLogs
                 .filter(l => l.empId === empId && l.dateString === todayStr)
                 .sort((a, b) => a.timestamp - b.timestamp);
+            const employee = precompiledEmployeesList.find(e => e.id === empId);
+            const resolved = resolveAllShiftParametersForEmployee(employee || { department: empDept });
             let eventType = "Check-In";
             let status = "On-Time";
             if (manualTypeOverride) {
                 eventType = manualTypeOverride;
                 status = eventType === "Check-In"
                     ? await calculateCheckInStatus(empId, empDept, now)
-                    : calculateCheckoutStatus(now, true);
+                    : calculateCheckoutStatus(now, true, resolved.logoutCutoffEnabled, resolved.logoutCutoffTime);
             } else {
                 const resolution = await resolveAutomaticAttendanceEvent(empId, employeeName, logsToday, now);
                 if (resolution.cancelled) return;
@@ -5063,7 +5448,7 @@
             let checkoutCompliance = "-";
             if (eventType === "Check-Out") {
                 sessionMinutes = resolveCheckoutSessionMinutes(logsToday, now.getTime());
-                checkoutCompliance = resolveCheckoutCompliance(sessionMinutes);
+                checkoutCompliance = resolveCheckoutCompliance(sessionMinutes, resolved.minimumSessionMinutes);
             }
             const logEntry = {
                 empId: empId,
@@ -5162,6 +5547,7 @@
                         status: targetStatus,
                         shiftStartTime: personalShiftStart || null,
                         shiftGraceMinutes: personalShiftGrace,
+                        assignedShiftId: document.getElementById('reg-employee-assigned-shift').value ? parseInt(document.getElementById('reg-employee-assigned-shift').value, 10) : null,
                         joined: originalRecord ? (originalRecord.joined || Date.now()) : Date.now()
                     });
                     await rebuildComputationalMatchingGraph();
@@ -5196,7 +5582,7 @@
         async function populateManualOverrideDropdown() {
             const selectEl = document.getElementById('manual-log-employee');
             selectEl.innerHTML = '<option value="">Select Employee...</option>';
-            precompiledEmployeesList.forEach(emp => {
+            precompiledEmployeesList.filter(emp => !emp.deletedAt).forEach(emp => {
                 const opt = document.createElement('option');
                 opt.value = emp.id;
                 opt.innerText = `${emp.name} (${emp.id})`;
@@ -5208,7 +5594,7 @@
             if (!selectEl) return;
             selectEl.innerHTML = '<option value="">Select Employee...</option>';
             precompiledEmployeesList
-                .filter(emp => emp.status !== "Banned")
+                .filter(emp => emp.status !== "Banned" && !emp.deletedAt)
                 .forEach(emp => {
                     const opt = document.createElement('option');
                     opt.value = emp.id;
@@ -5345,6 +5731,8 @@
             document.getElementById('reg-employee-id').value = emp.id;
             document.getElementById('reg-employee-id').disabled = true;
             document.getElementById('reg-employee-dept').value = emp.department;
+            await updateRegisterShiftDropdown();
+            document.getElementById('reg-employee-assigned-shift').value = emp.assignedShiftId || "";
             document.getElementById('reg-employee-role').value = emp.role || "";
             document.getElementById('reg-employee-email').value = emp.email || "";
             document.getElementById('reg-employee-phone').value = emp.phone || "";
@@ -5368,6 +5756,7 @@
             document.getElementById('reg-employee-status').value = "Active";
             document.getElementById('reg-employee-shift-start').value = "";
             document.getElementById('reg-employee-shift-grace').value = "";
+            document.getElementById('reg-employee-assigned-shift').value = "";
             const idField = document.getElementById('reg-employee-id');
             idField.disabled = false;
             suggestNextEmployeeId();
@@ -5412,6 +5801,7 @@
                 status: targetStatusString,
                 shiftStartTime: personalShiftStart || null,
                 shiftGraceMinutes: personalShiftGrace,
+                assignedShiftId: document.getElementById('reg-employee-assigned-shift').value ? parseInt(document.getElementById('reg-employee-assigned-shift').value, 10) : null,
                 joined: originalRecord.joined || Date.now()
             });
             await rebuildComputationalMatchingGraph();
@@ -5530,10 +5920,9 @@
             const now = new Date();
             const todayStr = now.toISOString().split('T')[0];
             const currentDayIndex = now.getDay();
-            const isWeekend = weekendDays.includes(currentDayIndex);
             const isHoliday = holidays.some(h => h.date === todayStr);
             const logsToday = logs.filter(l => l.dateString === todayStr);
-            const activeEmployees = employees.filter(e => e.status !== "Banned");
+            const activeEmployees = employees.filter(e => e.status !== "Banned" && !e.deletedAt);
             const totalCount = activeEmployees.length;
             const presentTodayNames = new Set(logsToday.filter(l => l.type === "Check-In").map(l => l.empId));
             const presentTodayCount = presentTodayNames.size;
@@ -5553,8 +5942,16 @@
             );
             const leaveExemptCount = activeEmployees.filter(e => leaveTodaySet.has(e.id) && !presentTodayNames.has(e.id)).length;
             let absentCount = 0;
-            if (!isWeekend && !isHoliday) {
-                absentCount = Math.max(0, totalCount - presentTodayCount - leaveExemptCount);
+            if (!isHoliday) {
+                activeEmployees.forEach(emp => {
+                    if (presentTodayNames.has(emp.id)) return;
+                    if (leaveTodaySet.has(emp.id)) return;
+                    const resolved = resolveAllShiftParametersForEmployee(emp);
+                    const isEmpWeekend = resolved.weekendDays.includes(currentDayIndex);
+                    if (!isEmpWeekend) {
+                        absentCount++;
+                    }
+                });
             }
             document.getElementById('stat-total-emp').innerText = totalCount;
             document.getElementById('stat-present').innerText = presentTodayCount;
@@ -5872,14 +6269,15 @@
             let csvContent = "data:text/csv;charset=utf-8,";
             csvContent += "Date,Employee ID,Employee Name,Department,Role,First Check-In,Last Check-Out,Worked Minutes,Worked Duration,Checkout Compliance,Pending Checkout\n";
             employees
-                .filter(e => e.status !== "Banned")
+                .filter(e => e.status !== "Banned" && !e.deletedAt)
                 .forEach(emp => {
                     const summary = summaryMap.get(emp.id);
                     const firstIn = summary && summary.firstIn ? summary.firstIn.timeString : "";
                     const lastOut = summary && summary.lastOut ? summary.lastOut.timeString : "";
                     const totalMinutes = summary ? summary.totalMinutes : 0;
                     const hasOpenSession = summary ? !!summary.openCheckInTs : false;
-                    const checkoutCompliance = totalMinutes > 0 ? resolveCheckoutCompliance(totalMinutes) : "-";
+                    const resolved = resolveAllShiftParametersForEmployee(emp);
+                    const checkoutCompliance = totalMinutes > 0 ? resolveCheckoutCompliance(totalMinutes, resolved.minimumSessionMinutes) : "-";
                     csvContent += `"${todayStr}","${emp.id}","${emp.name}","${emp.department}","${emp.role || ''}","${firstIn}","${lastOut}","${totalMinutes}","${formatDurationFromMinutes(totalMinutes)}","${checkoutCompliance}","${hasOpenSession ? 'Yes' : 'No'}"\n`;
                 });
             const encodedUri = encodeURI(csvContent);
@@ -6239,6 +6637,11 @@
                 await requestWakeLock();
             }
         });
+        window.addEventListener('focus', async () => {
+            if (wakeLockEnabled) {
+                await requestWakeLock();
+            }
+        });
         window.addEventListener('beforeunload', (event) => {
             if (manualRecordingInstance || motionRecordingInstance || motionClipRecords.length > 0) {
                 event.preventDefault();
@@ -6248,6 +6651,9 @@
         window.onload = compileApplicationCoreSubsystems;
     </script>
     
+
+
+
 
 
 
