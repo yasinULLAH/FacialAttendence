@@ -757,7 +757,7 @@ if (isset($_GET['action'])) {
             letter-spacing: 0.5px;
         }
 
-        input,
+        input:not(.swal2-input),
         select {
             padding: 10px 12px;
             border: 1px solid var(--border);
@@ -774,7 +774,7 @@ if (isset($_GET['action'])) {
             color: var(--muted-light);
         }
 
-        input:focus,
+        input:not(.swal2-input):focus,
         select:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px var(--primary-glow);
@@ -992,6 +992,8 @@ if (isset($_GET['action'])) {
         .datatable-search-wrapper {
             position: relative;
             width: 100%;
+            display: flex;
+            align-items: center;
         }
 
         .datatable-search-wrapper svg {
@@ -1002,10 +1004,32 @@ if (isset($_GET['action'])) {
             width: 14px;
             height: 14px;
             color: var(--muted);
+            pointer-events: none;
+            z-index: 2;
         }
 
         .datatable-search-input {
-            padding-left: 32px;
+            min-height: 38px;
+            line-height: 1.25;
+            padding-left: 36px;
+            padding-right: 12px;
+        }
+
+        .datatable-search-wrapper .datatable-search-input {
+            padding-left: 44px !important;
+        }
+
+        #emp-search-name {
+            min-height: 40px;
+            padding-left: 44px !important;
+        }
+
+        .swal2-popup .swal2-input {
+            width: calc(100% - 4em);
+            max-width: calc(100% - 4em);
+            margin-left: 2em;
+            margin-right: 2em;
+            box-sizing: border-box;
         }
 
         .datatable-filters {
@@ -1172,6 +1196,123 @@ if (isset($_GET['action'])) {
             gap: 16px;
         }
 
+        @media (max-width: 767px) {
+            main {
+                padding: 10px;
+                gap: 10px;
+            }
+
+            .card {
+                padding: 12px;
+                border-radius: 10px;
+            }
+
+            h2 {
+                font-size: 14px;
+            }
+
+            label {
+                font-size: 10px;
+                letter-spacing: 0.25px;
+            }
+
+            .btn,
+            .control-btn {
+                padding: 7px 10px;
+                font-size: 11px;
+                min-height: 34px;
+                border-radius: 9px;
+            }
+
+            input:not(.swal2-input),
+            select,
+            textarea {
+                padding: 8px 10px;
+                min-height: 34px;
+                font-size: 12px;
+                border-radius: 8px;
+            }
+
+            .datatable-search-input,
+            #emp-search-name {
+                min-height: 34px !important;
+                font-size: 12px;
+                padding-left: 40px !important;
+            }
+
+            .datatable-search-wrapper {
+                width: 100% !important;
+            }
+
+            .datatable-search-wrapper svg {
+                left: 12px;
+                width: 13px;
+                height: 13px;
+            }
+
+            .datatable-toolbar,
+            .datatable-filters {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+            }
+
+            .datatable-toolbar > *,
+            .datatable-filters > * {
+                width: 100% !important;
+                margin-left: 0 !important;
+            }
+
+            div.dt-container .dt-buttons {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px;
+                margin-bottom: 6px;
+            }
+
+            div.dt-container .dt-button {
+                font-size: 10px !important;
+                padding: 4px 7px !important;
+                border-radius: 7px !important;
+                min-height: 30px;
+                line-height: 1.1;
+            }
+
+            div.dt-button-collection {
+                min-width: 180px;
+                padding: 6px !important;
+            }
+
+            .datatable-page-btn {
+                padding: 4px 8px;
+                font-size: 10px;
+                border-radius: 7px;
+            }
+
+            .table-responsive td .btn {
+                padding: 3px 6px !important;
+                min-height: 26px;
+                font-size: 10px !important;
+                border-radius: 6px !important;
+                line-height: 1.1;
+            }
+
+            .table-responsive td .btn + .btn {
+                margin-left: 4px;
+            }
+
+            [style*="grid-template-columns: 1fr 1fr"],
+            [style*="grid-template-columns:1fr 1fr"],
+            [style*="grid-template-columns: repeat(2, 1fr)"],
+            [style*="grid-template-columns:repeat(2, 1fr)"],
+            [style*="grid-template-columns: 1.2fr 0.8fr"],
+            [style*="grid-template-columns:1.2fr 0.8fr"] {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
         @media (min-width: 768px) {
             header {
                 flex-direction: row;
@@ -1247,6 +1388,16 @@ if (isset($_GET['action'])) {
             }
         }
     </style>
+
+    
+
+    
+
+    
+
+    
+
+    
 
     
 
@@ -4356,6 +4507,11 @@ if (isset($_GET['action'])) {
 
         
     </script>
+
+
+
+
+
 
 
 
