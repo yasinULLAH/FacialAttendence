@@ -1324,16 +1324,6 @@
             }
         }
     </style>
-    
-    
-
-    
-
-    
-
-    
-
-    
 </head>
 
 <body>
@@ -1410,7 +1400,9 @@
                             </button>
                         </div>
                         <div class="camera-controls-bar">
-                            <select id="kiosk-camera-select" class="control-btn" style="max-width: 120px; text-overflow: ellipsis; border: 1px solid var(--border); background: var(--panel);" onchange="restartCameraStream('kiosk')"></select>
+                            <select id="kiosk-camera-select" class="control-btn"
+                                style="max-width: 120px; text-overflow: ellipsis; border: 1px solid var(--border); background: var(--panel);"
+                                onchange="restartCameraStream('kiosk')"></select>
                             <button id="btn-cam-start" class="control-btn control-btn-start"
                                 onclick="startCameraStream()" title="Start/Resume Camera">
                                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -1528,7 +1520,7 @@
                         <span style="font-size: 14px;">🗂️</span>
                         <div>
                             <strong style="display: block; margin-bottom: 2px;">Backup Reminder</strong>
-                            Export a backup JSON before major profile, policy, or log changes.
+                            For maximum privacy and security, all Facial data is stored locally on your device. Please export a backup JSON frequently. We are not responsible for any local data loss. for best result and app to work use and buy and external camera the pc webcam is not designed for continuous use and can cause overheating and performance issues.
                         </div>
                     </div>
                 </div>
@@ -1536,10 +1528,14 @@
             <div id="admin-panel-content" style="display: none; flex-direction: column; gap: 16px; width: 100%;">
                 <div class="sub-nav">
                     <div class="sub-nav-tabs">
-                        <button id="sub-tab-reports" class="sub-tab-btn active" onclick="switchSubTab('reports')">Analytics & Reports</button>
-                        <button id="sub-tab-reporting" class="sub-tab-btn" onclick="switchSubTab('reporting')">Reporting Center</button>
-                        <button id="sub-tab-employees" class="sub-tab-btn" onclick="switchSubTab('employees')">Profile Directory</button>
-                        <button id="sub-tab-settings" class="sub-tab-btn" onclick="switchSubTab('settings')">Controls & Policies</button>
+                        <button id="sub-tab-reports" class="sub-tab-btn active"
+                            onclick="switchSubTab('reports')">Analytics & Reports</button>
+                        <button id="sub-tab-reporting" class="sub-tab-btn" onclick="switchSubTab('reporting')">Reporting
+                            Center</button>
+                        <button id="sub-tab-employees" class="sub-tab-btn" onclick="switchSubTab('employees')">Profile
+                            Directory</button>
+                        <button id="sub-tab-settings" class="sub-tab-btn" onclick="switchSubTab('settings')">Controls &
+                            Policies</button>
                     </div>
                     <button class="btn btn-secondary" onclick="logoutAdminGate()"
                         style="padding: 6px 12px; font-size: 11px;">🔒 Lock Console</button>
@@ -1759,25 +1755,39 @@
                             </div>
                         </div>
                         <div class="reporting-actions-grid" style="margin-top: 8px;">
-                            <button class="btn btn-primary" onclick="applyComprehensiveReportFilters()">Apply Filters</button>
-                            <button class="btn btn-secondary" onclick="resetComprehensiveReportFilters()">Reset Filters</button>
-                            <button class="btn btn-secondary" onclick="printComprehensiveReportSummary()">Print Summary</button>
-                            <button class="btn btn-secondary" onclick="downloadComprehensiveReportJSON()">Download JSON</button>
+                            <button class="btn btn-primary" onclick="applyComprehensiveReportFilters()">Apply
+                                Filters</button>
+                            <button class="btn btn-secondary" onclick="resetComprehensiveReportFilters()">Reset
+                                Filters</button>
+                            <button class="btn btn-secondary" onclick="printComprehensiveReportSummary()">Print
+                                Summary</button>
+                            <button class="btn btn-secondary" onclick="downloadComprehensiveReportJSON()">Download
+                                JSON</button>
                         </div>
                     </div>
                     <div class="card">
                         <h2>Executive KPI Summary</h2>
                         <div class="reporting-kpi-grid">
-                            <div class="reporting-kpi-card"><span class="label">Total Logs</span><span id="rpt-kpi-total-logs" class="value">0</span></div>
-                            <div class="reporting-kpi-card"><span class="label">Unique Employees</span><span id="rpt-kpi-unique-employees" class="value">0</span></div>
-                            <div class="reporting-kpi-card"><span class="label">Check-In Logs</span><span id="rpt-kpi-check-ins" class="value">0</span></div>
-                            <div class="reporting-kpi-card"><span class="label">Check-Out Logs</span><span id="rpt-kpi-check-outs" class="value">0</span></div>
-                            <div class="reporting-kpi-card"><span class="label">On-Time Rate</span><span id="rpt-kpi-ontime-rate" class="value">0%</span></div>
-                            <div class="reporting-kpi-card"><span class="label">Late Rate</span><span id="rpt-kpi-late-rate" class="value">0%</span></div>
-                            <div class="reporting-kpi-card"><span class="label">Total Worked Time</span><span id="rpt-kpi-work-time" class="value">0h 0m</span></div>
-                            <div class="reporting-kpi-card"><span class="label">Avg Session</span><span id="rpt-kpi-avg-session" class="value">0m</span></div>
-                            <div class="reporting-kpi-card"><span class="label">Attendance Rate</span><span id="rpt-kpi-attendance-rate" class="value">0%</span></div>
-                            <div class="reporting-kpi-card"><span class="label">Pending Checkouts</span><span id="rpt-kpi-open-sessions" class="value">0</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Total Logs</span><span
+                                    id="rpt-kpi-total-logs" class="value">0</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Unique Employees</span><span
+                                    id="rpt-kpi-unique-employees" class="value">0</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Check-In Logs</span><span
+                                    id="rpt-kpi-check-ins" class="value">0</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Check-Out Logs</span><span
+                                    id="rpt-kpi-check-outs" class="value">0</span></div>
+                            <div class="reporting-kpi-card"><span class="label">On-Time Rate</span><span
+                                    id="rpt-kpi-ontime-rate" class="value">0%</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Late Rate</span><span
+                                    id="rpt-kpi-late-rate" class="value">0%</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Total Worked Time</span><span
+                                    id="rpt-kpi-work-time" class="value">0h 0m</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Avg Session</span><span
+                                    id="rpt-kpi-avg-session" class="value">0m</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Attendance Rate</span><span
+                                    id="rpt-kpi-attendance-rate" class="value">0%</span></div>
+                            <div class="reporting-kpi-card"><span class="label">Pending Checkouts</span><span
+                                    id="rpt-kpi-open-sessions" class="value">0</span></div>
                         </div>
                     </div>
                     <div class="card">
@@ -1845,7 +1855,8 @@
                                 <tbody id="comprehensive-report-table-body"></tbody>
                             </table>
                         </div>
-                        <div id="comprehensive-report-empty" style="display:none; margin-top:8px; color:var(--muted); font-size:12px;">
+                        <div id="comprehensive-report-empty"
+                            style="display:none; margin-top:8px; color:var(--muted); font-size:12px;">
                             No records match selected reporting filters.
                         </div>
                     </div>
@@ -1920,7 +1931,9 @@
                                         <button class="btn btn-secondary" onclick="startEnrollmentCamera()"
                                             style="padding: 4px 10px; font-size: 11px; margin-top: 4px;">Start
                                             Preview</button>
-                                        <select id="enroll-camera-select" style="margin-top: 4px; max-width: 140px; font-size: 11px; padding: 4px; border-radius: 4px; border: 1px solid var(--border);" onchange="restartCameraStream('enroll')"></select>
+                                        <select id="enroll-camera-select"
+                                            style="margin-top: 4px; max-width: 140px; font-size: 11px; padding: 4px; border-radius: 4px; border: 1px solid var(--border);"
+                                            onchange="restartCameraStream('enroll')"></select>
                                     </div>
                                 </div>
                             </div>
@@ -2329,6 +2342,9 @@
                 if (!this.ctx) {
                     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
                 }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
             },
             play(type) {
                 this.init();
@@ -2673,23 +2689,19 @@
         let comprehensiveReportRows = [];
         let comprehensiveReportDataTable = null;
         const reportingCharts = {};
-
         function toIsoDate(dateObj) {
             return new Date(dateObj).toISOString().split('T')[0];
         }
-
         function percentage(part, total) {
             if (!total) return "0%";
             return `${Math.round((part / total) * 100)}%`;
         }
-
         function destroyReportingChart(chartId) {
             if (reportingCharts[chartId]) {
                 reportingCharts[chartId].destroy();
                 reportingCharts[chartId] = null;
             }
         }
-
         function upsertReportingChart(chartId, config) {
             if (!window.Chart) return;
             const canvas = document.getElementById(chartId);
@@ -2705,7 +2717,6 @@
             destroyReportingChart(chartId);
             reportingCharts[chartId] = new Chart(canvas.getContext('2d'), config);
         }
-
         function setDefaultReportingDateRange() {
             const fromEl = document.getElementById('reporting-date-from');
             const toEl = document.getElementById('reporting-date-to');
@@ -2719,15 +2730,12 @@
                 fromEl.value = toIsoDate(start);
             }
         }
-
         function syncReportingFilterOptions(employees, departments) {
             const deptSelect = document.getElementById('reporting-filter-dept');
             const empSelect = document.getElementById('reporting-filter-employee');
             if (!deptSelect || !empSelect) return;
-
             const prevDept = deptSelect.value || "all";
             const prevEmp = empSelect.value || "all";
-
             deptSelect.innerHTML = '<option value="all">All Departments</option>';
             departments.forEach(dept => {
                 deptSelect.innerHTML += `<option value="${dept.name}">${dept.name}</option>`;
@@ -2735,7 +2743,6 @@
             if (deptSelect.querySelector(`option[value="${prevDept}"]`)) {
                 deptSelect.value = prevDept;
             }
-
             empSelect.innerHTML = '<option value="all">All Employees</option>';
             [...employees]
                 .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
@@ -2746,7 +2753,6 @@
                 empSelect.value = prevEmp;
             }
         }
-
         function getComprehensiveReportFilters() {
             let dateFrom = document.getElementById('reporting-date-from')?.value || "";
             let dateTo = document.getElementById('reporting-date-to')?.value || "";
@@ -2755,16 +2761,13 @@
             const type = document.getElementById('reporting-filter-type')?.value || "all";
             const status = document.getElementById('reporting-filter-status')?.value || "all";
             const sort = document.getElementById('reporting-sort')?.value || "timestamp_desc";
-
             if (dateFrom && dateTo && dateFrom > dateTo) {
                 const tmp = dateFrom;
                 dateFrom = dateTo;
                 dateTo = tmp;
             }
-
             return { dateFrom, dateTo, dept, employee, type, status, sort };
         }
-
         function sortComprehensiveReportRows(rows, sortBy) {
             const sorted = [...rows];
             if (sortBy === "timestamp_asc") sorted.sort((a, b) => a.timestamp - b.timestamp);
@@ -2775,7 +2778,6 @@
             else if (sortBy === "status_asc") sorted.sort((a, b) => (a.status || "").localeCompare(b.status || ""));
             return sorted;
         }
-
         function filterComprehensiveReportLogs(logs, filters) {
             const fromTs = filters.dateFrom ? new Date(`${filters.dateFrom}T00:00:00`).getTime() : null;
             const toTs = filters.dateTo ? new Date(`${filters.dateTo}T23:59:59`).getTime() : null;
@@ -2790,7 +2792,6 @@
             });
             return sortComprehensiveReportRows(filtered, filters.sort);
         }
-
         function computeOpenSessionsFromLogs(logs) {
             const map = new Map();
             [...logs]
@@ -2810,7 +2811,6 @@
             });
             return total;
         }
-
         function renderComprehensiveKpis(rows, employees) {
             const checkIns = rows.filter(r => r.type === "Check-In");
             const checkOuts = rows.filter(r => r.type === "Check-Out");
@@ -2824,12 +2824,10 @@
             const activeEmployees = employees.filter(e => e.status !== "Banned").length;
             const attendanceRate = percentage(uniqueEmployees, activeEmployees);
             const openSessions = computeOpenSessionsFromLogs(rows);
-
             const setText = (id, val) => {
                 const node = document.getElementById(id);
                 if (node) node.innerText = val;
             };
-
             setText('rpt-kpi-total-logs', rows.length);
             setText('rpt-kpi-unique-employees', uniqueEmployees);
             setText('rpt-kpi-check-ins', checkIns.length);
@@ -2841,7 +2839,6 @@
             setText('rpt-kpi-attendance-rate', attendanceRate);
             setText('rpt-kpi-open-sessions', openSessions);
         }
-
         function buildCountMap(rows, keyBuilder, filterFn = null) {
             const map = {};
             rows.forEach(row => {
@@ -2851,20 +2848,16 @@
             });
             return map;
         }
-
         function renderComprehensiveCharts(rows) {
             const dailyMap = buildCountMap(rows, row => row.dateString, row => row.type === "Check-In");
             const dailyLabels = Object.keys(dailyMap).sort((a, b) => a.localeCompare(b));
             const dailyData = dailyLabels.map(label => dailyMap[label]);
-
             const deptMap = buildCountMap(rows, row => row.department || "Unknown");
             const deptLabels = Object.keys(deptMap);
             const deptData = deptLabels.map(label => deptMap[label]);
-
             const statusMap = buildCountMap(rows, row => row.status || "-");
             const statusLabels = Object.keys(statusMap);
             const statusData = statusLabels.map(label => statusMap[label]);
-
             const hourMap = {};
             for (let i = 0; i < 24; i++) hourMap[i] = 0;
             rows
@@ -2877,9 +2870,7 @@
                 });
             const hourLabels = Object.keys(hourMap).map(h => `${String(h).padStart(2, '0')}:00`);
             const hourData = Object.values(hourMap);
-
             const palette = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#14b8a6', '#ec4899', '#3b82f6', '#8b5cf6'];
-
             upsertReportingChart('report-chart-daily', {
                 type: 'line',
                 data: {
@@ -2888,7 +2879,6 @@
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
-
             upsertReportingChart('report-chart-department', {
                 type: 'bar',
                 data: {
@@ -2897,7 +2887,6 @@
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
-
             upsertReportingChart('report-chart-status', {
                 type: 'doughnut',
                 data: {
@@ -2906,7 +2895,6 @@
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
-
             upsertReportingChart('report-chart-hour', {
                 type: 'bar',
                 data: {
@@ -2916,29 +2904,23 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
-
         function renderReportingInfographics(rows, employees) {
             const listEl = document.getElementById('reporting-infographic-list');
             if (!listEl) return;
-
             const deptMap = buildCountMap(rows, row => row.department || "Unknown");
             const topDeptEntry = Object.entries(deptMap).sort((a, b) => b[1] - a[1])[0];
             const topDept = topDeptEntry ? `${topDeptEntry[0]} (${topDeptEntry[1]} logs)` : 'N/A';
-
             const employeeMap = buildCountMap(rows, row => row.name || row.empId || "Unknown");
             const topEmployeeEntry = Object.entries(employeeMap).sort((a, b) => b[1] - a[1])[0];
             const topEmployee = topEmployeeEntry ? `${topEmployeeEntry[0]} (${topEmployeeEntry[1]} logs)` : 'N/A';
-
             const checkIns = rows.filter(r => r.type === "Check-In");
             const onTime = checkIns.filter(r => r.status === "On-Time").length;
             const late = checkIns.filter(r => r.status === "Late").length;
             const punctuality = percentage(onTime, checkIns.length);
             const lateRatio = percentage(late, checkIns.length);
-
             const activeEmployees = employees.filter(e => e.status !== "Banned").length;
             const uniqueEmployees = new Set(rows.map(r => r.empId)).size;
             const coverage = percentage(uniqueEmployees, activeEmployees);
-
             const hourMap = {};
             checkIns.forEach(log => {
                 const hour = Number((log.timeString || "00:00:00").split(':')[0]);
@@ -2947,7 +2929,6 @@
             });
             const peakHourEntry = Object.entries(hourMap).sort((a, b) => b[1] - a[1])[0];
             const peakHour = peakHourEntry ? `${String(peakHourEntry[0]).padStart(2, '0')}:00 (${peakHourEntry[1]} check-ins)` : 'N/A';
-
             listEl.innerHTML = `
                 <div class="reporting-infographic-item"><strong>Top Department</strong><br>${topDept}</div>
                 <div class="reporting-infographic-item"><strong>Top Employee</strong><br>${topEmployee}</div>
@@ -2956,12 +2937,10 @@
                 <div class="reporting-infographic-item"><strong>Peak Check-In Hour</strong><br>${peakHour}</div>
             `;
         }
-
         function renderComprehensiveReportTable(rows) {
             const tbody = document.getElementById('comprehensive-report-table-body');
             const emptyState = document.getElementById('comprehensive-report-empty');
             if (!tbody || !emptyState) return;
-
             tbody.innerHTML = '';
             rows.forEach(log => {
                 const tr = document.createElement('tr');
@@ -2979,9 +2958,7 @@
                 `;
                 tbody.appendChild(tr);
             });
-
             emptyState.style.display = rows.length ? "none" : "block";
-
             if (!window.jQuery || !jQuery.fn || !jQuery.fn.dataTable) return;
             if (jQuery.fn.DataTable.isDataTable('#comprehensive-report-table')) {
                 jQuery('#comprehensive-report-table').DataTable().destroy();
@@ -2994,7 +2971,6 @@
                     DataTable.Buttons.pdfMake(window.pdfMake);
                 }
             }
-
             comprehensiveReportDataTable = jQuery('#comprehensive-report-table').DataTable({
                 stateSave: true,
                 order: [],
@@ -3018,7 +2994,6 @@
                 }
             });
         }
-
         function renderReportingChartLab() {
             const type = document.getElementById('reporting-chart-type')?.value || 'bar';
             const rows = comprehensiveReportRows || [];
@@ -3026,7 +3001,6 @@
             const labels = Object.keys(deptMap);
             const dataValues = labels.map(k => deptMap[k]);
             const palette = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#14b8a6', '#ec4899', '#3b82f6', '#8b5cf6'];
-
             let config = null;
             if (type === 'scatter') {
                 const dayMap = buildCountMap(rows, row => row.dateString, row => row.type === "Check-In");
@@ -3060,33 +3034,26 @@
                     options: { responsive: true, maintainAspectRatio: false }
                 };
             }
-
             upsertReportingChart('report-chart-lab', config);
         }
-
         async function renderComprehensiveReportingHub() {
             if (!isDashboardAuthenticatedState) return;
             const logs = await readAllDatabaseRecords("attendance_logs");
             const employees = await readAllDatabaseRecords("employees");
             const departments = await readAllDatabaseRecords("departments");
-
             setDefaultReportingDateRange();
             syncReportingFilterOptions(employees, departments);
-
             const filters = getComprehensiveReportFilters();
             comprehensiveReportRows = filterComprehensiveReportLogs(logs, filters);
-
             renderComprehensiveKpis(comprehensiveReportRows, employees);
             renderComprehensiveCharts(comprehensiveReportRows);
             renderReportingInfographics(comprehensiveReportRows, employees);
             renderComprehensiveReportTable(comprehensiveReportRows);
             renderReportingChartLab();
         }
-
         async function applyComprehensiveReportFilters() {
             await renderComprehensiveReportingHub();
         }
-
         async function resetComprehensiveReportFilters() {
             const setVal = (id, value) => {
                 const node = document.getElementById(id);
@@ -3105,7 +3072,6 @@
             setVal('reporting-chart-type', 'bar');
             await renderComprehensiveReportingHub();
         }
-
         async function downloadComprehensiveReportJSON() {
             if (!comprehensiveReportRows.length) {
                 triggerToast("No report records available for JSON download", "warning");
@@ -3130,7 +3096,6 @@
             AudioEngine.play('success');
             await logAuditEvent("comprehensive_report_json_exported", { rows: comprehensiveReportRows.length });
         }
-
         function printComprehensiveReportSummary() {
             const printWindow = window.open('', '_blank', 'width=1100,height=750');
             if (!printWindow) return;
@@ -3163,35 +3128,6 @@
                 ${comprehensiveReportRows.length > 200 ? `<p style="font-size:11px;">Showing first 200 rows in print preview. Use DataTable PDF/Excel/CSV for full exports.</p>` : ''}
             `;
             printWindow.document.write(`<html><head><title>Comprehensive Report</title>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 
     
 
@@ -3205,10 +3141,9 @@
             printWindow.focus();
             printWindow.print();
         }
-
         function initializeDatabaseCoreSubsystems() {
             return new Promise((resolve, reject) => {
-                const openRequest = indexedDB.open("EnterpriseBiometricKioskCoreDB", 6);
+                const openRequest = indexedDB.open("EnterpriseFaceKioskCoreDB", 6);
                 openRequest.onupgradeneeded = (e) => {
                     const db = e.target.result;
                     if (!db.objectStoreNames.contains("employees")) {
@@ -3347,7 +3282,6 @@
                 }
             }
         }
-
         async function verifyAdminCredentialGateAccess() {
             const inputString = ui.passInput.value;
             const correctPasswordString = await readConfigKey("master_password");
@@ -3435,11 +3369,20 @@
                 return;
             }
             ui.banner.innerText = "Starting hardware scanning array connections...";
+            AudioEngine.init();
+            if ('speechSynthesis' in window) {
+                const unlockUtt = new SpeechSynthesisUtterance('');
+                unlockUtt.volume = 0;
+                window.speechSynthesis.speak(unlockUtt);
+            }
             try {
                 const selectEl = document.getElementById('kiosk-camera-select');
+                const savedCam = localStorage.getItem('aura_kiosk_camera');
                 const videoConstraints = { width: { ideal: 640 }, height: { ideal: 480 } };
                 if (selectEl && selectEl.value) {
                     videoConstraints.deviceId = { exact: selectEl.value };
+                } else if (savedCam) {
+                    videoConstraints.deviceId = { exact: savedCam };
                 } else {
                     videoConstraints.facingMode = "user";
                 }
@@ -3772,9 +3715,12 @@
             if (isEnrollCameraActive) return;
             try {
                 const selectEl = document.getElementById('enroll-camera-select');
+                const savedCam = localStorage.getItem('aura_enroll_camera');
                 const videoConstraints = { width: { ideal: 640 }, height: { ideal: 480 } };
                 if (selectEl && selectEl.value) {
                     videoConstraints.deviceId = { exact: selectEl.value };
+                } else if (savedCam) {
+                    videoConstraints.deviceId = { exact: savedCam };
                 } else {
                     videoConstraints.facingMode = "user";
                 }
@@ -3800,8 +3746,9 @@
         }
         async function populateCameraDevices(selectId) {
             const selectEl = document.getElementById(selectId);
-            if (!selectEl) return;
-            const currentVal = selectEl.value;
+            if (!selectEl || !navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+            const storageKey = selectId === 'kiosk-camera-select' ? 'aura_kiosk_camera' : 'aura_enroll_camera';
+            const currentVal = selectEl.value || localStorage.getItem(storageKey);
             const devices = await navigator.mediaDevices.enumerateDevices();
             const videoDevices = devices.filter(device => device.kind === 'videoinput');
             selectEl.innerHTML = '';
@@ -3817,9 +3764,13 @@
         }
         async function restartCameraStream(type) {
             if (type === 'kiosk') {
+                const select = document.getElementById('kiosk-camera-select');
+                if (select) localStorage.setItem('aura_kiosk_camera', select.value);
                 stopCameraStream();
                 await startCameraStream();
             } else if (type === 'enroll') {
+                const select = document.getElementById('enroll-camera-select');
+                if (select) localStorage.setItem('aura_enroll_camera', select.value);
                 stopEnrollmentCamera();
                 await startEnrollmentCamera();
             }
@@ -4042,6 +3993,8 @@
                 await loadAttendanceLedgingTicker();
                 populateManualOverrideDropdown();
                 populateLeaveRequestDropdown();
+                populateCameraDevices('kiosk-camera-select');
+                populateCameraDevices('enroll-camera-select');
                 await renderLeaveRequests();
                 await renderDepartmentShiftPolicies();
                 await renderAuditTrail();
@@ -4332,7 +4285,6 @@
             const workbook = new ExcelJS.Workbook();
             workbook.creator = "Aura Facial Recognition";
             workbook.created = new Date();
-
             const trailSheet = workbook.addWorksheet("Audit Trail");
             trailSheet.columns = [
                 { header: "Timestamp", key: "timestampLabel", width: 22 },
@@ -4359,7 +4311,6 @@
             styleAuditWorksheet(trailSheet, trailSheet.columnCount);
             trailSheet.getColumn("summary").alignment = { vertical: "top", wrapText: true };
             trailSheet.getColumn("detailPretty").alignment = { vertical: "top", wrapText: true };
-
             const summarySheet = workbook.addWorksheet("Summary");
             const actionCounts = buildAuditActionCounts(rows);
             const actors = new Set(rows.map(row => row.actor).filter(Boolean));
@@ -4376,7 +4327,6 @@
             summarySheet.addRow({});
             summarySheet.addRow({ metric: "Top Action", value: actionCounts[0] ? `${actionCounts[0].actionLabel} (${actionCounts[0].count})` : "-" });
             styleAuditWorksheet(summarySheet, 2);
-
             const actionPivotSheet = workbook.addWorksheet("Pivot Actions");
             const dayKeys = [...new Set(rows.map(row => row.dateISO))].sort();
             const actionLabels = [...new Set(rows.map(row => row.actionLabel))].sort((a, b) => a.localeCompare(b));
@@ -4391,7 +4341,6 @@
             actionPivotSheet.addRow(["Grand Total", ...actionTotalsByDay, rows.length]);
             styleAuditWorksheet(actionPivotSheet, actionHeader.length);
             autoSizeAuditWorksheet(actionPivotSheet, 12, 28);
-
             const actorPivotSheet = workbook.addWorksheet("Pivot Actors");
             const actorMap = new Map();
             rows.forEach(row => {
@@ -4412,7 +4361,6 @@
                 });
             styleAuditWorksheet(actorPivotSheet, actorHeader.length);
             autoSizeAuditWorksheet(actorPivotSheet, 12, 32);
-
             const chartDataSheet = workbook.addWorksheet("Chart Data");
             chartDataSheet.columns = [
                 { header: "Date", key: "dateISO", width: 14 },
@@ -4432,7 +4380,6 @@
                 });
             });
             styleAuditWorksheet(chartDataSheet, 5);
-
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], {
                 type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -4660,6 +4607,15 @@
             ui.captureBtn.disabled = true;
             const captureBtnEdit = document.getElementById('btn-trigger-capture-edit');
             if (captureBtnEdit) captureBtnEdit.disabled = true;
+            if (window.Swal) {
+                window.Swal.fire({
+                    title: 'Analyzing Face',
+                    text: 'Extracting high-precision facial topology mapping. Please hold still...',
+                    allowOutsideClick: false,
+                    didOpen: () => { window.Swal.showLoading(); }
+                });
+                await new Promise(resolve => setTimeout(resolve, 150));
+            }
             try {
                 const result = await faceapi.detectSingleFace(ui.videoEnroll, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
                     .withFaceLandmarks()
@@ -4669,6 +4625,7 @@
                     ui.captureBtn.disabled = false;
                     if (captureBtnEdit) captureBtnEdit.disabled = false;
                     ui.banner.innerText = "Ready.";
+                    if (window.Swal) window.Swal.close();
                     return;
                 }
                 const standardArrayPayload = Array.from(result.descriptor);
@@ -4709,6 +4666,7 @@
                 triggerToast(isEditing ? "Profile Updated Successfully" : "Employee Enrolled Successfully", "success");
                 AudioEngine.play('success');
                 ui.banner.innerText = "Ready.";
+                if (window.Swal) window.Swal.close();
             } catch (err) {
                 console.error(err);
                 triggerToast("Employee save failed. Please try again.", "error");
@@ -4717,6 +4675,7 @@
                     ui.captureBtn.disabled = false;
                     if (captureBtnEdit) captureBtnEdit.disabled = false;
                 }
+                if (window.Swal) window.Swal.close();
             }
         }
         async function renderAdministrativeEmployeeDirectoryTable() {
@@ -4794,7 +4753,7 @@
                 suggestNextEmployeeId();
                 await syncActiveFiltersList();
                 await logAuditEvent("employee_profile_deleted", { id: nameId });
-                triggerToast("Biometric Template Deleted", "warning");
+                triggerToast("Face Template Deleted", "warning");
                 AudioEngine.play('warning');
             }
         }
@@ -5097,11 +5056,13 @@
             };
             await writeDatabaseRecord("attendance_logs", logEntry);
             await loadAttendanceLedgingTicker();
-            await renderAnalyticsDashboard();
-            await logAuditEvent("attendance_logged", { empId, eventType, status, sessionMinutes, checkoutCompliance });
             triggerToast(`${eventType} logged for ${employeeName}`, "success");
             AudioEngine.play('success');
             speakText(`${employeeName} verified. ${eventType} registered.`);
+            setTimeout(async () => {
+                await renderAnalyticsDashboard();
+                await logAuditEvent("attendance_logged", { empId, eventType, status, sessionMinutes, checkoutCompliance });
+            }, 50);
         }
         async function loadAttendanceLedgingTicker() {
             ui.kioskLedger.innerHTML = "";
@@ -5146,7 +5107,7 @@
                 triggerToast(contactCollisionError, "error");
                 return;
             }
-            ui.banner.innerText = "Analyzing portrait biometric frames...";
+            ui.banner.innerText = "Analyzing portrait Face frames...";
             const img = new Image();
             img.onload = async () => {
                 try {
@@ -5203,7 +5164,7 @@
                     AudioEngine.play('success');
                     ui.banner.innerText = "Ready.";
                 } catch (e) {
-                    triggerToast("Biometric analysis error", "error");
+                    triggerToast("Face analysis error", "error");
                 }
             };
             img.src = URL.createObjectURL(file);
@@ -5949,6 +5910,19 @@
             } else {
                 document.getElementById('view-admin').classList.add('active');
                 document.getElementById('nav-admin').classList.add('active');
+                const lastReminder = localStorage.getItem('aura_backup_reminder_time');
+                const nowMs = Date.now();
+                if (!lastReminder || (nowMs - parseInt(lastReminder, 10)) > 7 * 24 * 60 * 60 * 1000) {
+                    if (window.Swal) {
+                        window.Swal.fire({
+                            title: 'Backup Reminder',
+                            text: 'For maximum privacy and security, all Facial data is stored locally on your device. Please export a backup JSON frequently. We are not responsible for any local data loss. for best result and app to work use and buy and external camera the pc webcam is not designed for continuous use and can cause overheating and performance issues.',
+                            icon: 'info',
+                            confirmButtonText: 'Understood'
+                        });
+                    }
+                    localStorage.setItem('aura_backup_reminder_time', nowMs.toString());
+                }
                 if (!isDashboardAuthenticatedState) {
                     ui.authGate.style.display = "flex";
                     document.getElementById('admin-panel-content').style.display = "none";
@@ -6252,25 +6226,7 @@
     
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <script type="module" src="./pwa-register.js"></script>
 </body>
 
 </html>
-
-
