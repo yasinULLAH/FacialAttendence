@@ -1213,6 +1213,12 @@ if (isset($_GET['action'])) {
     </style>
 
     
+
+    
+
+    
+
+    
 <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
@@ -3504,6 +3510,9 @@ if (isset($_GET['action'])) {
 
         
     </script>
+
+
+
 
 <script type="module" src="./pwa-register.js"></script>
 </body>

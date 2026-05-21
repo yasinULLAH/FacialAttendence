@@ -920,6 +920,12 @@
     </style>
 
     
+
+    
+
+    
+
+    
 <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
@@ -1034,6 +1040,13 @@
                             The default master passcode is <code style="font-family: monospace; font-weight: 700; background: rgba(0,0,0,0.05); padding: 1px 4px; border-radius: 3px;">admin1234</code>.
                         </div>
                     </div>
+                    <div style="background: var(--primary-glow); color: var(--primary); border: 1px solid var(--border); padding: 8px 10px; border-radius: 6px; display: flex; gap: 8px;">
+                        <span style="font-size: 14px;">🗂️</span>
+                        <div>
+                            <strong style="display: block; margin-bottom: 2px;">Backup Reminder</strong>
+                            Export a backup JSON before major profile, policy, or log changes.
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1068,6 +1081,18 @@
                         <div class="metric-card">
                             <div class="metric-label">Absentees</div>
                             <div id="stat-absent" class="metric-value">0</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">On Leave</div>
+                            <div id="stat-on-leave" class="metric-value">0</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Hours Today</div>
+                            <div id="stat-hours" class="metric-value">0h 0m</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Pending Check-Out</div>
+                            <div id="stat-open-sessions" class="metric-value">0</div>
                         </div>
                     </div>
 
@@ -1143,9 +1168,15 @@
                                     <button class="btn btn-secondary" onclick="exportReportsToCSV()">
                                         📥 Export CSV
                                     </button>
+                                    <button class="btn btn-secondary" style="grid-column: 1 / -1;" onclick="exportDailySummaryCSV()">Export Today Summary</button>
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Compliance Alerts</h2>
+                        <div id="compliance-alerts-container" style="display:flex; flex-direction:column; gap:6px; min-height:70px;"></div>
                     </div>
 
                     <div class="card">
@@ -1161,6 +1192,8 @@
                                         <th>Role</th>
                                         <th>Event Type</th>
                                         <th>Policy Status</th>
+                                        <th>Session</th>
+                                        <th>Checkout Policy</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -1219,6 +1252,16 @@
                                         <option value="Banned">Suspended</option>
                                     </select>
                                 </div>
+                                <div class="input-group">
+                                    <label>Personal Shift Start (Optional)</label>
+                                    <input type="time" id="reg-employee-shift-start" placeholder="Uses department/global when blank">
+                                </div>
+                            </div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                                <div class="input-group">
+                                    <label>Personal Grace Minutes (Optional)</label>
+                                    <input type="number" id="reg-employee-shift-grace" min="0" placeholder="Uses department/global when blank">
+                                </div>
                             </div>
 
                             <div class="input-group" style="margin-top: 4px;">
@@ -1265,6 +1308,47 @@
                                 </div>
                             </div>
                             <button class="btn btn-primary" onclick="commitManualAttendanceLog()">Register Manual Check</button>
+
+                            <h2 style="margin-top:8px;">Leave & Permission Manager</h2>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                                <div class="input-group">
+                                    <label>Employee</label>
+                                    <select id="leave-employee"></select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Request Type</label>
+                                    <select id="leave-type">
+                                        <option value="Leave">Leave</option>
+                                        <option value="Permission">Permission</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                                <div class="input-group">
+                                    <label>From Date</label>
+                                    <input type="date" id="leave-date-from">
+                                </div>
+                                <div class="input-group">
+                                    <label>To Date</label>
+                                    <input type="date" id="leave-date-to">
+                                </div>
+                            </div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                                <div class="input-group">
+                                    <label>Status</label>
+                                    <select id="leave-status">
+                                        <option value="Approved">Approved</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Rejected">Rejected</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Reason</label>
+                                    <input type="text" id="leave-reason" placeholder="Medical appointment">
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary" onclick="createLeaveRequest()">Save Leave Request</button>
+                            <div id="leave-list-container" style="display:flex; flex-direction:column; gap:6px; max-height:140px; overflow-y:auto; margin-top:4px;"></div>
                         </div>
 
                         <div class="card">
@@ -1291,6 +1375,7 @@
                                             <th>Employee Name</th>
                                             <th>Department</th>
                                             <th>Role</th>
+                                            <th>Shift</th>
                                             <th>Email</th>
                                             <th>Status</th>
                                             <th>Date Enrolled</th>
@@ -1345,6 +1430,10 @@
                                 <div class="input-group">
                                     <label>Grace Period (Min)</label>
                                     <input type="number" id="settings-grace-minutes" value="15" min="0">
+                                </div>
+                                <div class="input-group" style="grid-column: 1 / -1;">
+                                    <label>Minimum Session Minutes (For Checkout Compliance)</label>
+                                    <input type="number" id="settings-min-session-minutes" value="480" min="30">
                                 </div>
                             </div>
                             <div class="input-group">
@@ -1403,6 +1492,17 @@
                                 <div id="holiday-list-container" style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; margin-top: 4px; padding-right: 4px;"></div>
                             </div>
 
+                            <div class="input-group" style="margin-top: 8px;">
+                                <label>Department Shift Templates</label>
+                                <div style="display:grid; grid-template-columns: 1fr 0.8fr 0.8fr; gap:6px;">
+                                    <select id="settings-shift-policy-dept"></select>
+                                    <input type="time" id="settings-shift-policy-time" value="09:00">
+                                    <input type="number" id="settings-shift-policy-grace" min="0" value="15" placeholder="Grace">
+                                </div>
+                                <button class="btn btn-secondary" style="margin-top:6px;" onclick="saveDepartmentShiftPolicy()">Save Department Shift Policy</button>
+                                <div id="shift-policy-list-container" style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; margin-top: 6px; padding-right: 4px;"></div>
+                            </div>
+
                             <h2 style="margin-top: 10px;">System Datastore Utilities</h2>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                                 <button class="btn btn-secondary" onclick="exportDatastorePayload()">Export Backup JSON</button>
@@ -1411,6 +1511,14 @@
                             </div>
                             <button class="btn btn-danger" onclick="purgeSystemLocalMemoryStore()">Purge Local Database Indexes</button>
                         </div>
+                    </div>
+                    <div class="card">
+                        <h2>System Audit Trail</h2>
+                        <div style="display:flex; gap:8px; margin-bottom:8px;">
+                            <button class="btn btn-secondary" onclick="exportAuditTrailCSV()">Export Audit CSV</button>
+                            <button class="btn btn-secondary" onclick="renderAuditTrail()">Refresh</button>
+                        </div>
+                        <div id="audit-log-list-container" style="display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto;"></div>
                     </div>
                 </div>
             </div>
@@ -1452,6 +1560,10 @@
                         <option value="-">Check-Out (-)</option>
                     </select>
                 </div>
+            </div>
+            <div class="input-group">
+                <label>Session Minutes (optional for Check-Out)</label>
+                <input type="number" id="retro-log-session" min="0" placeholder="Auto-calculate when empty">
             </div>
             <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
                 <button class="btn btn-secondary" onclick="closeRetroactiveModal()">Cancel</button>
@@ -1574,6 +1686,7 @@
 
         let shiftStartTime = "09:00";
         let shiftGraceMinutes = 15;
+        let minimumSessionMinutes = 480;
         let weekendDays = [0, 6];
 
         let reportsPage = 1;
@@ -1586,7 +1699,7 @@
 
         function initializeDatabaseCoreSubsystems() {
             return new Promise((resolve, reject) => {
-                const openRequest = indexedDB.open("EnterpriseBiometricKioskCoreDB", 4);
+                const openRequest = indexedDB.open("EnterpriseBiometricKioskCoreDB", 6);
                 openRequest.onupgradeneeded = (e) => {
                     const db = e.target.result;
                     if (!db.objectStoreNames.contains("employees")) {
@@ -1603,6 +1716,15 @@
                     }
                     if (!db.objectStoreNames.contains("holidays")) {
                         db.createObjectStore("holidays", { keyPath: "date" });
+                    }
+                    if (!db.objectStoreNames.contains("leave_requests")) {
+                        db.createObjectStore("leave_requests", { keyPath: "id", autoIncrement: true });
+                    }
+                    if (!db.objectStoreNames.contains("shift_policies")) {
+                        db.createObjectStore("shift_policies", { keyPath: "department" });
+                    }
+                    if (!db.objectStoreNames.contains("audit_logs")) {
+                        db.createObjectStore("audit_logs", { keyPath: "id", autoIncrement: true });
                     }
                 };
                 openRequest.onsuccess = (e) => { indexedDatabasePointer = e.target.result; resolve(); };
@@ -1675,6 +1797,11 @@
             if (!weekends) {
                 await writeDatabaseRecord("system_config", { key: "weekend_days", value: [0, 6] });
             }
+
+            const minimumSession = await readConfigKey("minimum_session_minutes");
+            if (!minimumSession) {
+                await writeDatabaseRecord("system_config", { key: "minimum_session_minutes", value: 480 });
+            }
         }
 
         async function verifyAdminCredentialGateAccess() {
@@ -1721,6 +1848,7 @@
             ui.newPassInput.value = "";
             triggerToast("Admin Passcode Updated", "success");
             AudioEngine.play('success');
+            await logAuditEvent("admin_passcode_updated");
         }
 
         function updateCameraControlsUI() {
@@ -1869,7 +1997,10 @@
             const logs = await readAllDatabaseRecords("attendance_logs");
             const depts = await readAllDatabaseRecords("departments");
             const holidays = await readAllDatabaseRecords("holidays");
-            const payload = { emps, logs, depts, holidays };
+            const leaveRequests = await readAllDatabaseRecords("leave_requests");
+            const shiftPolicies = await readAllDatabaseRecords("shift_policies");
+            const auditLogs = await readAllDatabaseRecords("audit_logs");
+            const payload = { emps, logs, depts, holidays, leaveRequests, shiftPolicies, auditLogs };
             const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
             const temporaryAnchor = document.createElement("a");
             temporaryAnchor.href = URL.createObjectURL(blob);
@@ -1877,6 +2008,7 @@
             temporaryAnchor.click();
             triggerToast("Backup JSON Saved", "success");
             AudioEngine.play('success');
+            await logAuditEvent("backup_exported_json");
         }
 
         async function importDatastorePayload(event) {
@@ -1906,13 +2038,33 @@
                             await writeDatabaseRecord("holidays", item);
                         }
                     }
+                    if (dataset.leaveRequests) {
+                        for (const item of dataset.leaveRequests) {
+                            await writeDatabaseRecord("leave_requests", item);
+                        }
+                    }
+                    if (dataset.shiftPolicies) {
+                        for (const item of dataset.shiftPolicies) {
+                            await writeDatabaseRecord("shift_policies", item);
+                        }
+                    }
+                    if (dataset.auditLogs) {
+                        for (const item of dataset.auditLogs) {
+                            await writeDatabaseRecord("audit_logs", item);
+                        }
+                    }
                     triggerToast("Registry Backup Synchronized", "success");
                     AudioEngine.play('success');
                     await rebuildComputationalMatchingGraph();
                     await renderAdministrativeEmployeeDirectoryTable();
                     populateManualOverrideDropdown();
+                    populateLeaveRequestDropdown();
+                    await renderLeaveRequests();
+                    await renderDepartmentShiftPolicies();
+                    await renderAuditTrail();
                     suggestNextEmployeeId();
                     await syncActiveFiltersList();
+                    await logAuditEvent("backup_imported_json");
                 } catch (err) {
                     triggerToast("File format invalid", "error");
                     AudioEngine.play('error');
@@ -1929,6 +2081,12 @@
                 txnLogs.objectStore("attendance_logs").clear();
                 const txnHols = indexedDatabasePointer.transaction("holidays", "readwrite");
                 txnHols.objectStore("holidays").clear();
+                const txnLeaves = indexedDatabasePointer.transaction("leave_requests", "readwrite");
+                txnLeaves.objectStore("leave_requests").clear();
+                const txnShift = indexedDatabasePointer.transaction("shift_policies", "readwrite");
+                txnShift.objectStore("shift_policies").clear();
+                const txnAudit = indexedDatabasePointer.transaction("audit_logs", "readwrite");
+                txnAudit.objectStore("audit_logs").clear();
                 precompiledEmployeesList = [];
                 precompiledProfilesRegistry = [];
                 applicationFaceMatcherRuntime = null;
@@ -1938,8 +2096,13 @@
                 AudioEngine.play('warning');
                 await renderAdministrativeEmployeeDirectoryTable();
                 populateManualOverrideDropdown();
+                populateLeaveRequestDropdown();
+                await renderLeaveRequests();
+                await renderDepartmentShiftPolicies();
+                await renderAuditTrail();
                 suggestNextEmployeeId();
                 await syncActiveFiltersList();
+                await logAuditEvent("local_database_purged");
             }
         }
 
@@ -1973,6 +2136,11 @@
                     shiftGraceMinutes = parseInt(savedGrace, 10);
                     document.getElementById('settings-grace-minutes').value = savedGrace;
                 }
+                const savedMinimumSession = await readConfigKey("minimum_session_minutes");
+                if (savedMinimumSession) {
+                    minimumSessionMinutes = parseInt(savedMinimumSession, 10);
+                    document.getElementById('settings-min-session-minutes').value = savedMinimumSession;
+                }
                 const savedWk = await readConfigKey("weekend_days");
                 if (savedWk) {
                     weekendDays = savedWk;
@@ -1992,6 +2160,11 @@
                 ui.banner.innerText = "Facial recognition core loaded. System online.";
                 updateCameraControlsUI();
                 await loadAttendanceLedgingTicker();
+                populateManualOverrideDropdown();
+                populateLeaveRequestDropdown();
+                await renderLeaveRequests();
+                await renderDepartmentShiftPolicies();
+                await renderAuditTrail();
                 suggestNextEmployeeId();
                 await syncActiveFiltersList();
             } catch (err) {
@@ -2023,6 +2196,276 @@
             document.getElementById('reg-employee-id').value = "EMP-" + String(nextIdx).padStart(3, '0');
         }
 
+        function formatDurationFromMinutes(totalMinutes) {
+            if (typeof totalMinutes !== "number" || Number.isNaN(totalMinutes) || totalMinutes < 0) {
+                return "-";
+            }
+            const hrs = Math.floor(totalMinutes / 60);
+            const mins = totalMinutes % 60;
+            return `${hrs}h ${mins}m`;
+        }
+
+        function resolveCheckoutSessionMinutes(logsForEmployeeAndDate, checkoutTimestamp) {
+            const checkIns = logsForEmployeeAndDate
+                .filter(l => l.type === "Check-In" && l.timestamp < checkoutTimestamp)
+                .sort((a, b) => b.timestamp - a.timestamp);
+            const priorCheckOutCount = logsForEmployeeAndDate
+                .filter(l => l.type === "Check-Out" && l.timestamp < checkoutTimestamp).length;
+            const pairingCheckIn = checkIns[priorCheckOutCount];
+            if (!pairingCheckIn) return null;
+            const diff = Math.round((checkoutTimestamp - pairingCheckIn.timestamp) / 60000);
+            return diff >= 0 ? diff : null;
+        }
+
+        function resolveCheckoutCompliance(sessionMinutes) {
+            if (typeof sessionMinutes !== "number" || Number.isNaN(sessionMinutes)) return "-";
+            return sessionMinutes >= minimumSessionMinutes ? "Met" : "Short";
+        }
+
+        function buildDailySessionSummaryMap(logsForDate) {
+            const summaryMap = new Map();
+            const sorted = [...logsForDate].sort((a, b) => a.timestamp - b.timestamp);
+            sorted.forEach(log => {
+                if (!summaryMap.has(log.empId)) {
+                    summaryMap.set(log.empId, {
+                        firstIn: null,
+                        lastOut: null,
+                        totalMinutes: 0,
+                        openCheckInTs: null
+                    });
+                }
+                const entry = summaryMap.get(log.empId);
+                if (log.type === "Check-In") {
+                    if (!entry.firstIn) entry.firstIn = log;
+                    entry.openCheckInTs = log.timestamp;
+                } else if (log.type === "Check-Out") {
+                    if (entry.openCheckInTs) {
+                        const span = Math.round((log.timestamp - entry.openCheckInTs) / 60000);
+                        if (span > 0) entry.totalMinutes += span;
+                        entry.openCheckInTs = null;
+                    } else if (typeof log.sessionMinutes === "number" && log.sessionMinutes > 0) {
+                        entry.totalMinutes += log.sessionMinutes;
+                    }
+                    entry.lastOut = log;
+                }
+            });
+            return summaryMap;
+        }
+
+        function validateUniqueProfileContact(existingEmployees, targetEmployeeId, email, phone) {
+            const normalizedTargetId = (targetEmployeeId || "").toLowerCase();
+            const normalizedEmail = (email || "").trim().toLowerCase();
+            const normalizedPhone = (phone || "").replace(/\s+/g, "");
+            if (normalizedEmail) {
+                const duplicateEmail = existingEmployees.find(e =>
+                    e.id.toLowerCase() !== normalizedTargetId &&
+                    (e.email || "").trim().toLowerCase() === normalizedEmail
+                );
+                if (duplicateEmail) return "Email already used by another profile";
+            }
+            if (normalizedPhone) {
+                const duplicatePhone = existingEmployees.find(e =>
+                    e.id.toLowerCase() !== normalizedTargetId &&
+                    ((e.phone || "").replace(/\s+/g, "") === normalizedPhone)
+                );
+                if (duplicatePhone) return "Phone number already used by another profile";
+            }
+            return null;
+        }
+
+        function toAuditDetailString(detail) {
+            if (detail === null || detail === undefined) return "";
+            if (typeof detail === "string") return detail;
+            try {
+                return JSON.stringify(detail);
+            } catch (_err) {
+                return String(detail);
+            }
+        }
+
+        async function logAuditEvent(action, detail = "") {
+            try {
+                await writeDatabaseRecord("audit_logs", {
+                    timestamp: Date.now(),
+                    action: action,
+                    detail: toAuditDetailString(detail)
+                });
+            } catch (_err) {
+                // Non-blocking by design.
+            }
+        }
+
+        async function resolveShiftPolicyForEmployee(empId, fallbackDept = "") {
+            let policyStart = shiftStartTime;
+            let policyGrace = shiftGraceMinutes;
+            const policies = await readAllDatabaseRecords("shift_policies");
+            const employee = precompiledEmployeesList.find(e => e.id === empId);
+            const dept = employee ? employee.department : fallbackDept;
+            const deptPolicy = policies.find(p => p.department === dept);
+            if (deptPolicy && deptPolicy.shiftStartTime) {
+                policyStart = deptPolicy.shiftStartTime;
+            }
+            if (deptPolicy && Number.isFinite(parseInt(deptPolicy.shiftGraceMinutes, 10))) {
+                policyGrace = parseInt(deptPolicy.shiftGraceMinutes, 10);
+            }
+            if (employee && employee.shiftStartTime) {
+                policyStart = employee.shiftStartTime;
+            }
+            if (employee && Number.isFinite(parseInt(employee.shiftGraceMinutes, 10))) {
+                policyGrace = parseInt(employee.shiftGraceMinutes, 10);
+            }
+            return { shiftStartTime: policyStart, shiftGraceMinutes: policyGrace };
+        }
+
+        async function saveDepartmentShiftPolicy() {
+            const department = document.getElementById('settings-shift-policy-dept').value;
+            const shiftTime = document.getElementById('settings-shift-policy-time').value;
+            const grace = parseInt(document.getElementById('settings-shift-policy-grace').value, 10);
+            if (!department || !shiftTime || Number.isNaN(grace) || grace < 0) {
+                triggerToast("Department shift policy fields are invalid", "warning");
+                return;
+            }
+            await writeDatabaseRecord("shift_policies", {
+                department: department,
+                shiftStartTime: shiftTime,
+                shiftGraceMinutes: grace
+            });
+            await renderDepartmentShiftPolicies();
+            triggerToast(`Shift template saved for ${department}`, "success");
+            AudioEngine.play('success');
+            await logAuditEvent("department_shift_policy_saved", { department, shiftTime, grace });
+        }
+
+        async function deleteDepartmentShiftPolicy(department) {
+            if (!confirm(`Delete shift policy for ${department}?`)) return;
+            await deleteDatabaseRecord("shift_policies", department);
+            await renderDepartmentShiftPolicies();
+            triggerToast(`Shift policy removed for ${department}`, "warning");
+            AudioEngine.play('warning');
+            await logAuditEvent("department_shift_policy_deleted", { department });
+        }
+
+        async function renderDepartmentShiftPolicies() {
+            const listContainer = document.getElementById('shift-policy-list-container');
+            const deptSelect = document.getElementById('settings-shift-policy-dept');
+            if (!listContainer || !deptSelect) return;
+
+            const departments = await readAllDatabaseRecords("departments");
+            const policies = await readAllDatabaseRecords("shift_policies");
+
+            const previous = deptSelect.value;
+            deptSelect.innerHTML = "";
+            departments.forEach(d => {
+                deptSelect.innerHTML += `<option value="${d.name}">${d.name}</option>`;
+            });
+            if (previous && deptSelect.querySelector(`option[value="${previous}"]`)) {
+                deptSelect.value = previous;
+            }
+
+            listContainer.innerHTML = "";
+            if (!policies.length) {
+                listContainer.innerHTML = '<div style="font-size:11px; color:var(--muted); border:1px solid var(--border); border-radius:6px; padding:8px;">No department shift templates configured.</div>';
+                return;
+            }
+            policies.sort((a, b) => a.department.localeCompare(b.department)).forEach(policy => {
+                const div = document.createElement('div');
+                div.style = "display:flex; justify-content:space-between; align-items:center; background:var(--bg); border:1px solid var(--border); padding:6px 10px; border-radius:6px; font-size:12px; gap:6px;";
+                div.innerHTML = `
+                    <span><strong>${policy.department}</strong> - ${policy.shiftStartTime} (+${policy.shiftGraceMinutes}m)</span>
+                    <button class="btn btn-danger" style="padding:2px 6px; font-size:10px; border-radius:4px;" onclick="deleteDepartmentShiftPolicy('${policy.department.replace(/'/g, "\\'")}')">Drop</button>
+                `;
+                listContainer.appendChild(div);
+            });
+        }
+
+        async function renderComplianceAlerts(logs, employees) {
+            const container = document.getElementById('compliance-alerts-container');
+            if (!container) return;
+            const todayStr = new Date().toISOString().split('T')[0];
+            const logsToday = logs.filter(l => l.dateString === todayStr);
+            const summary = buildDailySessionSummaryMap(logsToday);
+            const activeEmployees = employees.filter(e => e.status !== "Banned");
+            const alerts = [];
+
+            summary.forEach((info, empId) => {
+                const emp = activeEmployees.find(e => e.id === empId);
+                if (!emp) return;
+                if (info.openCheckInTs) {
+                    alerts.push({ level: "warning", text: `${emp.name} (${empId}) is pending check-out.` });
+                }
+            });
+
+            logsToday
+                .filter(l => l.type === "Check-Out" && l.checkoutCompliance === "Short")
+                .forEach(l => {
+                    alerts.push({ level: "warning", text: `${l.name} (${l.empId}) has a short session (${formatDurationFromMinutes(l.sessionMinutes)}).` });
+                });
+
+            if (!alerts.length) {
+                container.innerHTML = '<div style="font-size:12px; color:var(--success); background:var(--success-bg); border:1px solid var(--success); border-radius:6px; padding:8px;">No compliance alerts for today.</div>';
+                return;
+            }
+
+            container.innerHTML = "";
+            alerts.slice(0, 12).forEach(alert => {
+                const div = document.createElement('div');
+                div.style = `font-size:12px; border:1px solid ${alert.level === 'warning' ? 'var(--warning)' : 'var(--danger)'}; background:${alert.level === 'warning' ? 'var(--warning-bg)' : 'var(--danger-bg)'}; color:${alert.level === 'warning' ? 'var(--warning)' : 'var(--danger)'}; border-radius:6px; padding:7px 9px;`;
+                div.innerText = alert.text;
+                container.appendChild(div);
+            });
+        }
+
+        async function renderAuditTrail() {
+            const container = document.getElementById('audit-log-list-container');
+            if (!container) return;
+            const audits = await readAllDatabaseRecords("audit_logs");
+            audits.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            container.innerHTML = "";
+            if (!audits.length) {
+                container.innerHTML = '<div style="font-size:11px; color:var(--muted); border:1px solid var(--border); border-radius:6px; padding:8px;">No audit records yet.</div>';
+                return;
+            }
+            audits.slice(0, 100).forEach(item => {
+                const dt = new Date(item.timestamp || Date.now());
+                const row = document.createElement('div');
+                row.style = "background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:8px; display:flex; flex-direction:column; gap:4px;";
+                row.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; gap:8px; font-size:11px;">
+                        <strong>${item.action || "event"}</strong>
+                        <span style="color:var(--muted);">${dt.toLocaleDateString()} ${dt.toLocaleTimeString()}</span>
+                    </div>
+                    <div style="font-size:11px; color:var(--muted); word-break:break-word;">${item.detail || "-"}</div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        async function exportAuditTrailCSV() {
+            const audits = await readAllDatabaseRecords("audit_logs");
+            if (!audits.length) {
+                triggerToast("Audit trail is empty", "warning");
+                return;
+            }
+            audits.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Timestamp,Date,Time,Action,Detail\n";
+            audits.forEach(item => {
+                const dt = new Date(item.timestamp || Date.now());
+                const dateVal = dt.toISOString().split('T')[0];
+                const timeVal = dt.toTimeString().split(' ')[0];
+                csvContent += `"${item.timestamp || ''}","${dateVal}","${timeVal}","${item.action || ''}","${(item.detail || '').replace(/"/g, '""')}"\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const anchor = document.createElement("a");
+            anchor.setAttribute("href", encodedUri);
+            anchor.setAttribute("download", `audit_trail_${Math.floor(Date.now() / 1000)}.csv`);
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+            triggerToast("Audit CSV Exported", "success");
+            AudioEngine.play('success');
+        }
+
         async function captureAndSerializeTopology() {
             const targetLabelString = ui.regName.value.trim();
             const targetIdString = document.getElementById('reg-employee-id').value.trim();
@@ -2030,14 +2473,26 @@
             const targetRoleString = document.getElementById('reg-employee-role').value.trim();
             const targetEmailString = document.getElementById('reg-employee-email').value.trim();
             const targetPhoneString = document.getElementById('reg-employee-phone').value.trim();
+            const personalShiftStart = document.getElementById('reg-employee-shift-start').value;
+            const personalShiftGraceRaw = document.getElementById('reg-employee-shift-grace').value.trim();
+            const personalShiftGrace = personalShiftGraceRaw === "" ? null : parseInt(personalShiftGraceRaw, 10);
             if (!targetLabelString || !targetIdString) {
                 triggerToast("Full Name and ID are required", "warning");
+                return;
+            }
+            if (personalShiftGraceRaw !== "" && (Number.isNaN(personalShiftGrace) || personalShiftGrace < 0)) {
+                triggerToast("Personal grace minutes are invalid", "warning");
                 return;
             }
             const existing = await readAllDatabaseRecords("employees");
             const duplicateId = existing.find(e => e.id.toLowerCase() === targetIdString.toLowerCase());
             if (duplicateId && (!currentEditingEmployeeId || currentEditingEmployeeId.toLowerCase() !== targetIdString.toLowerCase())) {
                 triggerToast("Employee ID already registered", "error");
+                return;
+            }
+            const contactCollisionError = validateUniqueProfileContact(existing, targetIdString, targetEmailString, targetPhoneString);
+            if (contactCollisionError) {
+                triggerToast(contactCollisionError, "error");
                 return;
             }
             ui.banner.innerText = `Resolving face characteristics for: [${targetLabelString}]`;
@@ -2069,12 +2524,15 @@
                 email: targetEmailString || `${targetLabelString.toLowerCase().replace(/\s+/g, '')}@company.com`,
                 phone: targetPhoneString || "+1000000000",
                 status: targetStatusString,
+                shiftStartTime: personalShiftStart || null,
+                shiftGraceMinutes: personalShiftGrace,
                 joined: originalRecord ? (originalRecord.joined || Date.now()) : Date.now()
             });
 
             await rebuildComputationalMatchingGraph();
             await renderAdministrativeEmployeeDirectoryTable();
             populateManualOverrideDropdown();
+            populateLeaveRequestDropdown();
             suggestNextEmployeeId();
             stopEnrollmentCamera();
 
@@ -2086,7 +2544,10 @@
                 document.getElementById('reg-employee-role').value = "";
                 document.getElementById('reg-employee-email').value = "";
                 document.getElementById('reg-employee-phone').value = "";
+                document.getElementById('reg-employee-shift-start').value = "";
+                document.getElementById('reg-employee-shift-grace').value = "";
             }
+            await logAuditEvent(isEditing ? "employee_profile_updated" : "employee_profile_created", { id: targetIdString, name: targetLabelString });
             triggerToast(isEditing ? "Profile Updated Successfully" : "Employee Enrolled Successfully", "success");
             AudioEngine.play('success');
             ui.banner.innerText = "Ready.";
@@ -2117,7 +2578,7 @@
             tbody.innerHTML = "";
 
             if (totalRecords === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--muted);">No matching profiles found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--muted);">No matching profiles found.</td></tr>';
                 document.getElementById('emp-paging-info').innerText = "Showing 0 to 0 of 0 profiles";
                 document.getElementById('btn-emp-prev').disabled = true;
                 document.getElementById('btn-emp-next').disabled = true;
@@ -2130,12 +2591,14 @@
                 const statusBadge = isBanned 
                     ? `<span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; background:var(--danger-bg); color:var(--danger); border:1px solid var(--danger);">Suspended</span>` 
                     : `<span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; background:var(--success-bg); color:var(--success); border:1px solid var(--success);">Active</span>`;
+                const shiftText = employee.shiftStartTime ? `${employee.shiftStartTime} (+${Number.isFinite(parseInt(employee.shiftGraceMinutes, 10)) ? employee.shiftGraceMinutes : shiftGraceMinutes}m)` : "Dept/Global";
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="font-weight:700; color: var(--primary); font-family:monospace;">${employee.id}</td>
                     <td style="font-weight:600; color: var(--text);">${employee.name}</td>
                     <td>${employee.department}</td>
                     <td>${employee.role}</td>
+                    <td>${shiftText}</td>
                     <td>${employee.email}</td>
                     <td>${statusBadge}</td>
                     <td style="color:var(--muted);">${joinedDate}</td>
@@ -2161,8 +2624,10 @@
                 await rebuildComputationalMatchingGraph();
                 await renderAdministrativeEmployeeDirectoryTable();
                 populateManualOverrideDropdown();
+                populateLeaveRequestDropdown();
                 suggestNextEmployeeId();
                 await syncActiveFiltersList();
+                await logAuditEvent("employee_profile_deleted", { id: nameId });
                 triggerToast("Biometric Template Deleted", "warning");
                 AudioEngine.play('warning');
             }
@@ -2372,7 +2837,9 @@
             const now = new Date();
             const todayStr = now.toISOString().split('T')[0];
             const allLogs = await readAllDatabaseRecords("attendance_logs");
-            const logsToday = allLogs.filter(l => l.empId === empId && l.dateString === todayStr);
+            const logsToday = allLogs
+                .filter(l => l.empId === empId && l.dateString === todayStr)
+                .sort((a, b) => a.timestamp - b.timestamp);
 
             let eventType = "Check-In";
             if (manualTypeOverride) {
@@ -2383,15 +2850,20 @@
             }
 
             let status = "On-Time";
+            let sessionMinutes = null;
+            let checkoutCompliance = "-";
             if (eventType === "Check-In") {
-                const [shiftH, shiftM] = shiftStartTime.split(':').map(Number);
+                const policy = await resolveShiftPolicyForEmployee(empId, empDept);
+                const [shiftH, shiftM] = policy.shiftStartTime.split(':').map(Number);
                 const shiftLimit = new Date();
-                shiftLimit.setHours(shiftH, shiftM + shiftGraceMinutes, 0, 0);
+                shiftLimit.setHours(shiftH, shiftM + policy.shiftGraceMinutes, 0, 0);
                 if (now.getTime() > shiftLimit.getTime()) {
                     status = "Late";
                 }
             } else {
                 status = "-";
+                sessionMinutes = resolveCheckoutSessionMinutes(logsToday, now.getTime());
+                checkoutCompliance = resolveCheckoutCompliance(sessionMinutes);
             }
 
             const logEntry = {
@@ -2403,11 +2875,14 @@
                 dateString: todayStr,
                 timeString: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
                 type: eventType,
-                status: status
+                status: status,
+                sessionMinutes: sessionMinutes,
+                checkoutCompliance: checkoutCompliance
             };
 
             await writeDatabaseRecord("attendance_logs", logEntry);
             await loadAttendanceLedgingTicker();
+            await logAuditEvent("attendance_logged", { empId, eventType, status, sessionMinutes, checkoutCompliance });
             triggerToast(`${eventType} logged for ${employeeName}`, "success");
             AudioEngine.play('success');
             speakText(`${employeeName} verified. ${eventType} registered.`);
@@ -2420,7 +2895,8 @@
             sortedLogs.forEach(log => {
                 const div = document.createElement('div');
                 div.className = `ledger-row success`;
-                div.innerHTML = `<span>[${log.type}] ${log.name} - ${log.status}</span><span style="font-size:10px; opacity:0.65;">${log.timeString}</span>`;
+                const sessionText = log.type === "Check-Out" ? ` | ${formatDurationFromMinutes(log.sessionMinutes)}` : "";
+                div.innerHTML = `<span>[${log.type}] ${log.name} - ${log.status}${sessionText}</span><span style="font-size:10px; opacity:0.65;">${log.timeString}</span>`;
                 ui.kioskLedger.appendChild(div);
             });
         }
@@ -2434,14 +2910,26 @@
             const targetRole = document.getElementById('reg-employee-role').value.trim();
             const targetEmail = document.getElementById('reg-employee-email').value.trim();
             const targetPhone = document.getElementById('reg-employee-phone').value.trim();
+            const personalShiftStart = document.getElementById('reg-employee-shift-start').value;
+            const personalShiftGraceRaw = document.getElementById('reg-employee-shift-grace').value.trim();
+            const personalShiftGrace = personalShiftGraceRaw === "" ? null : parseInt(personalShiftGraceRaw, 10);
             if (!targetName || !targetId) {
                 triggerToast("Name and ID are required", "warning");
+                return;
+            }
+            if (personalShiftGraceRaw !== "" && (Number.isNaN(personalShiftGrace) || personalShiftGrace < 0)) {
+                triggerToast("Personal grace minutes are invalid", "warning");
                 return;
             }
             const existing = await readAllDatabaseRecords("employees");
             const duplicateId = existing.find(e => e.id.toLowerCase() === targetId.toLowerCase());
             if (duplicateId && (!currentEditingEmployeeId || currentEditingEmployeeId.toLowerCase() !== targetId.toLowerCase())) {
                 triggerToast("Employee ID taken", "error");
+                return;
+            }
+            const contactCollisionError = validateUniqueProfileContact(existing, targetId, targetEmail, targetPhone);
+            if (contactCollisionError) {
+                triggerToast(contactCollisionError, "error");
                 return;
             }
             ui.banner.innerText = "Analyzing portrait biometric frames...";
@@ -2474,11 +2962,14 @@
                         email: targetEmail || `${targetName.toLowerCase().replace(/\s+/g, '')}@company.com`,
                         phone: targetPhone || "+1000000000",
                         status: targetStatus,
+                        shiftStartTime: personalShiftStart || null,
+                        shiftGraceMinutes: personalShiftGrace,
                         joined: originalRecord ? (originalRecord.joined || Date.now()) : Date.now()
                     });
                     await rebuildComputationalMatchingGraph();
                     await renderAdministrativeEmployeeDirectoryTable();
                     populateManualOverrideDropdown();
+                    populateLeaveRequestDropdown();
                     suggestNextEmployeeId();
                     await syncActiveFiltersList();
 
@@ -2490,7 +2981,10 @@
                         document.getElementById('reg-employee-role').value = "";
                         document.getElementById('reg-employee-email').value = "";
                         document.getElementById('reg-employee-phone').value = "";
+                        document.getElementById('reg-employee-shift-start').value = "";
+                        document.getElementById('reg-employee-shift-grace').value = "";
                     }
+                    await logAuditEvent(isEditing ? "employee_profile_updated" : "employee_profile_created", { id: targetId, name: targetName });
                     event.target.value = "";
                     triggerToast("Portrait Vector Saved", "success");
                     AudioEngine.play('success');
@@ -2513,6 +3007,145 @@
             });
         }
 
+        function populateLeaveRequestDropdown() {
+            const selectEl = document.getElementById('leave-employee');
+            if (!selectEl) return;
+            selectEl.innerHTML = '<option value="">Select Employee...</option>';
+            precompiledEmployeesList
+                .filter(emp => emp.status !== "Banned")
+                .forEach(emp => {
+                    const opt = document.createElement('option');
+                    opt.value = emp.id;
+                    opt.innerText = `${emp.name} (${emp.id})`;
+                    selectEl.appendChild(opt);
+                });
+        }
+
+        function dateWithinRange(targetDate, startDate, endDate) {
+            return targetDate >= startDate && targetDate <= endDate;
+        }
+
+        function normalizeLeaveRecord(record) {
+            return {
+                ...record,
+                status: record.status || "Approved",
+                type: record.type || "Leave",
+                reason: record.reason || "",
+                dateFrom: record.dateFrom || record.date,
+                dateTo: record.dateTo || record.dateFrom || record.date
+            };
+        }
+
+        async function createLeaveRequest() {
+            const empId = document.getElementById('leave-employee').value;
+            const type = document.getElementById('leave-type').value;
+            const dateFrom = document.getElementById('leave-date-from').value;
+            const dateTo = document.getElementById('leave-date-to').value;
+            const status = document.getElementById('leave-status').value;
+            const reason = document.getElementById('leave-reason').value.trim();
+            if (!empId || !dateFrom || !dateTo) {
+                triggerToast("Employee and both dates are required", "warning");
+                return;
+            }
+            if (dateFrom > dateTo) {
+                triggerToast("From date cannot be after to date", "warning");
+                return;
+            }
+            const emp = precompiledEmployeesList.find(e => e.id === empId);
+            if (!emp) {
+                triggerToast("Employee record not found", "error");
+                return;
+            }
+            const existingRequests = (await readAllDatabaseRecords("leave_requests")).map(normalizeLeaveRecord);
+            const overlap = existingRequests.find(req => {
+                if (req.empId !== emp.id) return false;
+                if (req.status === "Rejected") return false;
+                const intersects = !(dateTo < req.dateFrom || dateFrom > req.dateTo);
+                return intersects;
+            });
+            if (overlap && status === "Approved") {
+                triggerToast("Approved request overlaps existing leave/permission", "error");
+                return;
+            }
+            await writeDatabaseRecord("leave_requests", {
+                empId: emp.id,
+                name: emp.name,
+                department: emp.department,
+                type,
+                dateFrom,
+                dateTo,
+                status,
+                reason,
+                createdAt: Date.now()
+            });
+            document.getElementById('leave-date-from').value = "";
+            document.getElementById('leave-date-to').value = "";
+            document.getElementById('leave-reason').value = "";
+            triggerToast("Leave request saved", "success");
+            AudioEngine.play('success');
+            await logAuditEvent("leave_request_saved", { empId, type, dateFrom, dateTo, status });
+            await renderLeaveRequests();
+            await renderAnalyticsDashboard();
+        }
+
+        async function updateLeaveRequestStatus(id, status) {
+            const leaveRecords = await readAllDatabaseRecords("leave_requests");
+            const target = leaveRecords.find(item => item.id === id);
+            if (!target) return;
+            target.status = status;
+            await writeDatabaseRecord("leave_requests", target);
+            triggerToast(`Leave status set to ${status}`, "success");
+            AudioEngine.play('success');
+            await logAuditEvent("leave_request_status_updated", { id, status, empId: target.empId });
+            await renderLeaveRequests();
+            await renderAnalyticsDashboard();
+        }
+
+        async function deleteLeaveRequest(id) {
+            if (!confirm("Delete this leave request?")) return;
+            await deleteDatabaseRecord("leave_requests", id);
+            triggerToast("Leave request deleted", "warning");
+            AudioEngine.play('warning');
+            await logAuditEvent("leave_request_deleted", { id });
+            await renderLeaveRequests();
+            await renderAnalyticsDashboard();
+        }
+
+        async function renderLeaveRequests() {
+            const container = document.getElementById('leave-list-container');
+            if (!container) return;
+            const leaveRecords = (await readAllDatabaseRecords("leave_requests"))
+                .map(normalizeLeaveRecord)
+                .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+                .slice(0, 50);
+            container.innerHTML = "";
+            if (!leaveRecords.length) {
+                container.innerHTML = '<div style="font-size:11px; color:var(--muted); border:1px solid var(--border); border-radius:6px; padding:8px;">No leave requests yet.</div>';
+                return;
+            }
+            leaveRecords.forEach(rec => {
+                const statusColor = rec.status === "Approved" ? "var(--success)" : rec.status === "Pending" ? "var(--warning)" : "var(--danger)";
+                const statusBg = rec.status === "Approved" ? "var(--success-bg)" : rec.status === "Pending" ? "var(--warning-bg)" : "var(--danger-bg)";
+                const row = document.createElement('div');
+                row.style = "border:1px solid var(--border); border-radius:6px; padding:8px; background:var(--bg); display:flex; flex-direction:column; gap:6px;";
+                row.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; gap:6px; align-items:center;">
+                        <span style="font-size:11px; font-weight:700;">${rec.name} (${rec.empId})</span>
+                        <span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; color:${statusColor}; background:${statusBg}; border:1px solid ${statusColor};">${rec.status}</span>
+                    </div>
+                    <div style="font-size:11px; color:var(--muted);">${rec.type}: ${rec.dateFrom} to ${rec.dateTo}</div>
+                    <div style="font-size:11px; color:var(--text);">${rec.reason || "No reason provided"}</div>
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn btn-secondary" style="padding:3px 8px; font-size:10px; border-radius:4px;" onclick="updateLeaveRequestStatus(${rec.id}, 'Approved')">Approve</button>
+                        <button class="btn btn-secondary" style="padding:3px 8px; font-size:10px; border-radius:4px;" onclick="updateLeaveRequestStatus(${rec.id}, 'Pending')">Pending</button>
+                        <button class="btn btn-danger" style="padding:3px 8px; font-size:10px; border-radius:4px;" onclick="updateLeaveRequestStatus(${rec.id}, 'Rejected')">Reject</button>
+                        <button class="btn btn-danger" style="padding:3px 8px; font-size:10px; border-radius:4px;" onclick="deleteLeaveRequest(${rec.id})">Delete</button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
         async function startEditEmployee(empId) {
             const existing = await readAllDatabaseRecords("employees");
             const emp = existing.find(e => e.id === empId);
@@ -2527,6 +3160,8 @@
             document.getElementById('reg-employee-email').value = emp.email || "";
             document.getElementById('reg-employee-phone').value = emp.phone || "";
             document.getElementById('reg-employee-status').value = emp.status || "Active";
+            document.getElementById('reg-employee-shift-start').value = emp.shiftStartTime || "";
+            document.getElementById('reg-employee-shift-grace').value = Number.isFinite(parseInt(emp.shiftGraceMinutes, 10)) ? emp.shiftGraceMinutes : "";
             document.getElementById('reg-actions-enroll').style.display = "none";
             document.getElementById('reg-actions-edit').style.display = "flex";
             const editBtn = document.getElementById('btn-trigger-capture-edit');
@@ -2543,6 +3178,8 @@
             document.getElementById('reg-employee-email').value = "";
             document.getElementById('reg-employee-phone').value = "";
             document.getElementById('reg-employee-status').value = "Active";
+            document.getElementById('reg-employee-shift-start').value = "";
+            document.getElementById('reg-employee-shift-grace').value = "";
             const idField = document.getElementById('reg-employee-id');
             idField.disabled = false;
             suggestNextEmployeeId();
@@ -2558,11 +3195,23 @@
             const targetEmailString = document.getElementById('reg-employee-email').value.trim();
             const targetPhoneString = document.getElementById('reg-employee-phone').value.trim();
             const targetStatusString = document.getElementById('reg-employee-status').value;
+            const personalShiftStart = document.getElementById('reg-employee-shift-start').value;
+            const personalShiftGraceRaw = document.getElementById('reg-employee-shift-grace').value.trim();
+            const personalShiftGrace = personalShiftGraceRaw === "" ? null : parseInt(personalShiftGraceRaw, 10);
             if (!targetLabelString || !targetIdString) {
                 triggerToast("Name and ID are required", "warning");
                 return;
             }
+            if (personalShiftGraceRaw !== "" && (Number.isNaN(personalShiftGrace) || personalShiftGrace < 0)) {
+                triggerToast("Personal grace minutes are invalid", "warning");
+                return;
+            }
             const existing = await readAllDatabaseRecords("employees");
+            const contactCollisionError = validateUniqueProfileContact(existing, targetIdString, targetEmailString, targetPhoneString);
+            if (contactCollisionError) {
+                triggerToast(contactCollisionError, "error");
+                return;
+            }
             const originalRecord = existing.find(e => e.id === currentEditingEmployeeId);
             if (!originalRecord) return;
             await writeDatabaseRecord("employees", {
@@ -2574,13 +3223,17 @@
                 email: targetEmailString || `${targetLabelString.toLowerCase().replace(/\s+/g, '')}@company.com`,
                 phone: targetPhoneString || "+1000000000",
                 status: targetStatusString,
+                shiftStartTime: personalShiftStart || null,
+                shiftGraceMinutes: personalShiftGrace,
                 joined: originalRecord.joined || Date.now()
             });
             await rebuildComputationalMatchingGraph();
             await renderAdministrativeEmployeeDirectoryTable();
             populateManualOverrideDropdown();
+            populateLeaveRequestDropdown();
             cancelEditEmployeeMode();
             await syncActiveFiltersList();
+            await logAuditEvent("employee_profile_updated", { id: targetIdString, name: targetLabelString });
             triggerToast("Profile Updated Successfully", "success");
             AudioEngine.play('success');
         }
@@ -2595,9 +3248,11 @@
             await rebuildComputationalMatchingGraph();
             await renderAdministrativeEmployeeDirectoryTable();
             populateManualOverrideDropdown();
+            populateLeaveRequestDropdown();
             if (currentEditingEmployeeId === empId) {
                 document.getElementById('reg-employee-status').value = newStatus;
             }
+            await logAuditEvent("employee_status_updated", { id: empId, status: newStatus });
             triggerToast(`Profile status updated to: ${newStatus}`, "success");
             AudioEngine.play('success');
         }
@@ -2619,10 +3274,17 @@
         async function saveShiftPolicySettings() {
             const timeVal = document.getElementById('settings-shift-time').value;
             const graceVal = parseInt(document.getElementById('settings-grace-minutes').value, 10);
+            const minSessionVal = parseInt(document.getElementById('settings-min-session-minutes').value, 10);
+            if (Number.isNaN(graceVal) || graceVal < 0 || Number.isNaN(minSessionVal) || minSessionVal < 30) {
+                triggerToast("Grace and minimum session values are invalid", "warning");
+                return;
+            }
             shiftStartTime = timeVal;
             shiftGraceMinutes = graceVal;
+            minimumSessionMinutes = minSessionVal;
             await writeDatabaseRecord("system_config", { key: "shift_start_time", value: timeVal });
             await writeDatabaseRecord("system_config", { key: "shift_grace_minutes", value: graceVal });
+            await writeDatabaseRecord("system_config", { key: "minimum_session_minutes", value: minSessionVal });
 
             const wkChecked = [];
             for (let i = 0; i < 7; i++) {
@@ -2635,6 +3297,7 @@
 
             triggerToast("Policies Updated", "success");
             AudioEngine.play('success');
+            await logAuditEvent("global_shift_policy_updated", { timeVal, graceVal, minSessionVal, weekendDays: wkChecked });
             await renderAnalyticsDashboard();
         }
 
@@ -2642,6 +3305,7 @@
             const employees = await readAllDatabaseRecords("employees");
             const logs = await readAllDatabaseRecords("attendance_logs");
             const holidays = await readAllDatabaseRecords("holidays");
+            const leaveRequests = (await readAllDatabaseRecords("leave_requests")).map(normalizeLeaveRecord);
 
             const now = new Date();
             const todayStr = now.toISOString().split('T')[0];
@@ -2650,15 +3314,29 @@
             const isHoliday = holidays.some(h => h.date === todayStr);
 
             const logsToday = logs.filter(l => l.dateString === todayStr);
-            const totalCount = employees.filter(e => e.status !== "Banned").length;
+            const activeEmployees = employees.filter(e => e.status !== "Banned");
+            const totalCount = activeEmployees.length;
             const presentTodayNames = new Set(logsToday.filter(l => l.type === "Check-In").map(l => l.empId));
             const presentTodayCount = presentTodayNames.size;
             const onTimeCount = logsToday.filter(l => l.type === "Check-In" && l.status === "On-Time").length;
             const lateCount = logsToday.filter(l => l.type === "Check-In" && l.status === "Late").length;
+            const dailySummaryMap = buildDailySessionSummaryMap(logsToday);
+            let pendingCheckOutCount = 0;
+            let workedMinutesToday = 0;
+            dailySummaryMap.forEach(summary => {
+                workedMinutesToday += summary.totalMinutes;
+                if (summary.openCheckInTs) pendingCheckOutCount += 1;
+            });
+            const leaveTodaySet = new Set(
+                leaveRequests
+                    .filter(req => req.status === "Approved" && dateWithinRange(todayStr, req.dateFrom, req.dateTo))
+                    .map(req => req.empId)
+            );
+            const leaveExemptCount = activeEmployees.filter(e => leaveTodaySet.has(e.id) && !presentTodayNames.has(e.id)).length;
             
             let absentCount = 0;
             if (!isWeekend && !isHoliday) {
-                absentCount = Math.max(0, totalCount - presentTodayCount);
+                absentCount = Math.max(0, totalCount - presentTodayCount - leaveExemptCount);
             }
 
             document.getElementById('stat-total-emp').innerText = totalCount;
@@ -2666,11 +3344,15 @@
             document.getElementById('stat-on-time').innerText = onTimeCount;
             document.getElementById('stat-late').innerText = lateCount;
             document.getElementById('stat-absent').innerText = absentCount;
+            document.getElementById('stat-on-leave').innerText = leaveExemptCount;
+            document.getElementById('stat-hours').innerText = formatDurationFromMinutes(workedMinutesToday);
+            document.getElementById('stat-open-sessions').innerText = pendingCheckOutCount;
 
             filterReportsTable();
             drawWeeklyAnalyticsChart(logs);
             drawDepartmentCanvasChart(employees, logsToday);
             drawMonthlyContributionHeatmap(logs);
+            await renderComplianceAlerts(logs, employees);
         }
 
         function drawWeeklyAnalyticsChart(logs) {
@@ -2882,7 +3564,7 @@
             tbody.innerHTML = "";
 
             if (totalRecords === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--muted);">No matching attendance records found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:var(--muted);">No matching attendance records found.</td></tr>';
                 document.getElementById('reports-paging-info').innerText = "Showing 0 to 0 of 0 logs";
                 document.getElementById('btn-report-prev').disabled = true;
                 document.getElementById('btn-report-next').disabled = true;
@@ -2899,6 +3581,8 @@
                     <td>${log.role}</td>
                     <td style="font-weight: 600; color: var(--primary);">${log.type}</td>
                     <td><span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; background:${log.status === 'On-Time' ? 'var(--success-bg)' : log.status === 'Late' ? 'var(--warning-bg)' : log.status === 'Exempt' ? 'var(--primary-glow)' : 'var(--bg)'}; color:${log.status === 'On-Time' ? 'var(--success)' : log.status === 'Late' ? 'var(--warning)' : log.status === 'Exempt' ? 'var(--primary)' : 'var(--muted)'};">${log.status}</span></td>
+                    <td style="font-weight: 600;">${formatDurationFromMinutes(log.sessionMinutes)}</td>
+                    <td><span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; background:${log.checkoutCompliance === 'Met' ? 'var(--success-bg)' : log.checkoutCompliance === 'Short' ? 'var(--warning-bg)' : 'var(--bg)'}; color:${log.checkoutCompliance === 'Met' ? 'var(--success)' : log.checkoutCompliance === 'Short' ? 'var(--warning)' : 'var(--muted)'};">${log.checkoutCompliance || '-'}</span></td>
                     <td>
                         <div style="display:flex; gap:4px;">
                             <button class="btn btn-secondary" style="padding:4px 8px; font-size:10px; border-radius:4px;" onclick="openRetroactiveModal(${log.id})">Edit</button>
@@ -2946,6 +3630,7 @@
                 await loadAttendanceLedgingTicker();
                 triggerToast("Attendance Record Deleted", "warning");
                 AudioEngine.play('warning');
+                await logAuditEvent("attendance_log_deleted", { logId });
             }
         }
 
@@ -2955,9 +3640,11 @@
                 return;
             }
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Date,Time,Employee ID,Employee Name,Department,Role,Event Type,Status\n";
+            csvContent += "Date,Time,Employee ID,Employee Name,Department,Role,Event Type,Status,Session Minutes,Checkout Compliance\n";
             filteredReportsList.forEach(log => {
-                csvContent += `"${log.dateString}","${log.timeString}","${log.empId}","${log.name}","${log.department}","${log.role}","${log.type}","${log.status}"\n`;
+                const sessionMinutes = typeof log.sessionMinutes === "number" ? log.sessionMinutes : "";
+                const checkoutCompliance = log.checkoutCompliance || "-";
+                csvContent += `"${log.dateString}","${log.timeString}","${log.empId}","${log.name}","${log.department}","${log.role}","${log.type}","${log.status}","${sessionMinutes}","${checkoutCompliance}"\n`;
             });
             const encodedUri = encodeURI(csvContent);
             const temporaryAnchor = document.createElement("a");
@@ -2968,6 +3655,44 @@
             document.body.removeChild(temporaryAnchor);
             triggerToast("CSV Download Initiated", "success");
             AudioEngine.play('success');
+            await logAuditEvent("attendance_report_exported", { rows: filteredReportsList.length });
+        }
+
+        async function exportDailySummaryCSV() {
+            const employees = await readAllDatabaseRecords("employees");
+            if (!employees.length) {
+                triggerToast("No employees found for summary export", "warning");
+                return;
+            }
+            const logs = await readAllDatabaseRecords("attendance_logs");
+            const todayStr = new Date().toISOString().split('T')[0];
+            const logsToday = logs.filter(l => l.dateString === todayStr);
+            const summaryMap = buildDailySessionSummaryMap(logsToday);
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Date,Employee ID,Employee Name,Department,Role,First Check-In,Last Check-Out,Worked Minutes,Worked Duration,Checkout Compliance,Pending Checkout\n";
+            employees
+                .filter(e => e.status !== "Banned")
+                .forEach(emp => {
+                    const summary = summaryMap.get(emp.id);
+                    const firstIn = summary && summary.firstIn ? summary.firstIn.timeString : "";
+                    const lastOut = summary && summary.lastOut ? summary.lastOut.timeString : "";
+                    const totalMinutes = summary ? summary.totalMinutes : 0;
+                    const hasOpenSession = summary ? !!summary.openCheckInTs : false;
+                    const checkoutCompliance = totalMinutes > 0 ? resolveCheckoutCompliance(totalMinutes) : "-";
+                    csvContent += `"${todayStr}","${emp.id}","${emp.name}","${emp.department}","${emp.role || ''}","${firstIn}","${lastOut}","${totalMinutes}","${formatDurationFromMinutes(totalMinutes)}","${checkoutCompliance}","${hasOpenSession ? 'Yes' : 'No'}"\n`;
+                });
+
+            const encodedUri = encodeURI(csvContent);
+            const anchor = document.createElement("a");
+            anchor.setAttribute("href", encodedUri);
+            anchor.setAttribute("download", `attendance_daily_summary_${todayStr}.csv`);
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+            triggerToast("Daily Summary Exported", "success");
+            AudioEngine.play('success');
+            await logAuditEvent("attendance_daily_summary_exported");
         }
 
         function switchView(targetViewModeString) {
@@ -3004,6 +3729,8 @@
                 document.getElementById('sub-view-employees').style.display = "flex";
                 renderAdministrativeEmployeeDirectoryTable();
                 populateManualOverrideDropdown();
+                populateLeaveRequestDropdown();
+                renderLeaveRequests();
                 suggestNextEmployeeId();
             } else if (subTabName === 'settings') {
                 document.getElementById('sub-view-settings').style.display = "flex";
@@ -3065,6 +3792,8 @@
                                  <button class="btn btn-danger" style="padding:2px 6px; font-size:10px; border-radius:4px;" onclick="deleteHoliday('${h.date}')">Drop</button>`;
                 holidayContainer.appendChild(div);
             });
+            await renderDepartmentShiftPolicies();
+            await renderAuditTrail();
         }
 
         async function addNewDepartment() {
@@ -3074,6 +3803,7 @@
             document.getElementById('settings-new-dept').value = "";
             triggerToast(`Department '${name}' registered`, "success");
             AudioEngine.play('success');
+            await logAuditEvent("department_added", { name });
             await syncActiveFiltersList();
             await renderSettingsLists();
         }
@@ -3081,8 +3811,10 @@
         async function deleteDepartment(name) {
             if (confirm(`Confirm dropping department: ${name}?`)) {
                 await deleteDatabaseRecord("departments", name);
+                await deleteDatabaseRecord("shift_policies", name);
                 triggerToast(`Department '${name}' dropped`, "warning");
                 AudioEngine.play('warning');
+                await logAuditEvent("department_deleted", { name });
                 await syncActiveFiltersList();
                 await renderSettingsLists();
             }
@@ -3100,6 +3832,7 @@
             document.getElementById('settings-new-holiday-name').value = "";
             triggerToast(`Holiday exception registered`, "success");
             AudioEngine.play('success');
+            await logAuditEvent("holiday_added", { date, name });
             await renderSettingsLists();
             await renderAnalyticsDashboard();
         }
@@ -3109,6 +3842,7 @@
                 await deleteDatabaseRecord("holidays", date);
                 triggerToast(`Holiday exception dropped`, "warning");
                 AudioEngine.play('warning');
+                await logAuditEvent("holiday_deleted", { date });
                 await renderSettingsLists();
                 await renderAnalyticsDashboard();
             }
@@ -3154,6 +3888,7 @@
             const timeField = document.getElementById('retro-log-time');
             const typeField = document.getElementById('retro-log-type');
             const statusField = document.getElementById('retro-log-status');
+            const sessionField = document.getElementById('retro-log-session');
             const hiddenId = document.getElementById('retro-log-id');
 
             if (logId) {
@@ -3167,6 +3902,7 @@
                     timeField.value = log.timeString;
                     typeField.value = log.type;
                     statusField.value = log.status;
+                    sessionField.value = typeof log.sessionMinutes === "number" ? log.sessionMinutes : "";
                     document.getElementById('retro-modal-title').innerText = "Edit Attendance Log Entry";
                 }
             } else {
@@ -3177,6 +3913,7 @@
                 timeField.value = now.toTimeString().split(' ')[0];
                 typeField.value = "Check-In";
                 statusField.value = "On-Time";
+                sessionField.value = "";
                 document.getElementById('retro-modal-title').innerText = "Create Retroactive Log Entry";
             }
             document.getElementById('retroactive-log-modal').style.display = 'flex';
@@ -3193,6 +3930,7 @@
             const timeStr = document.getElementById('retro-log-time').value;
             const eventType = document.getElementById('retro-log-type').value;
             const statusVal = document.getElementById('retro-log-status').value;
+            const sessionFieldRaw = document.getElementById('retro-log-session').value.trim();
 
             if (!empId || !dateStr || !timeStr) {
                 triggerToast("Complete all details", "warning");
@@ -3204,6 +3942,30 @@
             if (!emp) return;
 
             const datetimeObj = new Date(`${dateStr}T${timeStr}`);
+            const logs = await readAllDatabaseRecords("attendance_logs");
+            const sameDayEmployeeLogs = logs.filter(l =>
+                l.empId === emp.id &&
+                l.dateString === dateStr &&
+                (!logIdVal || l.id !== parseInt(logIdVal, 10))
+            );
+
+            let computedStatus = statusVal;
+            let sessionMinutes = null;
+            let checkoutCompliance = "-";
+            if (eventType === "Check-Out") {
+                if (sessionFieldRaw !== "") {
+                    sessionMinutes = parseInt(sessionFieldRaw, 10);
+                    if (Number.isNaN(sessionMinutes) || sessionMinutes < 0) {
+                        triggerToast("Session minutes must be a positive value", "warning");
+                        return;
+                    }
+                } else {
+                    sessionMinutes = resolveCheckoutSessionMinutes(sameDayEmployeeLogs, datetimeObj.getTime());
+                }
+                computedStatus = "-";
+                checkoutCompliance = resolveCheckoutCompliance(sessionMinutes);
+            }
+
             const logEntry = {
                 empId: emp.id,
                 name: emp.name,
@@ -3213,7 +3975,9 @@
                 dateString: dateStr,
                 timeString: timeStr,
                 type: eventType,
-                status: statusVal
+                status: computedStatus,
+                sessionMinutes: sessionMinutes,
+                checkoutCompliance: checkoutCompliance
             };
 
             if (logIdVal) {
@@ -3224,6 +3988,7 @@
             closeRetroactiveModal();
             triggerToast(logIdVal ? "Log Record Updated" : "Retro Log Entry Appended", "success");
             AudioEngine.play('success');
+            await logAuditEvent(logIdVal ? "attendance_log_updated_retroactive" : "attendance_log_created_retroactive", { empId, dateStr, timeStr, eventType });
             await renderAnalyticsDashboard();
             await loadAttendanceLedgingTicker();
         }
@@ -3232,6 +3997,9 @@
 
         
     </script>
+
+
+
 
 <script type="module" src="./pwa-register.js"></script>
 </body>
