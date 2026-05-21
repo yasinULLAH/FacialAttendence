@@ -1369,8 +1369,12 @@
             </button>
         </nav>
         <div class="status-container">
-            <button class="btn btn-secondary" onclick="toggleTheme()"
-                style="padding: 4px 8px; font-size: 11px; margin-right: 8px;">🌓 Theme</button>
+            <button class="btn btn-secondary" onclick="toggleTheme()" title="Theme"
+                style="padding: 4px 8px; font-size: 11px; margin-right: 8px;">🌓</button>
+            <button id="btn-header-login" class="btn btn-secondary" onclick="switchView('admin')" title="Login"
+                style="padding: 4px 8px; font-size: 11px; margin-right: 8px;">🔑</button>
+            <button id="btn-header-logout" class="btn btn-secondary" onclick="logoutAdminGate()" title="Logout"
+                style="padding: 4px 8px; font-size: 11px; margin-right: 8px; display: none;">🔒</button>
             <span id="system-status-dot" class="status-dot active"></span>
             <span id="system-status-text">Core Active</span>
         </div>
@@ -2635,6 +2639,7 @@
                 return null;
             }
             return $table.DataTable({
+                stateSave: true,
                 order: [],
                 paging: false,
                 searching: false,
@@ -2985,6 +2990,7 @@
             }
 
             comprehensiveReportDataTable = jQuery('#comprehensive-report-table').DataTable({
+                stateSave: true,
                 order: [],
                 paging: true,
                 pageLength: 25,
@@ -3176,6 +3182,14 @@
     
 
     
+
+    
+
+    
+
+    
+
+    
 <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head><body>${summaryHtml}</body></html>`);
@@ -3312,11 +3326,26 @@
                 await writeDatabaseRecord("system_config", { key: "motion_idle_seconds", value: 2 });
             }
         }
+        function updateAuthButtonsVisibility() {
+            const loginBtn = document.getElementById('btn-header-login');
+            const logoutBtn = document.getElementById('btn-header-logout');
+            if (loginBtn && logoutBtn) {
+                if (isDashboardAuthenticatedState) {
+                    loginBtn.style.display = 'none';
+                    logoutBtn.style.display = 'inline-flex';
+                } else {
+                    loginBtn.style.display = 'inline-flex';
+                    logoutBtn.style.display = 'none';
+                }
+            }
+        }
+
         async function verifyAdminCredentialGateAccess() {
             const inputString = ui.passInput.value;
             const correctPasswordString = await readConfigKey("master_password");
             if (inputString === correctPasswordString) {
                 isDashboardAuthenticatedState = true;
+                updateAuthButtonsVisibility();
                 currentPrimaryView = "admin";
                 writeSessionState({ isAdminAuthenticated: true, activeView: currentPrimaryView, activeSubTab: currentAdminSubTab });
                 ui.authGate.style.display = "none";
@@ -3338,6 +3367,7 @@
         }
         function logoutAdminGate() {
             isDashboardAuthenticatedState = false;
+            updateAuthButtonsVisibility();
             writeSessionState({ isAdminAuthenticated: false, activeView: "admin", activeSubTab: currentAdminSubTab });
             stopEnrollmentCamera();
             ui.authGate.style.display = "flex";
@@ -5835,6 +5865,7 @@
             currentPrimaryView = validViews.includes(state.activeView) ? state.activeView : "kiosk";
             currentAdminSubTab = validSubTabs.includes(state.activeSubTab) ? state.activeSubTab : "reports";
             isDashboardAuthenticatedState = state.isAdminAuthenticated === true;
+            updateAuthButtonsVisibility();
             switchView(currentPrimaryView, { skipPersist: true });
         }
         function switchView(targetViewModeString, options = {}) {
@@ -6169,6 +6200,10 @@
         window.onload = compileApplicationCoreSubsystems;
     </script>
     
+
+
+
+
 
 
 

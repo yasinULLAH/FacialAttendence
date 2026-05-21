@@ -1305,6 +1305,14 @@ if (isset($_GET['action'])) {
     
 
     
+
+    
+
+    
+
+    
+
+    
 <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
@@ -1343,7 +1351,9 @@ if (isset($_GET['action'])) {
             </button>
         </nav>
         <div class="status-container">
-            <button class="btn btn-secondary" onclick="toggleTheme()" style="padding: 4px 8px; font-size: 11px; margin-right: 8px;">🌓 Theme</button>
+            <button class="btn btn-secondary" onclick="toggleTheme()" style="padding: 4px 8px; font-size: 11px; margin-right: 8px;" title="Theme">🌓</button>
+            <button id="btn-header-login" class="btn btn-secondary" onclick="switchView('admin')" style="padding: 4px 8px; font-size: 11px; margin-right: 8px;" title="Login">🔑</button>
+            <button id="btn-header-logout" class="btn btn-secondary" onclick="logoutAdminGate()" style="padding: 4px 8px; font-size: 11px; margin-right: 8px; display: none;" title="Logout">🔒</button>
             <span id="system-status-dot" class="status-dot active"></span>
             <span id="system-status-text">Core Active</span>
         </div>
@@ -2259,6 +2269,20 @@ if (isset($_GET['action'])) {
         const empRowsPerPage = 10;
         let filteredEmpList = [];
 
+        function updateAuthButtonsVisibility() {
+            const loginBtn = document.getElementById('btn-header-login');
+            const logoutBtn = document.getElementById('btn-header-logout');
+            if (loginBtn && logoutBtn) {
+                if (isDashboardAuthenticatedState) {
+                    loginBtn.style.display = 'none';
+                    logoutBtn.style.display = 'inline-flex';
+                } else {
+                    loginBtn.style.display = 'inline-flex';
+                    logoutBtn.style.display = 'none';
+                }
+            }
+        }
+
         async function verifyAdminCredentialGateAccess() {
             const inputString = ui.passInput.value;
             const res = await fetch('index.php?action=verify_login', {
@@ -2269,6 +2293,7 @@ if (isset($_GET['action'])) {
             const result = await res.json();
             if (result.success) {
                 isDashboardAuthenticatedState = true;
+                updateAuthButtonsVisibility();
                 ui.authGate.style.display = "none";
                 document.getElementById('admin-panel-content').style.display = "flex";
                 ui.passInput.value = "";
@@ -2291,6 +2316,7 @@ if (isset($_GET['action'])) {
         async function logoutAdminGate() {
             await fetch('index.php?action=logout');
             isDashboardAuthenticatedState = false;
+            updateAuthButtonsVisibility();
             stopEnrollmentCamera();
             ui.authGate.style.display = "flex";
             document.getElementById('admin-panel-content').style.display = "none";
@@ -2826,6 +2852,7 @@ if (isset($_GET['action'])) {
                 const checkSessionRes = await fetch('index.php?action=check_session');
                 const checkSession = await checkSessionRes.json();
                 isDashboardAuthenticatedState = checkSession.authenticated;
+                updateAuthButtonsVisibility();
 
                 const accentColor = await readConfigKey("theme_color");
                 applyAccentColor(accentColor);
@@ -4275,6 +4302,10 @@ if (isset($_GET['action'])) {
 
         
     </script>
+
+
+
+
 
 
 
