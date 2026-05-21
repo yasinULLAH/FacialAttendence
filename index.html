@@ -1,0 +1,2487 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aura Facial Recognition Attendance Suite</title>
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --bg: #f8fafc;
+            --panel: #ffffff;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-glow: rgba(79, 70, 229, 0.08);
+            --text: #0f172a;
+            --muted: #475569;
+            --muted-light: #94a3b8;
+            --border: #e2e8f0;
+            --success: #059669;
+            --success-bg: #ecfdf5;
+            --warning: #d97706;
+            --warning-bg: #fffbeb;
+            --danger: #dc2626;
+            --danger-bg: #fef2f2;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .brand-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-logo {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+            color: #ffffff;
+            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+        }
+
+        .brand-title {
+            font-weight: 800;
+            font-size: 16px;
+            letter-spacing: -0.3px;
+            color: var(--text);
+        }
+
+        .brand-badge {
+            font-size: 9px;
+            font-weight: 700;
+            background: #f1f5f9;
+            color: var(--muted);
+            padding: 3px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            text-transform: uppercase;
+        }
+
+        nav {
+            display: flex;
+            background: #f1f5f9;
+            padding: 3px;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .tab-btn:hover {
+            color: var(--text);
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            background: var(--panel);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+
+        main {
+            padding: 16px;
+            flex: 1;
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        #system-alert-banner {
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            padding: 8px 16px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.03);
+        }
+
+        #system-alert-banner::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            background-color: var(--primary);
+            border-radius: 50%;
+        }
+
+        .view-section {
+            display: none;
+            width: 100%;
+        }
+
+        .view-section.active {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .grid-2 {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--panel);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        h2 {
+            font-size: 15px;
+            font-weight: 700;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text);
+        }
+
+        .camera-container {
+            position: relative;
+            width: 100%;
+            padding-top: 75%;
+            background-color: #020617;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .camera-placeholder-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            z-index: 10;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .placeholder-icon {
+            font-size: 32px;
+            color: var(--muted-light);
+            background: #f1f5f9;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .placeholder-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .placeholder-subtitle {
+            font-size: 12px;
+            color: var(--muted);
+            max-width: 280px;
+            line-height: 1.5;
+        }
+
+        .camera-controls-bar {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            padding: 4px;
+            border-radius: 30px;
+            display: flex;
+            gap: 6px;
+            z-index: 15;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .control-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: var(--muted);
+            background: transparent;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .control-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            background: transparent !important;
+            color: var(--muted-light) !important;
+        }
+
+        .control-btn-start:hover:not(:disabled) {
+            color: var(--success);
+            background: var(--success-bg);
+        }
+
+        .control-btn-pause:hover:not(:disabled) {
+            color: var(--warning);
+            background: var(--warning-bg);
+        }
+
+        .control-btn-stop:hover:not(:disabled) {
+            color: var(--danger);
+            background: var(--danger-bg);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+        }
+
+        label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input,
+        select {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            width: 100%;
+            background: #ffffff;
+            color: var(--text);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        input::placeholder {
+            color: var(--muted-light);
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .btn {
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            color: #ffffff;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.15);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #f8fafc;
+            border-color: var(--muted-light);
+        }
+
+        .btn-danger {
+            background: #ffffff;
+            color: var(--danger);
+            border: 1px solid var(--border);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: var(--danger-bg);
+            border-color: rgba(220, 38, 38, 0.2);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.01);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 12px 16px;
+            font-weight: 700;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.75px;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            white-space: nowrap;
+        }
+
+        tr:last-child td {
+            border: none;
+        }
+
+        tr:hover td {
+            background: #f8fafc;
+        }
+
+        .ledger-box {
+            flex: 1;
+            min-height: 240px;
+            max-height: 480px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 4px;
+        }
+
+        .ledger-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .ledger-box::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .ledger-row {
+            padding: 10px 14px;
+            border-radius: 6px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+        }
+
+        .ledger-row.success {
+            border-left-color: var(--success);
+            background: var(--success-bg);
+            border-color: rgba(5, 150, 105, 0.1);
+            color: #065f46;
+        }
+
+        #admin-auth-gate {
+            max-width: 400px;
+            margin: 60px auto;
+            width: 100%;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--muted);
+        }
+
+        .status-dot.active {
+            background-color: var(--success);
+            box-shadow: 0 0 8px var(--success);
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .metric-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text);
+            margin-top: 4px;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: var(--muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .dropzone-area {
+            border: 2px dashed var(--border);
+            border-radius: 6px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            background: #fafafb;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .dropzone-area:hover {
+            border-color: var(--primary);
+            background: var(--primary-glow);
+        }
+
+        .datatable-header {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 4px 0;
+        }
+
+        .datatable-search-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .datatable-search-wrapper svg {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            color: var(--muted);
+        }
+
+        .datatable-search-input {
+            padding-left: 32px;
+        }
+
+        .datatable-filters {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            width: 100%;
+        }
+
+        .datatable-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .datatable-pagination {
+            display: flex;
+            gap: 6px;
+        }
+
+        .datatable-page-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            background: #ffffff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text);
+            transition: all 0.2s ease;
+        }
+
+        .datatable-page-btn:hover:not(:disabled) {
+            background: #f8fafc;
+            border-color: var(--muted-light);
+        }
+
+        .datatable-page-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .datatable-toolbar {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            gap: 8px;
+        }
+
+        .sub-nav {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+            overflow-x: auto;
+            gap: 20px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sub-nav-tabs {
+            display: flex;
+            gap: 20px;
+        }
+
+        .sub-tab-btn {
+            padding: 10px 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .sub-tab-btn:hover {
+            color: var(--text);
+        }
+
+        .sub-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        @media (min-width: 768px) {
+            header {
+                flex-direction: row;
+                height: 56px;
+                padding: 0 32px;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .brand {
+                width: auto;
+            }
+
+            nav {
+                width: auto;
+            }
+
+            .tab-btn {
+                flex: none;
+                padding: 6px 18px;
+                font-size: 13px;
+            }
+
+            main {
+                padding: 24px;
+                gap: 24px;
+            }
+
+            .grid-2 {
+                display: grid;
+                grid-template-columns: 1.2fr 0.8fr;
+                gap: 24px;
+            }
+
+            .card {
+                padding: 24px;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 12px;
+            }
+
+            .datatable-header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .datatable-search-wrapper {
+                width: 240px;
+            }
+
+            .datatable-filters {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                width: auto;
+            }
+
+            .datatable-filters select {
+                width: 140px;
+            }
+
+            .datatable-toolbar {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <div class="brand-info">
+                <div class="brand-logo">A</div>
+                <span class="brand-title">AURA FACE RECOGNITION</span>
+            </div>
+            <span class="brand-badge">v2.0</span>
+        </div>
+        <nav>
+            <button id="nav-kiosk" class="tab-btn active" onclick="switchView('kiosk')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="4"></line>
+                    <line x1="8" y1="2" x2="8" y2="4"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                Kiosk View
+            </button>
+            <button id="nav-admin" class="tab-btn" onclick="switchView('admin')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                Admin Terminal
+            </button>
+        </nav>
+        <div class="status-container">
+            <span id="system-status-dot" class="status-dot active"></span>
+            <span id="system-status-text">Core Active</span>
+        </div>
+    </header>
+    <main>
+        <div id="system-alert-banner">Initializing System Local Filesystem Core...</div>
+
+        <div id="view-kiosk" class="view-section active">
+            <div class="grid-2">
+                <div class="card">
+                    <h2>
+                        <span>Facial Recognition Scanner</span>
+                        <span id="camera-status-pill" style="font-size: 9px; padding: 2px 6px; border-radius: 4px; background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(220, 38, 38, 0.15); font-weight: 700;">OFFLINE</span>
+                    </h2>
+                    <div class="camera-container">
+                        <video id="webcam-stream" autoplay loop muted playsinline></video>
+                        <canvas id="canvas-runtime-draw"></canvas>
+                        <div id="camera-placeholder" class="camera-placeholder-overlay">
+                            <div class="placeholder-icon">📷</div>
+                            <div class="placeholder-title">Webcam Inactive</div>
+                            <div class="placeholder-subtitle">Activate scanner device to start high-precision verification scans.</div>
+                            <button id="btn-placeholder-start" class="btn btn-primary" onclick="startCameraStream()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                <span>Start Webcam</span>
+                            </button>
+                        </div>
+                        <div class="camera-controls-bar">
+                            <button id="btn-cam-start" class="control-btn control-btn-start" onclick="startCameraStream()" title="Start/Resume Camera">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
+                                Start
+                            </button>
+                            <button id="btn-cam-pause" class="control-btn control-btn-pause" onclick="pauseCameraStream()" title="Pause Camera" disabled>
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                                </svg>
+                                Pause
+                            </button>
+                            <button id="btn-cam-stop" class="control-btn control-btn-stop" onclick="stopCameraStream()" title="Stop Camera" disabled>
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M6 6h12v12H6z" />
+                                </svg>
+                                Stop
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Live Check-in Ticker</h2>
+                    <div id="kiosk-ledger" class="ledger-box"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-admin" class="view-section">
+            <div id="admin-auth-gate" class="card">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                    <div class="placeholder-icon" style="color: var(--primary); background: var(--primary-glow); margin-bottom:8px;">🔒</div>
+                    <h2 style="border:none; padding:0; font-size:16px;">Administrative Access Gate</h2>
+                    <span style="font-size:12px; color: var(--muted); text-align:center; max-width:260px; line-height:1.4;">Enter master passcode to view analytics reports, directories and system settings.</span>
+                </div>
+                <div class="input-group">
+                    <label>Master Passcode</label>
+                    <input type="password" id="admin-gate-pass" placeholder="Enter master key passcode" onkeydown="if(event.key==='Enter') verifyAdminCredentialGateAccess()">
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <input type="checkbox" id="show-pass-check" onchange="toggleGatePasswordReveal()" style="width:auto; cursor:pointer;">
+                    <label for="show-pass-check" style="cursor:pointer; font-size:11px; color: var(--muted); text-transform:none; letter-spacing:0;">Reveal passcode input characters</label>
+                </div>
+                <button class="btn btn-primary" onclick="verifyAdminCredentialGateAccess()" style="width:100%;">Verify Identity Signature</button>
+            </div>
+
+            <div id="admin-panel-content" style="display: none; flex-direction: column; gap: 16px; width: 100%;">
+                <div class="sub-nav">
+                    <div class="sub-nav-tabs">
+                        <button id="sub-tab-reports" class="sub-tab-btn active" onclick="switchSubTab('reports')">📊 Analytics & Reports</button>
+                        <button id="sub-tab-employees" class="sub-tab-btn" onclick="switchSubTab('employees')">👥 Profile Directory</button>
+                        <button id="sub-tab-settings" class="sub-tab-btn" onclick="switchSubTab('settings')">⚙️ Shift Settings</button>
+                    </div>
+                    <button class="btn btn-secondary" onclick="logoutAdminGate()" style="padding: 6px 12px; font-size: 11px;">🔒 Lock Console</button>
+                </div>
+
+                <div id="sub-view-reports" class="sub-view-section" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-label">Profiles Enrolled</div>
+                            <div id="stat-total-emp" class="metric-value">0</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Present Today</div>
+                            <div id="stat-present" class="metric-value">0</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">On-Time</div>
+                            <div id="stat-on-time" class="metric-value">0</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Late</div>
+                            <div id="stat-late" class="metric-value">0</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Absentees</div>
+                            <div id="stat-absent" class="metric-value">0</div>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="card">
+                            <h2>Weekly Attendance Distribution</h2>
+                            <div id="analytics-chart-container" style="min-height: 180px; display: flex; align-items: center; justify-content: center;"></div>
+                        </div>
+                        <div class="card">
+                            <h2>Datatable Advanced Filters</h2>
+                            <div class="datatable-header" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                                <div class="datatable-search-wrapper">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    <input type="text" id="report-search-name" class="datatable-search-input" placeholder="Search by name or ID..." oninput="reportSearchChange()">
+                                </div>
+                                <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px;">
+                                    <div class="input-group">
+                                        <label>Date Range</label>
+                                        <select id="report-filter-date" onchange="reportFilterChange()">
+                                            <option value="all">All Dates</option>
+                                            <option value="today">Today</option>
+                                            <option value="yesterday">Yesterday</option>
+                                            <option value="week">Last 7 Days</option>
+                                            <option value="month">Last 30 Days</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Department</label>
+                                        <select id="report-filter-dept" onchange="reportFilterChange()">
+                                            <option value="all">All Departments</option>
+                                            <option value="Administration">Administration</option>
+                                            <option value="Engineering">Engineering</option>
+                                            <option value="Sales">Sales</option>
+                                            <option value="Marketing">Marketing</option>
+                                            <option value="Human Resources">Human Resources</option>
+                                            <option value="Finance">Finance</option>
+                                            <option value="Operations">Operations</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px;">
+                                    <div class="input-group">
+                                        <label>Event Type</label>
+                                        <select id="report-filter-type" onchange="reportFilterChange()">
+                                            <option value="all">All Types</option>
+                                            <option value="Check-In">Check-In</option>
+                                            <option value="Check-Out">Check-Out</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Policy Status</label>
+                                        <select id="report-filter-status" onchange="reportFilterChange()">
+                                            <option value="all">All Statuses</option>
+                                            <option value="On-Time">On-Time</option>
+                                            <option value="Late">Late</option>
+                                            <option value="-">Check-Out (-)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button class="btn btn-secondary" onclick="exportReportsToCSV()" style="width: 100%; margin-top:4px;">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    Export Logs Grid (CSV)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Attendance Records Datatable</h2>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>ID</th>
+                                        <th>Employee Name</th>
+                                        <th>Department</th>
+                                        <th>Role</th>
+                                        <th>Event Type</th>
+                                        <th>Policy Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reports-table-body"></tbody>
+                            </table>
+                        </div>
+                        <div class="datatable-footer">
+                            <div id="reports-paging-info">Showing 0 to 0 of 0 logs</div>
+                            <div class="datatable-pagination">
+                                <button id="btn-report-prev" class="datatable-page-btn" onclick="changeReportsPage(-1)">Prev</button>
+                                <button id="btn-report-next" class="datatable-page-btn" onclick="changeReportsPage(1)">Next</button>
+                            </div>
+<div id="sub-view-employees" class="sub-view-section" style="display: none; flex-direction: column; gap: 16px;">
+                    <div class="grid-2">
+                        <div class="card">
+                            <h2 id="reg-form-title">Enroll New Employee Profile</h2>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                                <div class="input-group">
+                                    <label>Employee Name</label>
+                                    <input type="text" id="reg-employee-name" placeholder="John Doe">
+                                </div>
+                                <div class="input-group">
+                                    <label>Employee ID</label>
+                                    <input type="text" id="reg-employee-id" placeholder="EMP-001">
+                                </div>
+                            </div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                                <div class="input-group">
+                                    <label>Department</label>
+                                    <select id="reg-employee-dept">
+                                        <option value="Administration">Administration</option>
+                                        <option value="Engineering">Engineering</option>
+                                        <option value="Sales">Sales</option>
+                                        <option value="Marketing">Marketing</option>
+                                        <option value="Human Resources">Human Resources</option>
+                                        <option value="Finance">Finance</option>
+                                        <option value="Operations">Operations</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Role / Title</label>
+                                    <input type="text" id="reg-employee-role" placeholder="Software Engineer">
+                                </div>
+                            </div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                                <div class="input-group">
+                                    <label>Email Address</label>
+                                    <input type="email" id="reg-employee-email" placeholder="john.doe@company.com">
+                                </div>
+                                <div class="input-group">
+                                    <label>Phone Number</label>
+                                    <input type="tel" id="reg-employee-phone" placeholder="+1234567890">
+                                </div>
+                            </div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                                <div class="input-group">
+                                    <label>Profile Status</label>
+                                    <select id="reg-employee-status">
+                                        <option value="Active">Active</option>
+                                        <option value="Banned">Suspended</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                </div>
+                            </div>
+
+                            <div class="input-group" style="margin-top: 4px;">
+                                <label>Facial Recognition Enrollment Preview</label>
+                                <div class="camera-container" style="padding-top: 56.25%; margin-top: 4px; border-radius: 6px;">
+                                    <video id="webcam-enroll-stream" autoplay loop muted playsinline style="transform: scaleX(-1);"></video>
+                                    <div id="enroll-camera-placeholder" class="camera-placeholder-overlay" style="background: #fafafb;">
+                                        <div class="placeholder-icon" style="width:40px; height:40px; font-size:20px;">📷</div>
+                                        <div class="placeholder-title" style="font-size:12px;">Enrollment Camera Inactive</div>
+                                        <button class="btn btn-secondary" onclick="startEnrollmentCamera()" style="padding: 4px 10px; font-size: 11px; margin-top: 4px;">Start Preview</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="reg-actions-enroll" style="display: flex; flex-direction: column; gap: 8px; margin-top:12px;">
+                                <button id="btn-trigger-capture" class="btn btn-primary" onclick="captureAndSerializeTopology()" disabled>Capture Via Webcam</button>
+                                <div class="dropzone-area" onclick="document.getElementById('reg-file-upload').click()">
+                                    <span>📁 Upload Portrait Photo</span>
+                                    <span style="font-size: 9px; color: var(--muted); font-weight: 500;">Generates face landmarks from image file</span>
+                                </div>
+                                <input type="file" id="reg-file-upload" accept="image/*" style="display: none;" onchange="handleImageEnrollmentUpload(event)">
+                            </div>
+                            <div id="reg-actions-edit" style="display: none; flex-direction: column; gap: 8px; margin-top:12px;">
+                                <button class="btn btn-primary" onclick="commitEditEmployeeProfile()">Save Profile Changes</button>
+                                <button id="btn-trigger-capture-edit" class="btn btn-secondary" onclick="captureAndSerializeTopology()" disabled>Update Face Via Webcam</button>
+                                <div class="dropzone-area" onclick="document.getElementById('reg-file-upload-edit').click()">
+                                    <span>📁 Update Face Portrait Photo</span>
+                                    <span style="font-size: 9px; color: var(--muted); font-weight: 500;">Generates new face landmarks from image file</span>
+                                </div>
+                                <input type="file" id="reg-file-upload-edit" accept="image/*" style="display: none;" onchange="handleImageEnrollmentUpload(event)">
+                                <button class="btn btn-danger" onclick="cancelEditEmployeeMode()">Cancel Editing</button>
+                            </div>
+
+                            <h2 style="margin-top:8px;">Manual Check-in Override</h2>
+                            <div style="display:grid; grid-template-columns: 1.2fr 0.8fr; gap:8px;">
+                                <div class="input-group">
+                                    <label>Select employee profile</label>
+                                    <select id="manual-log-employee"></select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Check Type</label>
+                                    <select id="manual-log-type">
+                                        <option value="Check-In">Check-In</option>
+                                        <option value="Check-Out">Check-Out</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="commitManualAttendanceLog()">Register Manual Check</button>
+                        </div>
+
+                        <div class="card">
+                            <h2>Profiles Records Directory</h2>
+                            <div class="datatable-toolbar">
+                                <div class="datatable-search-wrapper">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    <input type="text" id="emp-search-name" class="datatable-search-input" placeholder="Search profiles..." oninput="empSearchChange()">
+                                </div>
+                                <div class="input-group" style="width: auto;">
+                                    <select id="emp-filter-dept" onchange="empSearchChange()" style="width: 150px;">
+                                        <option value="all">All Departments</option>
+                                        <option value="Administration">Administration</option>
+                                        <option value="Engineering">Engineering</option>
+                                        <option value="Sales">Sales</option>
+                                        <option value="Marketing">Marketing</option>
+                                        <option value="Human Resources">Human Resources</option>
+                                        <option value="Finance">Finance</option>
+                                        <option value="Operations">Operations</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Employee Name</th>
+                                            <th>Department</th>
+                                            <th>Role</th>
+                                            <th>Email</th>
+                                            <th>Status</th>
+                                            <th>Date Enrolled</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="directory-table-body"></tbody>
+                                </table>
+                            </div>
+                            <div class="datatable-footer">
+                                <div id="emp-paging-info">Showing 0 to 0 of 0 profiles</div>
+                                <div class="datatable-pagination">
+                                    <button id="btn-emp-prev" class="datatable-page-btn" onclick="changeEmpPage(-1)">Prev</button>
+                                    <button id="btn-emp-next" class="datatable-page-btn" onclick="changeEmpPage(1)">Next</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sub-view-settings" class="sub-view-section" style="display: none; flex-direction: column; gap: 16px;">
+                    <div class="grid-2">
+                        <div class="card">
+                            <h2>Shift & Late Policy Policies</h2>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <div class="input-group">
+                                    <label>Shift Start Time</label>
+                                    <input type="time" id="settings-shift-time" value="09:00">
+                                </div>
+                                <div class="input-group">
+                                    <label>Grace Period (Min)</label>
+                                    <input type="number" id="settings-grace-minutes" value="15" min="0">
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary" onclick="saveShiftPolicySettings()">Apply Shift Policies</button>
+
+                            <h2 style="margin-top: 10px;">Security Access settings</h2>
+                            <div class="input-group">
+                                <label>Change Dashboard Password</label>
+                                <input type="password" id="admin-new-pass" placeholder="Enter new master key passcode">
+                            </div>
+                            <button class="btn btn-secondary" onclick="updateAdministrativeSystemPassword()">Update Passcode Key</button>
+                        </div>
+
+                        <div class="card">
+                            <h2>System Datastore Utilities</h2>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <button class="btn btn-secondary" onclick="exportDatastorePayload()">Export Storage File</button>
+                                <button class="btn btn-secondary" onclick="document.getElementById('file-import').click()">Import Backup File</button>
+                                <input type="file" id="file-import" accept=".json" style="display:none" onchange="importDatastorePayload(event)">
+                            </div>
+                            <button class="btn btn-danger" onclick="purgeSystemLocalMemoryStore()">Purge Local Database Indexes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        const CDN_MODELS_PATH = 'https://justadudewhohacks.github.io/face-api.js/models';
+        const ui = {
+            video: document.getElementById('webcam-stream'),
+            videoEnroll: document.getElementById('webcam-enroll-stream'),
+            enrollPlaceholder: document.getElementById('enroll-camera-placeholder'),
+            canvas: document.getElementById('canvas-runtime-draw'),
+            banner: document.getElementById('system-alert-banner'),
+            captureBtn: document.getElementById('btn-trigger-capture'),
+            regName: document.getElementById('reg-employee-name'),
+            directoryTable: document.getElementById('directory-table-body'),
+            kioskLedger: document.getElementById('kiosk-ledger'),
+            authGate: document.getElementById('admin-auth-gate'),
+            passInput: document.getElementById('admin-gate-pass'),
+            newPassInput: document.getElementById('admin-new-pass'),
+            cameraStatus: document.getElementById('camera-status-pill'),
+            placeholder: document.getElementById('camera-placeholder'),
+            btnStart: document.getElementById('btn-cam-start'),
+            btnPause: document.getElementById('btn-cam-pause'),
+            btnStop: document.getElementById('btn-cam-stop')
+        };
+
+        let indexedDatabasePointer = null;
+        let applicationFaceMatcherRuntime = null;
+        let precompiledProfilesRegistry = [];
+        let precompiledEmployeesList = [];
+        const transactionThrottleMap = new Map();
+        const biometricLivenessTrackerMap = new Map();
+
+        let isDashboardAuthenticatedState = false;
+        let isCameraActive = false;
+        let isCameraPaused = false;
+        let isEnrollCameraActive = false;
+        let inferenceIntervalId = null;
+        let latestFaceDetections = [];
+        let currentEditingEmployeeId = null;
+
+        let scanLinePos = 0;
+        let scanLineSpeed = 2.5;
+        let scanLineDirection = 1;
+
+        let shiftStartTime = "09:00";
+        let shiftGraceMinutes = 15;
+
+        let reportsPage = 1;
+        const reportsRowsPerPage = 10;
+        let filteredReportsList = [];
+
+        let empPage = 1;
+        const empRowsPerPage = 10;
+        let filteredEmpList = [];
+
+        function initializeDatabaseCoreSubsystems() {
+            return new Promise((resolve, reject) => {
+                const openRequest = indexedDB.open("EnterpriseBiometricKioskCoreDB", 3);
+                openRequest.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (db.objectStoreNames.contains("employees")) {
+                        db.deleteObjectStore("employees");
+                    }
+                    if (db.objectStoreNames.contains("attendance_logs")) {
+                        db.deleteObjectStore("attendance_logs");
+                    }
+                    db.createObjectStore("employees", { keyPath: "id" });
+                    if (!db.objectStoreNames.contains("system_config")) {
+                        db.createObjectStore("system_config", { keyPath: "key" });
+                    }
+                    db.createObjectStore("attendance_logs", { keyPath: "id", autoIncrement: true });
+                };
+                openRequest.onsuccess = (e) => { indexedDatabasePointer = e.target.result; resolve(); };
+                openRequest.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        function writeDatabaseRecord(storeName, valueObject) {
+            return new Promise((resolve) => {
+                const txn = indexedDatabasePointer.transaction(storeName, "readwrite");
+                txn.objectStore(storeName).put(valueObject);
+                txn.oncomplete = () => resolve();
+            });
+        }
+
+        function deleteDatabaseRecord(storeName, keyId) {
+            return new Promise((resolve) => {
+                const txn = indexedDatabasePointer.transaction(storeName, "readwrite");
+                txn.objectStore(storeName).delete(keyId);
+                txn.oncomplete = () => resolve();
+            });
+        }
+
+        function readAllDatabaseRecords(storeName) {
+            return new Promise((resolve) => {
+                const txn = indexedDatabasePointer.transaction(storeName, "readonly");
+                const req = txn.objectStore(storeName).getAll();
+                req.onsuccess = () => resolve(req.result || []);
+            });
+        }
+
+        function readConfigKey(key) {
+            return new Promise((resolve) => {
+                const txn = indexedDatabasePointer.transaction("system_config", "readonly");
+                const req = txn.objectStore("system_config").get(key);
+                req.onsuccess = () => resolve(req.result ? req.result.value : null);
+            });
+        }
+
+        async function verifyAndInitializeMasterPasswordConfiguration() {
+            const structuralRecordInstance = await readConfigKey("master_password");
+            if (!structuralRecordInstance) {
+                await writeDatabaseRecord("system_config", { key: "master_password", value: "admin1234" });
+            }
+        }
+
+        async function verifyAdminCredentialGateAccess() {
+            const inputString = ui.passInput.value;
+            const correctPasswordString = await readConfigKey("master_password");
+            if (inputString === correctPasswordString) {
+                isDashboardAuthenticatedState = true;
+                ui.authGate.style.display = "none";
+                document.getElementById('admin-panel-content').style.display = "flex";
+                ui.passInput.value = "";
+                document.getElementById('show-pass-check').checked = false;
+                ui.passInput.type = "password";
+                switchSubTab('reports');
+            } else {
+                alert("Security Violation: Entered password signature mismatch.");
+            }
+        }
+
+        function toggleGatePasswordReveal() {
+            const check = document.getElementById('show-pass-check');
+            ui.passInput.type = check.checked ? "text" : "password";
+        }
+
+        function logoutAdminGate() {
+            isDashboardAuthenticatedState = false;
+            stopEnrollmentCamera();
+            ui.authGate.style.display = "flex";
+            document.getElementById('admin-panel-content').style.display = "none";
+            ui.passInput.value = "";
+        }
+
+        async function updateAdministrativeSystemPassword() {
+            const targetString = ui.newPassInput.value.trim();
+            if (targetString.length < 4) return alert("Validation error: Password must consist of 4+ characters.");
+            await writeDatabaseRecord("system_config", { key: "master_password", value: targetString });
+            ui.newPassInput.value = "";
+            alert("Administrative passcode database update executed successfully.");
+        }
+
+        function updateCameraControlsUI() {
+            if (isCameraActive) {
+                ui.placeholder.style.opacity = '0';
+                ui.placeholder.style.pointerEvents = 'none';
+                ui.btnStart.disabled = !isCameraPaused;
+                ui.btnPause.disabled = isCameraPaused;
+                ui.btnStop.disabled = false;
+
+                ui.cameraStatus.innerText = isCameraPaused ? "PAUSED" : "ONLINE";
+                ui.cameraStatus.style.background = isCameraPaused ? "var(--warning-bg)" : "var(--success-bg)";
+                ui.cameraStatus.style.color = isCameraPaused ? "var(--warning)" : "var(--success)";
+                ui.cameraStatus.style.borderColor = isCameraPaused ? "rgba(245, 158, 11, 0.15)" : "rgba(16, 185, 129, 0.15)";
+            } else {
+                ui.placeholder.style.opacity = '1';
+                ui.placeholder.style.pointerEvents = 'auto';
+                ui.btnStart.disabled = false;
+                ui.btnPause.disabled = true;
+                ui.btnStop.disabled = true;
+
+                ui.cameraStatus.innerText = "OFFLINE";
+                ui.cameraStatus.style.background = "var(--danger-bg)";
+                ui.cameraStatus.style.color = "var(--danger)";
+                ui.cameraStatus.style.borderColor = "rgba(239, 68, 68, 0.15)";
+            }
+        }
+
+        async function startCameraStream() {
+            if (isCameraActive) {
+                if (isCameraPaused) {
+                    ui.video.play();
+                    isCameraPaused = false;
+                    initiateContinuousInferenceEngineLoop();
+                    updateCameraControlsUI();
+                    ui.banner.innerText = "System online. Present profile inside scanner.";
+                }
+                return;
+            }
+            ui.banner.innerText = "Requesting device camera framework connections...";
+            try {
+                const captureStream = await navigator.mediaDevices.getUserMedia({
+                    audio: false,
+                    video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }
+                });
+                ui.video.srcObject = captureStream;
+                ui.video.onloadedmetadata = () => {
+                    ui.video.play().then(() => {
+                        isCameraActive = true;
+                        isCameraPaused = false;
+                        executeCanvasBoundingSynchronization();
+                        ui.banner.innerText = "System online. Present profile inside scanner.";
+                        initiateContinuousInferenceEngineLoop();
+                        updateCameraControlsUI();
+                    });
+                };
+            } catch (err) {
+                ui.banner.innerText = "Hardware Fault: Camera stream unsecure or connection rejected.";
+                console.error(err);
+            }
+        }
+
+        function pauseCameraStream() {
+            if (isCameraActive && !isCameraPaused) {
+                ui.video.pause();
+                isCameraPaused = true;
+                if (inferenceIntervalId) {
+                    clearInterval(inferenceIntervalId);
+                    inferenceIntervalId = null;
+                }
+                latestFaceDetections = [];
+                updateCameraControlsUI();
+                ui.banner.innerText = "Facial recognition scanning stream paused.";
+            }
+        }
+
+        function stopCameraStream() {
+            if (isCameraActive) {
+                if (inferenceIntervalId) {
+                    clearInterval(inferenceIntervalId);
+                    inferenceIntervalId = null;
+                }
+                ui.video.pause();
+                const stream = ui.video.srcObject;
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                ui.video.srcObject = null;
+                isCameraActive = false;
+                isCameraPaused = false;
+                latestFaceDetections = [];
+                updateCameraControlsUI();
+                ui.banner.innerText = "Facial recognition scanner stream stopped.";
+            }
+        }
+
+        async function startEnrollmentCamera() {
+            if (isEnrollCameraActive) return;
+            try {
+                const captureStream = await navigator.mediaDevices.getUserMedia({
+                    audio: false,
+                    video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }
+                });
+                ui.videoEnroll.srcObject = captureStream;
+                ui.videoEnroll.onloadedmetadata = () => {
+                    ui.videoEnroll.play().then(() => {
+                        isEnrollCameraActive = true;
+                        ui.enrollPlaceholder.style.opacity = '0';
+                        ui.enrollPlaceholder.style.pointerEvents = 'none';
+                        ui.captureBtn.disabled = false;
+                        const editBtn = document.getElementById('btn-trigger-capture-edit');
+                        if (editBtn) editBtn.disabled = false;
+                    });
+                };
+            } catch (err) {
+                alert("Hardware Fault: Enrollment camera stream could not be started.");
+                console.error(err);
+            }
+        }
+
+        function stopEnrollmentCamera() {
+            if (isEnrollCameraActive) {
+                ui.videoEnroll.pause();
+                const stream = ui.videoEnroll.srcObject;
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                ui.videoEnroll.srcObject = null;
+                isEnrollCameraActive = false;
+                ui.enrollPlaceholder.style.opacity = '1';
+                ui.enrollPlaceholder.style.pointerEvents = 'auto';
+                ui.captureBtn.disabled = true;
+                const editBtn = document.getElementById('btn-trigger-capture-edit');
+                if (editBtn) editBtn.disabled = true;
+            }
+        }
+
+        function executeCanvasBoundingSynchronization() {
+            const boundsWidth = ui.video.videoWidth || 640;
+            const boundsHeight = ui.video.videoHeight || 480;
+            ui.canvas.width = boundsWidth;
+            ui.canvas.height = boundsHeight;
+            faceapi.matchDimensions(ui.canvas, { width: boundsWidth, height: boundsHeight });
+        }
+
+        async function exportDatastorePayload() {
+            const data = await readAllDatabaseRecords("employees");
+            if (!data.length) return alert("Export structural exception: Datastore contains 0 records.");
+            const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+            const temporaryAnchor = document.createElement("a");
+            temporaryAnchor.href = URL.createObjectURL(blob);
+            temporaryAnchor.download = `facial_recognition_registry_payload_${Math.floor(Date.now() / 1000)}.json`;
+            temporaryAnchor.click();
+        }
+
+        async function importDatastorePayload(event) {
+            const targetFile = event.target.files[0];
+            if (!targetFile) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const dataset = JSON.parse(e.target.result);
+                    for (const item of dataset) {
+                        const normalizedId = item.id || "EMP-" + String(Math.floor(Math.random() * 100000)).padStart(5, '0');
+                        const normalizedName = item.name;
+                        const normalizedDescriptor = item.descriptor;
+                        if (normalizedName && Array.isArray(normalizedDescriptor)) {
+                            await writeDatabaseRecord("employees", {
+                                id: normalizedId,
+                                name: normalizedName,
+                                descriptor: normalizedDescriptor,
+                                department: item.department || "Engineering",
+                                role: item.role || "Specialist",
+                                email: item.email || `${normalizedName.toLowerCase().replace(/\s+/g, '')}@company.com`,
+                                phone: item.phone || "+1000000000",
+                                status: item.status || "Active",
+                                joined: item.joined || Date.now()
+                            });
+                        }
+                    }
+                    alert("Database state structural parameters synchronized cleanly.");
+                    await rebuildComputationalMatchingGraph();
+                    await renderAdministrativeEmployeeDirectoryTable();
+                    populateManualOverrideDropdown();
+                    suggestNextEmployeeId();
+                } catch (err) { alert("Parsing processing failure: File contents invalid."); }
+            };
+            reader.readAsText(targetFile);
+        }
+
+        async function purgeSystemLocalMemoryStore() {
+            if (confirm("Danger: Wiping all local records and logs. Continue?")) {
+                const txn = indexedDatabasePointer.transaction("employees", "readwrite");
+                txn.objectStore("employees").clear();
+
+                const txnLogs = indexedDatabasePointer.transaction("attendance_logs", "readwrite");
+                txnLogs.objectStore("attendance_logs").clear();
+
+                precompiledEmployeesList = [];
+                precompiledProfilesRegistry = [];
+                applicationFaceMatcherRuntime = null;
+                latestFaceDetections = [];
+                ui.banner.innerText = "Storage configuration matrix dropped.";
+
+                await renderAdministrativeEmployeeDirectoryTable();
+                populateManualOverrideDropdown();
+                suggestNextEmployeeId();
+            }
+        }
+
+        async function compileApplicationCoreSubsystems() {
+            try {
+                startRenderLoop();
+                await initializeDatabaseCoreSubsystems();
+                await verifyAndInitializeMasterPasswordConfiguration();
+
+                const savedTime = await readConfigKey("shift_start_time");
+                if (savedTime) {
+                    shiftStartTime = savedTime;
+                    document.getElementById('settings-shift-time').value = savedTime;
+                } else {
+                    await writeDatabaseRecord("system_config", { key: "shift_start_time", value: "09:00" });
+                }
+
+                const savedGrace = await readConfigKey("shift_grace_minutes");
+                if (savedGrace) {
+                    shiftGraceMinutes = parseInt(savedGrace, 10);
+                    document.getElementById('settings-grace-minutes').value = savedGrace;
+                } else {
+                    await writeDatabaseRecord("system_config", { key: "shift_grace_minutes", value: "15" });
+                }
+
+                ui.banner.innerText = "Downloading core weight libraries (approx. 5MB)...";
+                if (faceapi.tf && faceapi.tf.setBackend) await faceapi.tf.setBackend('cpu');
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(CDN_MODELS_PATH),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(CDN_MODELS_PATH),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(CDN_MODELS_PATH)
+                ]);
+                await rebuildComputationalMatchingGraph();
+                ui.banner.innerText = "Facial recognition core loaded. System online.";
+                updateCameraControlsUI();
+                await loadAttendanceLedgingTicker();
+                suggestNextEmployeeId();
+            } catch (err) {
+                ui.banner.innerText = "Fatal core framework exception. Startup interrupted.";
+                console.error(err);
+            }
+        }
+
+        async function loadEmployeesListFromDB() {
+            precompiledEmployeesList = await readAllDatabaseRecords("employees");
+        }
+
+        async function rebuildComputationalMatchingGraph() {
+            await loadEmployeesListFromDB();
+            precompiledProfilesRegistry = [];
+            if (precompiledEmployeesList.length > 0) {
+                precompiledEmployeesList.forEach(record => {
+                    const floatArray = new Float32Array(record.descriptor);
+                    precompiledProfilesRegistry.push(new faceapi.LabeledFaceDescriptors(record.id, [floatArray]));
+                });
+                applicationFaceMatcherRuntime = new faceapi.FaceMatcher(precompiledProfilesRegistry, 0.48);
+            } else {
+                applicationFaceMatcherRuntime = null;
+            }
+        }
+
+        async function suggestNextEmployeeId() {
+            const list = await readAllDatabaseRecords("employees");
+            const nextIdx = list.length + 1;
+            document.getElementById('reg-employee-id').value = "EMP-" + String(nextIdx).padStart(3, '0');
+        }
+
+        async function captureAndSerializeTopology() {
+            const targetLabelString = ui.regName.value.trim();
+            const targetIdString = document.getElementById('reg-employee-id').value.trim();
+            const targetDeptString = document.getElementById('reg-employee-dept').value;
+            const targetRoleString = document.getElementById('reg-employee-role').value.trim();
+            const targetEmailString = document.getElementById('reg-employee-email').value.trim();
+            const targetPhoneString = document.getElementById('reg-employee-phone').value.trim();
+
+            if (!targetLabelString || !targetIdString) {
+                return alert("Validation requirement: Full Name and Employee ID are required.");
+            }
+
+            const existing = await readAllDatabaseRecords("employees");
+            const duplicateId = existing.find(e => e.id.toLowerCase() === targetIdString.toLowerCase());
+            if (duplicateId && (!currentEditingEmployeeId || currentEditingEmployeeId.toLowerCase() !== targetIdString.toLowerCase())) {
+                return alert(`Validation error: Employee ID '${targetIdString}' is already taken.`);
+            }
+
+            ui.banner.innerText = `Resolving face characteristics for: [${targetLabelString}]`;
+            ui.captureBtn.disabled = true;
+            const captureBtnEdit = document.getElementById('btn-trigger-capture-edit');
+            if (captureBtnEdit) captureBtnEdit.disabled = true;
+
+            const structuralResultInstance = await faceapi.detectSingleFace(ui.videoEnroll, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+
+            if (!structuralResultInstance) {
+                alert("Analysis exception: Weak edge landmarks. Adjust lighting.");
+                ui.captureBtn.disabled = false;
+                if (captureBtnEdit) captureBtnEdit.disabled = false;
+                ui.banner.innerText = "Ready.";
+                return;
+            }
+
+            const standardArrayPayload = Array.from(structuralResultInstance.descriptor);
+            const targetStatusString = document.getElementById('reg-employee-status').value;
+            const originalRecord = existing.find(e => e.id === currentEditingEmployeeId);
+            await writeDatabaseRecord("employees", {
+                id: targetIdString,
+                name: targetLabelString,
+                descriptor: standardArrayPayload,
+                department: targetDeptString,
+                role: targetRoleString || "Staff Member",
+                email: targetEmailString || `${targetLabelString.toLowerCase().replace(/\s+/g, '')}@company.com`,
+                phone: targetPhoneString || "+1000000000",
+                status: targetStatusString,
+                joined: originalRecord ? (originalRecord.joined || Date.now()) : Date.now()
+            });
+
+            await rebuildComputationalMatchingGraph();
+            await renderAdministrativeEmployeeDirectoryTable();
+            populateManualOverrideDropdown();
+            suggestNextEmployeeId();
+            stopEnrollmentCamera();
+
+            const isEditing = !!currentEditingEmployeeId;
+            if (isEditing) {
+                cancelEditEmployeeMode();
+            } else {
+                ui.regName.value = "";
+                document.getElementById('reg-employee-role').value = "";
+                document.getElementById('reg-employee-email').value = "";
+                document.getElementById('reg-employee-phone').value = "";
+            }
+
+            ui.banner.innerText = isEditing ? `Successfully updated: [${targetLabelString}]` : `Successfully registered: [${targetLabelString}]`;
+        }
+
+        async function renderAdministrativeEmployeeDirectoryTable() {
+            if (!isDashboardAuthenticatedState) return;
+            const listing = await readAllDatabaseRecords("employees");
+            const searchQuery = document.getElementById('emp-search-name').value.toLowerCase().trim();
+            const deptQuery = document.getElementById('emp-filter-dept').value;
+
+            filteredEmpList = listing.filter(emp => {
+                if (searchQuery && !emp.name.toLowerCase().includes(searchQuery) && !emp.id.toLowerCase().includes(searchQuery) && !emp.role.toLowerCase().includes(searchQuery) && !emp.email.toLowerCase().includes(searchQuery)) return false;
+                if (deptQuery !== "all" && emp.department !== deptQuery) return false;
+                return true;
+            });
+
+            filteredEmpList.sort((a, b) => (b.joined || 0) - (a.joined || 0));
+
+            const totalRecords = filteredEmpList.length;
+            const totalPages = Math.ceil(totalRecords / empRowsPerPage) || 1;
+            if (empPage > totalPages) empPage = totalPages;
+
+            const startIndex = (empPage - 1) * empRowsPerPage;
+            const endIndex = Math.min(startIndex + empRowsPerPage, totalRecords);
+            const pagedEmps = filteredEmpList.slice(startIndex, endIndex);
+
+            const tbody = ui.directoryTable;
+            tbody.innerHTML = "";
+
+            if (totalRecords === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--muted);">No matching profiles found.</td></tr>';
+                document.getElementById('emp-paging-info').innerText = "Showing 0 to 0 of 0 profiles";
+                document.getElementById('btn-emp-prev').disabled = true;
+                document.getElementById('btn-emp-next').disabled = true;
+                return;
+            }
+
+            pagedEmps.forEach(employee => {
+                const joinedDate = employee.joined ? new Date(employee.joined).toLocaleDateString() : "-";
+                const isBanned = employee.status === "Banned";
+                const statusBadge = isBanned 
+                    ? `<span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; background:var(--danger-bg); color:var(--danger); border:1px solid rgba(220,38,38,0.15);">Suspended</span>` 
+                    : `<span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; background:var(--success-bg); color:var(--success); border:1px solid rgba(5,150,105,0.15);">Active</span>`;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:700; color: var(--primary); font-family:monospace;">${employee.id}</td>
+                    <td style="font-weight:600; color: var(--text);">${employee.name}</td>
+                    <td>${employee.department}</td>
+                    <td>${employee.role}</td>
+                    <td>${employee.email}</td>
+                    <td>${statusBadge}</td>
+                    <td style="color:var(--muted);">${joinedDate}</td>
+                    <td>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px; border-radius:4px;" onclick="startEditEmployee('${employee.id}')">Edit</button>
+                            <button class="btn" style="padding:4px 8px; font-size:11px; border-radius:4px; background:${isBanned ? 'var(--success-bg)' : 'var(--warning-bg)'}; color:${isBanned ? 'var(--success)' : 'var(--warning)'}; border:1px solid ${isBanned ? 'rgba(5,150,105,0.15)' : 'rgba(245,158,11,0.15)'};" onclick="toggleBanEmployee('${employee.id}')">${isBanned ? 'Activate' : 'Suspend'}</button>
+                            <button class="btn btn-danger" style="padding:4px 8px; font-size:11px; border-radius: 4px;" onclick="removeProfileTemplateRecord('${employee.id}')">Delete</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('emp-paging-info').innerText = `Showing ${startIndex + 1} to ${endIndex} of ${totalRecords} profiles`;
+            document.getElementById('btn-emp-prev').disabled = empPage === 1;
+            document.getElementById('btn-emp-next').disabled = empPage === totalPages;
+        }
+
+        async function removeProfileTemplateRecord(nameId) {
+            if (confirm(`Confirm action: Drop template for ID [${nameId}]?`)) {
+                await deleteDatabaseRecord("employees", nameId);
+                await rebuildComputationalMatchingGraph();
+                await renderAdministrativeEmployeeDirectoryTable();
+                populateManualOverrideDropdown();
+                suggestNextEmployeeId();
+            }
+        }
+
+        const evaluateEuclideanPointsDistance = (pt1, pt2) => Math.sqrt(Math.pow(pt1.x - pt2.x, 2) + Math.pow(pt1.y - pt2.y, 2));
+
+        function processEyeAspectRatioMetric(eyeClusterNodes) {
+            const vertVectorA = evaluateEuclideanPointsDistance(eyeClusterNodes[1], eyeClusterNodes[5]);
+            const vertVectorB = evaluateEuclideanPointsDistance(eyeClusterNodes[2], eyeClusterNodes[4]);
+            const horizVector = evaluateEuclideanPointsDistance(eyeClusterNodes[0], eyeClusterNodes[3]);
+            return (vertVectorA + vertVectorB) / (2.0 * horizVector);
+        }
+
+        function drawCustomFaceOverlay(box, label, color, ctx) {
+            const canvasWidth = ui.canvas.width;
+            const mirroredX = canvasWidth - box.x - box.width;
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(mirroredX, box.y, box.width, box.height, 6);
+            } else {
+                ctx.rect(mirroredX, box.y, box.width, box.height);
+            }
+            ctx.stroke();
+
+            ctx.fillStyle = color;
+            ctx.font = 'bold 11px "Inter", -apple-system, BlinkMacSystemFont, sans-serif';
+            const textPadding = 6;
+            const textWidth = ctx.measureText(label).width;
+            const labelHeight = 20;
+            const labelX = mirroredX;
+            let labelY = box.y - labelHeight - 4;
+            if (labelY < 0) {
+                labelY = box.y + box.height + 4;
+            }
+
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(labelX, labelY, textWidth + textPadding * 2, labelHeight, 4);
+            } else {
+                ctx.rect(labelX, labelY, textWidth + textPadding * 2, labelHeight);
+            }
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(label, labelX + textPadding, labelY + 14);
+        }
+
+        function startRenderLoop() {
+            function render() {
+                if (isCameraActive && !isCameraPaused) {
+                    const ctx = ui.canvas.getContext('2d');
+                    ctx.clearRect(0, 0, ui.canvas.width, ui.canvas.height);
+
+                    scanLinePos += scanLineSpeed * scanLineDirection;
+                    if (scanLinePos >= ui.canvas.height) {
+                        scanLinePos = ui.canvas.height;
+                        scanLineDirection = -1;
+                    } else if (scanLinePos <= 0) {
+                        scanLinePos = 0;
+                        scanLineDirection = 1;
+                    }
+
+                    const grad = ctx.createLinearGradient(0, scanLinePos - 6, 0, scanLinePos + 6);
+                    grad.addColorStop(0, 'rgba(79, 70, 229, 0)');
+                    grad.addColorStop(0.5, 'rgba(79, 70, 229, 0.6)');
+                    grad.addColorStop(1, 'rgba(79, 70, 229, 0)');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0, scanLinePos - 6, ui.canvas.width, 12);
+
+                    ctx.strokeStyle = 'rgba(79, 70, 229, 0.8)';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(0, scanLinePos);
+                    ctx.lineTo(ui.canvas.width, scanLinePos);
+                    ctx.stroke();
+
+                    latestFaceDetections.forEach(face => {
+                        drawCustomFaceOverlay(face.box, face.label, face.color, ctx);
+                    });
+                }
+                requestAnimationFrame(render);
+            }
+            requestAnimationFrame(render);
+        }
+
+        function initiateContinuousInferenceEngineLoop() {
+            if (inferenceIntervalId) clearInterval(inferenceIntervalId);
+            const renderResolutionDimensions = { width: ui.canvas.width, height: ui.canvas.height };
+            inferenceIntervalId = setInterval(async () => {
+                if (!isCameraActive || isCameraPaused) return;
+                const rawInferenceFrameDetections = await faceapi.detectAllFaces(ui.video, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.4 }))
+                    .withFaceLandmarks()
+                    .withFaceDescriptors();
+                const parsedResultsCollection = faceapi.resizeResults(rawInferenceFrameDetections, renderResolutionDimensions);
+
+                if (!applicationFaceMatcherRuntime) {
+                    let tempDetections = [];
+                    parsedResultsCollection.forEach(det => {
+                        tempDetections.push({
+                            box: det.detection.box,
+                            label: "Register profiles inside Admin Terminal to scan",
+                            color: "rgba(100, 116, 139, 0.9)"
+                        });
+                    });
+                    latestFaceDetections = tempDetections;
+                    return;
+                }
+
+                let tempDetections = [];
+                parsedResultsCollection.forEach(faceObject => {
+                    const matchScoreResolution = applicationFaceMatcherRuntime.findBestMatch(faceObject.descriptor);
+                    const assignedStringId = matchScoreResolution.label;
+                    let outputInterfaceDisplayString = "Unregistered Profile";
+                    let activeHexChromeStrokeColor = "rgba(239, 68, 68, 0.9)";
+                    if (assignedStringId !== 'unknown') {
+                        const emp = precompiledEmployeesList.find(e => e.id === assignedStringId);
+                        const displayName = emp ? emp.name : assignedStringId;
+                        const displayDept = emp ? ` (${emp.department})` : "";
+
+                        if (emp && emp.status === "Banned") {
+                            outputInterfaceDisplayString = `${displayName} - ACCESS SUSPENDED`;
+                            activeHexChromeStrokeColor = "rgba(239, 68, 68, 0.9)";
+                        } else {
+                            const calculatedRatio = (processEyeAspectRatioMetric(faceObject.landmarks.getLeftEye()) + processEyeAspectRatioMetric(faceObject.landmarks.getRightEye())) / 2;
+                            if (!biometricLivenessTrackerMap.has(assignedStringId)) {
+                                biometricLivenessTrackerMap.set(assignedStringId, { livenessPassedCondition: false });
+                            }
+                            const trackerReferenceRecord = biometricLivenessTrackerMap.get(assignedStringId);
+                            if (calculatedRatio < 0.24) trackerReferenceRecord.livenessPassedCondition = true;
+                            if (trackerReferenceRecord.livenessPassedCondition) {
+                                outputInterfaceDisplayString = `${displayName}${displayDept} - Verified`;
+                                activeHexChromeStrokeColor = "rgba(16, 185, 129, 0.9)";
+                                registerVerifiedAttendanceEvent(assignedStringId);
+                            } else {
+                                outputInterfaceDisplayString = `${displayName}${displayDept} - Blink eyes`;
+                                activeHexChromeStrokeColor = "rgba(245, 158, 11, 0.9)";
+                            }
+                        }
+                    }
+                    tempDetections.push({
+                        box: faceObject.detection.box,
+                        label: outputInterfaceDisplayString,
+                        color: activeHexChromeStrokeColor
+                    });
+                });
+                latestFaceDetections = tempDetections;
+            }, 250);
+        }
+
+        async function registerVerifiedAttendanceEvent(empId) {
+            const timestamp = Date.now();
+            const suppressionCooldownPeriod = 20000;
+            if (transactionThrottleMap.has(empId)) {
+                const historicalTime = transactionThrottleMap.get(empId);
+                if (timestamp - historicalTime < suppressionCooldownPeriod) return;
+            }
+            transactionThrottleMap.set(empId, timestamp);
+
+            const emp = precompiledEmployeesList.find(e => e.id === empId);
+            if (emp) {
+                await recordAttendanceLogToDB(emp.id, emp.name, emp.department, emp.role);
+            }
+
+            setTimeout(() => {
+                if (biometricLivenessTrackerMap.has(empId)) {
+                    biometricLivenessTrackerMap.get(empId).livenessPassedCondition = false;
+                }
+            }, suppressionCooldownPeriod);
+        }
+
+        async function recordAttendanceLogToDB(empId, employeeName, empDept, empRole, manualTypeOverride = null) {
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+
+            const allLogs = await readAllDatabaseRecords("attendance_logs");
+            const logsToday = allLogs.filter(l => l.empId === empId && l.dateString === todayStr);
+
+            let eventType = "Check-In";
+            if (manualTypeOverride) {
+                eventType = manualTypeOverride;
+            } else if (logsToday.length > 0) {
+                const lastLog = logsToday[logsToday.length - 1];
+                eventType = lastLog.type === "Check-In" ? "Check-Out" : "Check-In";
+            }
+
+            let status = "On-Time";
+            if (eventType === "Check-In") {
+                const [shiftH, shiftM] = shiftStartTime.split(':').map(Number);
+                const shiftLimit = new Date();
+                shiftLimit.setHours(shiftH, shiftM + shiftGraceMinutes, 0, 0);
+                if (now.getTime() > shiftLimit.getTime()) {
+                    status = "Late";
+                }
+            } else {
+                status = "-";
+            }
+
+            const logEntry = {
+                empId: empId,
+                name: employeeName,
+                department: empDept,
+                role: empRole,
+                timestamp: now.getTime(),
+                dateString: todayStr,
+                timeString: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                type: eventType,
+                status: status
+            };
+
+            await writeDatabaseRecord("attendance_logs", logEntry);
+            await loadAttendanceLedgingTicker();
+        }
+
+        async function loadAttendanceLedgingTicker() {
+            ui.kioskLedger.innerHTML = "";
+            const allLogs = await readAllDatabaseRecords("attendance_logs");
+            const sortedLogs = allLogs.sort((a, b) => b.timestamp - a.timestamp).slice(0, 20);
+            sortedLogs.forEach(log => {
+                const div = document.createElement('div');
+                div.className = `ledger-row success`;
+                div.innerHTML = `<span>[${log.type}] ${log.name} - ${log.status}</span><span style="font-size:10px; opacity:0.65;">${log.timeString}</span>`;
+                ui.kioskLedger.appendChild(div);
+            });
+        }
+
+        async function handleImageEnrollmentUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const targetName = ui.regName.value.trim();
+            const targetId = document.getElementById('reg-employee-id').value.trim();
+            const targetDept = document.getElementById('reg-employee-dept').value;
+            const targetRole = document.getElementById('reg-employee-role').value.trim();
+            const targetEmail = document.getElementById('reg-employee-email').value.trim();
+            const targetPhone = document.getElementById('reg-employee-phone').value.trim();
+
+            if (!targetName || !targetId) {
+                return alert("Validation requirement: Full Name and Employee ID are required.");
+            }
+
+            const existing = await readAllDatabaseRecords("employees");
+            const duplicateId = existing.find(e => e.id.toLowerCase() === targetId.toLowerCase());
+            if (duplicateId && (!currentEditingEmployeeId || currentEditingEmployeeId.toLowerCase() !== targetId.toLowerCase())) {
+                return alert(`Validation error: Employee ID '${targetId}' is already taken.`);
+            }
+
+            ui.banner.innerText = "Analyzing uploaded portrait image file...";
+
+            const img = new Image();
+            img.onload = async () => {
+                try {
+                    const analysisCanvas = document.createElement('canvas');
+                    analysisCanvas.width = img.width;
+                    analysisCanvas.height = img.height;
+                    const ctx = analysisCanvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+
+                    const result = await faceapi.detectSingleFace(analysisCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 }))
+                        .withFaceLandmarks()
+                        .withFaceDescriptor();
+
+                    if (!result) {
+                        alert("Face-api failed: Could not detect a clear face layout in the uploaded photo.");
+                        ui.banner.innerText = "Ready.";
+                        return;
+                    }
+
+                    const standardArrayPayload = Array.from(result.descriptor);
+                    const targetStatus = document.getElementById('reg-employee-status').value;
+                    const originalRecord = existing.find(e => e.id === currentEditingEmployeeId);
+                    await writeDatabaseRecord("employees", {
+                        id: targetId,
+                        name: targetName,
+                        descriptor: standardArrayPayload,
+                        department: targetDept,
+                        role: targetRole || "Staff Member",
+                        email: targetEmail || `${targetName.toLowerCase().replace(/\s+/g, '')}@company.com`,
+                        phone: targetPhone || "+1000000000",
+                        status: targetStatus,
+                        joined: originalRecord ? (originalRecord.joined || Date.now()) : Date.now()
+                    });
+
+                    await rebuildComputationalMatchingGraph();
+                    await renderAdministrativeEmployeeDirectoryTable();
+                    populateManualOverrideDropdown();
+                    suggestNextEmployeeId();
+
+                    const isEditing = !!currentEditingEmployeeId;
+                    if (isEditing) {
+                        cancelEditEmployeeMode();
+                    } else {
+                        ui.regName.value = "";
+                        document.getElementById('reg-employee-role').value = "";
+                        document.getElementById('reg-employee-email').value = "";
+                        document.getElementById('reg-employee-phone').value = "";
+                    }
+                    event.target.value = "";
+                    ui.banner.innerText = isEditing ? `Updated profile successfully from image: [${targetName}]` : `Enrolled profile successfully from image: [${targetName}]`;
+                } catch (e) {
+                    alert("Error compiling face vector template from uploaded file.");
+                    console.error(e);
+                }
+            };
+            img.src = URL.createObjectURL(file);
+        }
+
+        async function populateManualOverrideDropdown() {
+            const selectEl = document.getElementById('manual-log-employee');
+            selectEl.innerHTML = '<option value="">Select Employee...</option>';
+            precompiledEmployeesList.forEach(emp => {
+                const opt = document.createElement('option');
+                opt.value = emp.id;
+                opt.innerText = `${emp.name} (${emp.id})`;
+                selectEl.appendChild(opt);
+            });
+        }
+
+        async function startEditEmployee(empId) {
+            const existing = await readAllDatabaseRecords("employees");
+            const emp = existing.find(e => e.id === empId);
+            if (!emp) return alert("Database error: Employee not found.");
+
+            currentEditingEmployeeId = emp.id;
+
+            document.getElementById('reg-form-title').innerText = `Edit Employee Profile: [${emp.name}]`;
+            ui.regName.value = emp.name;
+            document.getElementById('reg-employee-id').value = emp.id;
+            document.getElementById('reg-employee-id').disabled = true;
+            document.getElementById('reg-employee-dept').value = emp.department;
+            document.getElementById('reg-employee-role').value = emp.role || "";
+            document.getElementById('reg-employee-email').value = emp.email || "";
+            document.getElementById('reg-employee-phone').value = emp.phone || "";
+            document.getElementById('reg-employee-status').value = emp.status || "Active";
+
+            document.getElementById('reg-actions-enroll').style.display = "none";
+            document.getElementById('reg-actions-edit').style.display = "flex";
+
+            const editBtn = document.getElementById('btn-trigger-capture-edit');
+            if (editBtn) {
+                editBtn.disabled = !isEnrollCameraActive;
+            }
+        }
+
+        function cancelEditEmployeeMode() {
+            currentEditingEmployeeId = null;
+
+            document.getElementById('reg-form-title').innerText = "Enroll New Employee Profile";
+            ui.regName.value = "";
+            document.getElementById('reg-employee-role').value = "";
+            document.getElementById('reg-employee-email').value = "";
+            document.getElementById('reg-employee-phone').value = "";
+            document.getElementById('reg-employee-status').value = "Active";
+
+            const idField = document.getElementById('reg-employee-id');
+            idField.disabled = false;
+            suggestNextEmployeeId();
+
+            document.getElementById('reg-actions-enroll').style.display = "flex";
+            document.getElementById('reg-actions-edit').style.display = "none";
+        }
+
+        async function commitEditEmployeeProfile() {
+            const targetLabelString = ui.regName.value.trim();
+            const targetIdString = document.getElementById('reg-employee-id').value.trim();
+            const targetDeptString = document.getElementById('reg-employee-dept').value;
+            const targetRoleString = document.getElementById('reg-employee-role').value.trim();
+            const targetEmailString = document.getElementById('reg-employee-email').value.trim();
+            const targetPhoneString = document.getElementById('reg-employee-phone').value.trim();
+            const targetStatusString = document.getElementById('reg-employee-status').value;
+
+            if (!targetLabelString || !targetIdString) {
+                return alert("Validation requirement: Full Name and Employee ID are required.");
+            }
+
+            const existing = await readAllDatabaseRecords("employees");
+            const originalRecord = existing.find(e => e.id === currentEditingEmployeeId);
+            if (!originalRecord) {
+                return alert("Database error: Original employee record not found.");
+            }
+
+            await writeDatabaseRecord("employees", {
+                id: targetIdString,
+                name: targetLabelString,
+                descriptor: originalRecord.descriptor,
+                department: targetDeptString,
+                role: targetRoleString || "Staff Member",
+                email: targetEmailString || `${targetLabelString.toLowerCase().replace(/\s+/g, '')}@company.com`,
+                phone: targetPhoneString || "+1000000000",
+                status: targetStatusString,
+                joined: originalRecord.joined || Date.now()
+            });
+
+            await rebuildComputationalMatchingGraph();
+            await renderAdministrativeEmployeeDirectoryTable();
+            populateManualOverrideDropdown();
+            cancelEditEmployeeMode();
+
+            ui.banner.innerText = `Successfully updated profile: [${targetLabelString}]`;
+            appendTransactionActivityLog(`Updated profile: ${targetLabelString}`, false);
+        }
+
+        async function toggleBanEmployee(empId) {
+            const existing = await readAllDatabaseRecords("employees");
+            const emp = existing.find(e => e.id === empId);
+            if (!emp) return alert("Database error: Employee not found.");
+
+            const newStatus = emp.status === "Banned" ? "Active" : "Banned";
+            emp.status = newStatus;
+
+            await writeDatabaseRecord("employees", emp);
+            await rebuildComputationalMatchingGraph();
+            await renderAdministrativeEmployeeDirectoryTable();
+            populateManualOverrideDropdown();
+
+            if (currentEditingEmployeeId === empId) {
+                document.getElementById('reg-employee-status').value = newStatus;
+            }
+
+            ui.banner.innerText = `Employee [${emp.name}] status changed to: ${newStatus}`;
+        }
+
+        async function commitManualAttendanceLog() {
+            const selectEl = document.getElementById('manual-log-employee');
+            const empId = selectEl.value;
+            const logType = document.getElementById('manual-log-type').value;
+
+            if (!empId) return alert("Validation requirement: Please select an employee profile.");
+
+            const emp = precompiledEmployeesList.find(e => e.id === empId);
+            if (!emp) return alert("Database error: Employee profile not found.");
+
+            await recordAttendanceLogToDB(emp.id, emp.name, emp.department, emp.role, logType);
+            selectEl.value = "";
+            alert(`Manual ${logType} record saved for ${emp.name}`);
+        }
+
+        async function saveShiftPolicySettings() {
+            const timeVal = document.getElementById('settings-shift-time').value;
+            const graceVal = parseInt(document.getElementById('settings-grace-minutes').value, 10);
+
+            shiftStartTime = timeVal;
+            shiftGraceMinutes = graceVal;
+
+            await writeDatabaseRecord("system_config", { key: "shift_start_time", value: timeVal });
+            await writeDatabaseRecord("system_config", { key: "shift_grace_minutes", value: graceVal.toString() });
+
+            alert("Shift policies updated and committed to storage.");
+        }
+
+        async function renderAnalyticsDashboard() {
+            const employees = await readAllDatabaseRecords("employees");
+            const logs = await readAllDatabaseRecords("attendance_logs");
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            const logsToday = logs.filter(l => l.dateString === todayStr);
+
+            const totalCount = employees.length;
+            const presentTodayNames = new Set(logsToday.filter(l => l.type === "Check-In").map(l => l.empId));
+            const presentTodayCount = presentTodayNames.size;
+
+            const onTimeCount = logsToday.filter(l => l.type === "Check-In" && l.status === "On-Time").length;
+            const lateCount = logsToday.filter(l => l.type === "Check-In" && l.status === "Late").length;
+            const absentCount = Math.max(0, totalCount - presentTodayCount);
+
+            document.getElementById('stat-total-emp').innerText = totalCount;
+            document.getElementById('stat-present').innerText = presentTodayCount;
+            document.getElementById('stat-on-time').innerText = onTimeCount;
+            document.getElementById('stat-late').innerText = lateCount;
+            document.getElementById('stat-absent').innerText = absentCount;
+
+            filterReportsTable();
+            drawWeeklyAnalyticsChart(logs);
+        }
+
+        function drawWeeklyAnalyticsChart(logs) {
+            const chartContainer = document.getElementById('analytics-chart-container');
+            if (!chartContainer) return;
+
+            const last7Days = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                last7Days.push(d.toISOString().split('T')[0]);
+            }
+
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const data = last7Days.map(dateStr => {
+                const dayLogs = logs.filter(l => l.dateString === dateStr && l.type === "Check-In");
+                const onTime = dayLogs.filter(l => l.status === "On-Time").length;
+                const late = dayLogs.filter(l => l.status === "Late").length;
+                const dateObj = new Date(dateStr);
+                return {
+                    label: dayNames[dateObj.getDay()] + " " + dateObj.getDate(),
+                    onTime: onTime,
+                    late: late
+                };
+            });
+
+            const maxVal = Math.max(...data.map(d => d.onTime + d.late), 4);
+            const scale = 110 / maxVal;
+
+            let barsSvg = '';
+            data.forEach((d, index) => {
+                const x = 30 + index * 60;
+                const onTimeHeight = d.onTime * scale;
+                const lateHeight = d.late * scale;
+                const yOnTime = 130 - onTimeHeight;
+                const yLate = yOnTime - lateHeight;
+
+                barsSvg += `
+                    <rect x="${x}" y="${yOnTime}" width="16" height="${onTimeHeight}" fill="var(--success)" rx="1.5" />
+                    <rect x="${x}" y="${yLate}" width="16" height="${lateHeight}" fill="var(--warning)" rx="1.5" />
+                    <text x="${x + 8}" y="146" fill="var(--muted)" font-size="9" text-anchor="middle" font-weight="600">${d.label}</text>
+                `;
+            });
+
+            chartContainer.innerHTML = `
+                <svg viewBox="0 0 440 160" width="100%" height="160" style="font-family: var(--font-family);">
+                    <line x1="25" y1="20" x2="420" y2="20" stroke="#f1f5f9" stroke-width="1" />
+                    <line x1="25" y1="75" x2="420" y2="75" stroke="#f1f5f9" stroke-width="1" />
+                    <line x1="25" y1="130" x2="420" y2="130" stroke="#cbd5e1" stroke-width="1" />
+                    <text x="18" y="23" fill="var(--muted)" font-size="8" text-anchor="end">${maxVal}</text>
+                    <text x="18" y="78" fill="var(--muted)" font-size="8" text-anchor="end">${Math.round(maxVal / 2)}</text>
+                    <text x="18" y="133" fill="var(--muted)" font-size="8" text-anchor="end">0</text>
+                    ${barsSvg}
+                </svg>
+            `;
+        }
+
+        async function filterReportsTable() {
+            const logs = await readAllDatabaseRecords("attendance_logs");
+            const searchName = document.getElementById('report-search-name').value.toLowerCase().trim();
+            const filterDate = document.getElementById('report-filter-date').value;
+            const filterDept = document.getElementById('report-filter-dept').value;
+            const filterType = document.getElementById('report-filter-type').value;
+            const filterStatus = document.getElementById('report-filter-status').value;
+
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+
+            const monthAgo = new Date();
+            monthAgo.setDate(monthAgo.getDate() - 30);
+
+            filteredReportsList = logs.filter(log => {
+                if (searchName && !log.name.toLowerCase().includes(searchName) && !log.empId.toLowerCase().includes(searchName)) return false;
+
+                if (filterDate === "today") {
+                    if (log.dateString !== todayStr) return false;
+                } else if (filterDate === "yesterday") {
+                    if (log.dateString !== yesterdayStr) return false;
+                } else if (filterDate === "week") {
+                    if (log.timestamp < weekAgo.getTime()) return false;
+                } else if (filterDate === "month") {
+                    if (log.timestamp < monthAgo.getTime()) return false;
+                }
+
+                if (filterDept !== "all" && log.department !== filterDept) return false;
+                if (filterType !== "all" && log.type !== filterType) return false;
+                if (filterStatus !== "all" && log.status !== filterStatus) return false;
+
+                return true;
+            });
+
+            filteredReportsList.sort((a, b) => b.timestamp - a.timestamp);
+
+            const totalRecords = filteredReportsList.length;
+            const totalPages = Math.ceil(totalRecords / reportsRowsPerPage) || 1;
+            if (reportsPage > totalPages) reportsPage = totalPages;
+
+            const startIndex = (reportsPage - 1) * reportsRowsPerPage;
+            const endIndex = Math.min(startIndex + reportsRowsPerPage, totalRecords);
+            const pagedLogs = filteredReportsList.slice(startIndex, endIndex);
+
+            const tbody = document.getElementById('reports-table-body');
+            tbody.innerHTML = "";
+
+            if (totalRecords === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--muted);">No matching attendance records found.</td></tr>';
+                document.getElementById('reports-paging-info').innerText = "Showing 0 to 0 of 0 logs";
+                document.getElementById('btn-report-prev').disabled = true;
+                document.getElementById('btn-report-next').disabled = true;
+                return;
+            }
+
+            pagedLogs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight: 500;">${log.dateString} ${log.timeString}</td>
+                    <td style="font-weight: 700; color: var(--primary); font-family: monospace;">${log.empId}</td>
+                    <td style="font-weight: 600;">${log.name}</td>
+                    <td>${log.department}</td>
+                    <td>${log.role}</td>
+                    <td style="font-weight: 600; color: var(--primary);">${log.type}</td>
+                    <td><span style="padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700; background:${log.status === 'On-Time' ? 'var(--success-bg)' : log.status === 'Late' ? 'var(--warning-bg)' : '#f1f5f9'}; color:${log.status === 'On-Time' ? 'var(--success)' : log.status === 'Late' ? 'var(--warning)' : 'var(--muted)'};">${log.status}</span></td>
+                    <td><button class="btn btn-danger" style="padding:4px 8px; font-size:10px; border-radius:4px;" onclick="deleteAttendanceLog(${log.id})">Delete</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('reports-paging-info').innerText = `Showing ${startIndex + 1} to ${endIndex} of ${totalRecords} logs`;
+            document.getElementById('btn-report-prev').disabled = reportsPage === 1;
+            document.getElementById('btn-report-next').disabled = reportsPage === totalPages;
+        }
+
+        function changeReportsPage(dir) {
+            reportsPage += dir;
+            filterReportsTable();
+        }
+
+        function reportSearchChange() {
+            reportsPage = 1;
+            filterReportsTable();
+        }
+
+        function reportFilterChange() {
+            reportsPage = 1;
+            filterReportsTable();
+        }
+
+        function changeEmpPage(dir) {
+            empPage += dir;
+            renderAdministrativeEmployeeDirectoryTable();
+        }
+
+        function empSearchChange() {
+            empPage = 1;
+            renderAdministrativeEmployeeDirectoryTable();
+        }
+
+        async function deleteAttendanceLog(logId) {
+            if (confirm("Confirm action: Remove this log record from historical tables?")) {
+                await deleteDatabaseRecord("attendance_logs", logId);
+                await renderAnalyticsDashboard();
+                await loadAttendanceLedgingTicker();
+            }
+        }
+
+        async function exportReportsToCSV() {
+            if (!filteredReportsList.length) return alert("Export failed: Attendance log records table is empty.");
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Date,Time,Employee ID,Employee Name,Department,Role,Event Type,Status\n";
+
+            filteredReportsList.forEach(log => {
+                csvContent += `"${log.dateString}","${log.timeString}","${log.empId}","${log.name}","${log.department}","${log.role}","${log.type}","${log.status}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const temporaryAnchor = document.createElement("a");
+            temporaryAnchor.setAttribute("href", encodedUri);
+            temporaryAnchor.setAttribute("download", `attendance_report_${Math.floor(Date.now() / 1000)}.csv`);
+            document.body.appendChild(temporaryAnchor);
+            temporaryAnchor.click();
+            document.body.removeChild(temporaryAnchor);
+        }
+
+
+
+        function switchView(targetViewModeString) {
+            document.querySelectorAll('.view-section').forEach(section => section.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            stopEnrollmentCamera();
+            if (targetViewModeString === 'kiosk') {
+                document.getElementById('view-kiosk').classList.add('active');
+                document.getElementById('nav-kiosk').classList.add('active');
+            } else {
+                document.getElementById('view-admin').classList.add('active');
+                document.getElementById('nav-admin').classList.add('active');
+                if (!isDashboardAuthenticatedState) {
+                    ui.authGate.style.display = "flex";
+                    document.getElementById('admin-panel-content').style.display = "none";
+                } else {
+                    ui.authGate.style.display = "none";
+                    document.getElementById('admin-panel-content').style.display = "flex";
+                    switchSubTab('reports');
+                }
+            }
+        }
+
+        function switchSubTab(subTabName) {
+            document.querySelectorAll('.sub-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.sub-view-section').forEach(sec => sec.style.display = "none");
+
+            stopEnrollmentCamera();
+            document.getElementById(`sub-tab-${subTabName}`).classList.add('active');
+
+            if (subTabName === 'reports') {
+                document.getElementById('sub-view-reports').style.display = "flex";
+                renderAnalyticsDashboard();
+            } else if (subTabName === 'employees') {
+                cancelEditEmployeeMode();
+                document.getElementById('sub-view-employees').style.display = "flex";
+                renderAdministrativeEmployeeDirectoryTable();
+                populateManualOverrideDropdown();
+                suggestNextEmployeeId();
+            } else {
+                document.getElementById('sub-view-settings').style.display = "flex";
+            }
+        }
+
+        window.onload = compileApplicationCoreSubsystems;
+    </script>
+</body>
+
+</html>
