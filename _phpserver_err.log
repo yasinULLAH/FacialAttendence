@@ -1,0 +1,4 @@
+[Thu May 21 22:56:48 2026] PHP 8.3.0 Development Server (http://127.0.0.1:8099) started
+[Thu May 21 22:56:49 2026] 127.0.0.1:60046 Accepted
+[Thu May 21 22:56:49 2026] 127.0.0.1:60046 [500]: GET /index.php?action=db_get_all&store=system_config
+[Thu May 21 22:56:49 2026] 127.0.0.1:60046 Closing

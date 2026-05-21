@@ -1,533 +1,38 @@
 <?php
 session_start();
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
-    exit;
-}
-
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
 define('DB_PASS', 'root');
 define('DB_NAME', 'facial_attendance_db');
-
-function respond_json($payload, $statusCode = 200)
-{
-    http_response_code($statusCode);
-    header('Content-Type: application/json');
-    echo json_encode($payload);
-    exit;
-}
-
-function read_json_body()
-{
-    $raw = file_get_contents('php://input');
-    if (!$raw) {
-        return [];
-    }
-    $data = json_decode($raw, true);
-    return is_array($data) ? $data : [];
-}
-
-function ensure_column(PDO $db, $table, $column, $definitionSql)
-{
-    $stmt = $db->prepare("SHOW COLUMNS FROM `$table` LIKE ?");
-    $stmt->execute([$column]);
-    if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
-        $db->exec("ALTER TABLE `$table` ADD COLUMN $definitionSql");
-    }
-}
-
-function parse_boolish($value)
-{
-    if ($value === null) {
-        return null;
-    }
-    if (is_bool($value)) {
-        return $value ? 1 : 0;
-    }
-    if (is_numeric($value)) {
-        return ((int) $value) ? 1 : 0;
-    }
-    $v = strtolower(trim((string) $value));
-    return ($v === '1' || $v === 'true' || $v === 'yes' || $v === 'on') ? 1 : 0;
-}
-
-function parse_int_or_null($value)
-{
-    if ($value === null || $value === '') {
-        return null;
-    }
-    return is_numeric($value) ? (int) $value : null;
-}
-
-function parse_float_or_null($value)
-{
-    if ($value === null || $value === '') {
-        return null;
-    }
-    return is_numeric($value) ? (float) $value : null;
-}
-
-function read_config_map(PDO $db)
-{
-    $rows = $db->query('SELECT cfg_key, cfg_val FROM system_config')->fetchAll(PDO::FETCH_ASSOC);
-    $map = [];
-    foreach ($rows as $row) {
-        $value = $row['cfg_val'];
-        if ($row['cfg_key'] === 'weekend_days') {
-            $decoded = json_decode($value, true);
-            if (is_array($decoded)) {
-                $value = $decoded;
-            }
-        } elseif ($row['cfg_key'] === 'minimum_session_minutes' || $row['cfg_key'] === 'shift_grace_minutes' || $row['cfg_key'] === 'kiosk_shift_lock_extension_hours' || $row['cfg_key'] === 'motion_aggressiveness' || $row['cfg_key'] === 'motion_idle_seconds') {
-            if (is_numeric($value)) {
-                $value = (int) $value;
-            }
-        } elseif ($row['cfg_key'] === 'checkout_gap_hours') {
-            if (is_numeric($value)) {
-                $value = (float) $value;
-            }
-        }
-        $map[$row['cfg_key']] = $value;
-    }
-    return $map;
-}
-
-function get_store_records(PDO $db, $store)
-{
-    if ($store === 'employees') {
-        $rows = $db->query('SELECT * FROM employees')->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($rows as &$row) {
-            $decodedDesc = json_decode($row['descriptor'], true);
-            $row['descriptor'] = is_array($decodedDesc) ? $decodedDesc : [];
-            $row['joined'] = (int) $row['joined'];
-            $row['shiftGraceMinutes'] = $row['shiftGraceMinutes'] !== null ? (int) $row['shiftGraceMinutes'] : null;
-            $row['assignedShiftId'] = $row['assignedShiftId'] !== null ? (int) $row['assignedShiftId'] : null;
-            $row['deletedAt'] = $row['deletedAt'] !== null ? (int) $row['deletedAt'] : null;
-        }
-        return $rows;
-    }
-    if ($store === 'attendance_logs') {
-        $rows = $db->query('SELECT * FROM attendance_logs')->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($rows as &$row) {
-            $row['id'] = (int) $row['id'];
-            $row['timestamp'] = (int) $row['timestamp'];
-            $row['sessionMinutes'] = $row['sessionMinutes'] !== null ? (int) $row['sessionMinutes'] : null;
-        }
-        return $rows;
-    }
-    if ($store === 'departments') {
-        return $db->query('SELECT * FROM departments')->fetchAll(PDO::FETCH_ASSOC);
-    }
-    if ($store === 'holidays') {
-        return $db->query('SELECT * FROM holidays')->fetchAll(PDO::FETCH_ASSOC);
-    }
-    if ($store === 'leave_requests') {
-        $rows = $db->query('SELECT * FROM leave_requests')->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($rows as &$row) {
-            $row['id'] = (int) $row['id'];
-            $row['createdAt'] = $row['createdAt'] !== null ? (int) $row['createdAt'] : null;
-        }
-        return $rows;
-    }
-    if ($store === 'shift_policies') {
-        $rows = $db->query('SELECT * FROM shift_policies')->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($rows as &$row) {
-            $row['id'] = (int) $row['id'];
-            $row['customSettingsEnabled'] = $row['customSettingsEnabled'] !== null ? ((int) $row['customSettingsEnabled'] === 1) : false;
-            $row['shiftGraceMinutes'] = $row['shiftGraceMinutes'] !== null ? (int) $row['shiftGraceMinutes'] : null;
-            $row['minimumSessionMinutes'] = $row['minimumSessionMinutes'] !== null ? (int) $row['minimumSessionMinutes'] : null;
-            $row['checkoutGapHours'] = $row['checkoutGapHours'] !== null ? (float) $row['checkoutGapHours'] : null;
-            $row['logoutCutoffEnabled'] = $row['logoutCutoffEnabled'] !== null ? ((int) $row['logoutCutoffEnabled'] === 1) : null;
-            $row['weekendDays'] = null;
-            if ($row['weekendDaysJson']) {
-                $decodedWk = json_decode($row['weekendDaysJson'], true);
-                if (is_array($decodedWk)) {
-                    $row['weekendDays'] = $decodedWk;
-                }
-            }
-            unset($row['weekendDaysJson']);
-        }
-        return $rows;
-    }
-    if ($store === 'audit_logs') {
-        $rows = $db->query('SELECT * FROM audit_logs')->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($rows as &$row) {
-            $row['id'] = (int) $row['id'];
-            $row['timestamp'] = $row['timestamp'] !== null ? (int) $row['timestamp'] : null;
-        }
-        return $rows;
-    }
-    if ($store === 'security_clips') {
-        return $db->query('SELECT id, mode, startedAt, endedAt, durationSec, blobMime, blobBase64 FROM security_clips')->fetchAll(PDO::FETCH_ASSOC);
-    }
-    if ($store === 'system_config') {
-        $rows = $db->query('SELECT cfg_key, cfg_val FROM system_config')->fetchAll(PDO::FETCH_ASSOC);
-        $out = [];
-        foreach ($rows as $row) {
-            $value = $row['cfg_val'];
-            if ($row['cfg_key'] === 'weekend_days') {
-                $decoded = json_decode($value, true);
-                if (is_array($decoded)) {
-                    $value = $decoded;
-                }
-            }
-            $out[] = ['key' => $row['cfg_key'], 'value' => $value];
-        }
-        return $out;
-    }
-    throw new Exception('Unsupported store: ' . $store);
-}
-
-function upsert_store_record(PDO $db, $store, $record)
-{
-    if ($store === 'employees') {
-        if (!isset($record['id']) || trim((string) $record['id']) === '') {
-            throw new Exception('Employee id is required');
-        }
-        $descriptor = isset($record['descriptor']) ? $record['descriptor'] : [];
-        if (!is_array($descriptor)) {
-            $descriptor = [];
-        }
-        $stmt = $db->prepare('INSERT INTO employees (id, name, descriptor, department, role, email, phone, status, joined, shiftStartTime, shiftGraceMinutes, assignedShiftId, deletedAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE
-                name = VALUES(name),
-                descriptor = VALUES(descriptor),
-                department = VALUES(department),
-                role = VALUES(role),
-                email = VALUES(email),
-                phone = VALUES(phone),
-                status = VALUES(status),
-                joined = VALUES(joined),
-                shiftStartTime = VALUES(shiftStartTime),
-                shiftGraceMinutes = VALUES(shiftGraceMinutes),
-                assignedShiftId = VALUES(assignedShiftId),
-                deletedAt = VALUES(deletedAt)');
-        $stmt->execute([
-            (string) $record['id'],
-            isset($record['name']) ? $record['name'] : '',
-            json_encode($descriptor),
-            isset($record['department']) ? $record['department'] : '',
-            isset($record['role']) ? $record['role'] : '',
-            isset($record['email']) ? $record['email'] : '',
-            isset($record['phone']) ? $record['phone'] : '',
-            isset($record['status']) ? $record['status'] : 'Active',
-            isset($record['joined']) && is_numeric($record['joined']) ? (int) $record['joined'] : round(microtime(true) * 1000),
-            isset($record['shiftStartTime']) ? $record['shiftStartTime'] : null,
-            parse_int_or_null(isset($record['shiftGraceMinutes']) ? $record['shiftGraceMinutes'] : null),
-            parse_int_or_null(isset($record['assignedShiftId']) ? $record['assignedShiftId'] : null),
-            parse_int_or_null(isset($record['deletedAt']) ? $record['deletedAt'] : null)
-        ]);
-        return true;
-    }
-
-    if ($store === 'attendance_logs') {
-        if (isset($record['id']) && is_numeric($record['id'])) {
-            $stmt = $db->prepare('UPDATE attendance_logs SET empId = ?, name = ?, department = ?, role = ?, timestamp = ?, dateString = ?, timeString = ?, type = ?, status = ?, sessionMinutes = ?, checkoutCompliance = ? WHERE id = ?');
-            $stmt->execute([
-                isset($record['empId']) ? $record['empId'] : '',
-                isset($record['name']) ? $record['name'] : '',
-                isset($record['department']) ? $record['department'] : '',
-                isset($record['role']) ? $record['role'] : '',
-                isset($record['timestamp']) && is_numeric($record['timestamp']) ? (int) $record['timestamp'] : round(microtime(true) * 1000),
-                isset($record['dateString']) ? $record['dateString'] : '',
-                isset($record['timeString']) ? $record['timeString'] : '',
-                isset($record['type']) ? $record['type'] : '',
-                isset($record['status']) ? $record['status'] : '',
-                parse_int_or_null(isset($record['sessionMinutes']) ? $record['sessionMinutes'] : null),
-                isset($record['checkoutCompliance']) ? $record['checkoutCompliance'] : '-',
-                (int) $record['id']
-            ]);
-            return (int) $record['id'];
-        }
-
-        $stmt = $db->prepare('INSERT INTO attendance_logs (empId, name, department, role, timestamp, dateString, timeString, type, status, sessionMinutes, checkoutCompliance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-        $stmt->execute([
-            isset($record['empId']) ? $record['empId'] : '',
-            isset($record['name']) ? $record['name'] : '',
-            isset($record['department']) ? $record['department'] : '',
-            isset($record['role']) ? $record['role'] : '',
-            isset($record['timestamp']) && is_numeric($record['timestamp']) ? (int) $record['timestamp'] : round(microtime(true) * 1000),
-            isset($record['dateString']) ? $record['dateString'] : '',
-            isset($record['timeString']) ? $record['timeString'] : '',
-            isset($record['type']) ? $record['type'] : '',
-            isset($record['status']) ? $record['status'] : '',
-            parse_int_or_null(isset($record['sessionMinutes']) ? $record['sessionMinutes'] : null),
-            isset($record['checkoutCompliance']) ? $record['checkoutCompliance'] : '-'
-        ]);
-        return (int) $db->lastInsertId();
-    }
-
-    if ($store === 'departments') {
-        $stmt = $db->prepare('INSERT INTO departments (name) VALUES (?) ON DUPLICATE KEY UPDATE name = VALUES(name)');
-        $stmt->execute([isset($record['name']) ? $record['name'] : '']);
-        return true;
-    }
-
-    if ($store === 'holidays') {
-        $stmt = $db->prepare('INSERT INTO holidays (date, name) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name)');
-        $stmt->execute([isset($record['date']) ? $record['date'] : '', isset($record['name']) ? $record['name'] : '']);
-        return true;
-    }
-
-    if ($store === 'leave_requests') {
-        if (isset($record['id']) && is_numeric($record['id'])) {
-            $stmt = $db->prepare('UPDATE leave_requests SET empId = ?, name = ?, department = ?, type = ?, dateFrom = ?, dateTo = ?, status = ?, reason = ?, createdAt = ? WHERE id = ?');
-            $stmt->execute([
-                isset($record['empId']) ? $record['empId'] : '',
-                isset($record['name']) ? $record['name'] : '',
-                isset($record['department']) ? $record['department'] : '',
-                isset($record['type']) ? $record['type'] : 'Leave',
-                isset($record['dateFrom']) ? $record['dateFrom'] : '',
-                isset($record['dateTo']) ? $record['dateTo'] : '',
-                isset($record['status']) ? $record['status'] : 'Pending',
-                isset($record['reason']) ? $record['reason'] : '',
-                isset($record['createdAt']) && is_numeric($record['createdAt']) ? (int) $record['createdAt'] : round(microtime(true) * 1000),
-                (int) $record['id']
-            ]);
-            return (int) $record['id'];
-        }
-        $stmt = $db->prepare('INSERT INTO leave_requests (empId, name, department, type, dateFrom, dateTo, status, reason, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
-        $stmt->execute([
-            isset($record['empId']) ? $record['empId'] : '',
-            isset($record['name']) ? $record['name'] : '',
-            isset($record['department']) ? $record['department'] : '',
-            isset($record['type']) ? $record['type'] : 'Leave',
-            isset($record['dateFrom']) ? $record['dateFrom'] : '',
-            isset($record['dateTo']) ? $record['dateTo'] : '',
-            isset($record['status']) ? $record['status'] : 'Pending',
-            isset($record['reason']) ? $record['reason'] : '',
-            isset($record['createdAt']) && is_numeric($record['createdAt']) ? (int) $record['createdAt'] : round(microtime(true) * 1000)
-        ]);
-        return (int) $db->lastInsertId();
-    }
-
-    if ($store === 'shift_policies') {
-        $weekendDaysJson = null;
-        if (isset($record['weekendDays']) && is_array($record['weekendDays'])) {
-            $weekendDaysJson = json_encode($record['weekendDays']);
-        }
-        if (isset($record['id']) && is_numeric($record['id'])) {
-            $stmt = $db->prepare('UPDATE shift_policies SET department = ?, name = ?, shiftStartTime = ?, customSettingsEnabled = ?, shiftGraceMinutes = ?, minimumSessionMinutes = ?, checkoutGapHours = ?, logoutCutoffEnabled = ?, logoutCutoffTime = ?, weekendDaysJson = ? WHERE id = ?');
-            $stmt->execute([
-                isset($record['department']) ? $record['department'] : '',
-                isset($record['name']) ? $record['name'] : 'Default Shift',
-                isset($record['shiftStartTime']) ? $record['shiftStartTime'] : '09:00',
-                parse_boolish(isset($record['customSettingsEnabled']) ? $record['customSettingsEnabled'] : false),
-                parse_int_or_null(isset($record['shiftGraceMinutes']) ? $record['shiftGraceMinutes'] : null),
-                parse_int_or_null(isset($record['minimumSessionMinutes']) ? $record['minimumSessionMinutes'] : null),
-                parse_float_or_null(isset($record['checkoutGapHours']) ? $record['checkoutGapHours'] : null),
-                parse_boolish(isset($record['logoutCutoffEnabled']) ? $record['logoutCutoffEnabled'] : null),
-                isset($record['logoutCutoffTime']) ? $record['logoutCutoffTime'] : null,
-                $weekendDaysJson,
-                (int) $record['id']
-            ]);
-            return (int) $record['id'];
-        }
-        $stmt = $db->prepare('INSERT INTO shift_policies (department, name, shiftStartTime, customSettingsEnabled, shiftGraceMinutes, minimumSessionMinutes, checkoutGapHours, logoutCutoffEnabled, logoutCutoffTime, weekendDaysJson) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-        $stmt->execute([
-            isset($record['department']) ? $record['department'] : '',
-            isset($record['name']) ? $record['name'] : 'Default Shift',
-            isset($record['shiftStartTime']) ? $record['shiftStartTime'] : '09:00',
-            parse_boolish(isset($record['customSettingsEnabled']) ? $record['customSettingsEnabled'] : false),
-            parse_int_or_null(isset($record['shiftGraceMinutes']) ? $record['shiftGraceMinutes'] : null),
-            parse_int_or_null(isset($record['minimumSessionMinutes']) ? $record['minimumSessionMinutes'] : null),
-            parse_float_or_null(isset($record['checkoutGapHours']) ? $record['checkoutGapHours'] : null),
-            parse_boolish(isset($record['logoutCutoffEnabled']) ? $record['logoutCutoffEnabled'] : null),
-            isset($record['logoutCutoffTime']) ? $record['logoutCutoffTime'] : null,
-            $weekendDaysJson
-        ]);
-        return (int) $db->lastInsertId();
-    }
-
-    if ($store === 'audit_logs') {
-        if (isset($record['id']) && is_numeric($record['id'])) {
-            $stmt = $db->prepare('UPDATE audit_logs SET timestamp = ?, action = ?, detail = ? WHERE id = ?');
-            $stmt->execute([
-                isset($record['timestamp']) && is_numeric($record['timestamp']) ? (int) $record['timestamp'] : round(microtime(true) * 1000),
-                isset($record['action']) ? $record['action'] : '',
-                isset($record['detail']) ? $record['detail'] : '',
-                (int) $record['id']
-            ]);
-            return (int) $record['id'];
-        }
-        $stmt = $db->prepare('INSERT INTO audit_logs (timestamp, action, detail) VALUES (?, ?, ?)');
-        $stmt->execute([
-            isset($record['timestamp']) && is_numeric($record['timestamp']) ? (int) $record['timestamp'] : round(microtime(true) * 1000),
-            isset($record['action']) ? $record['action'] : '',
-            isset($record['detail']) ? $record['detail'] : ''
-        ]);
-        return (int) $db->lastInsertId();
-    }
-
-    if ($store === 'security_clips') {
-        if (!isset($record['id']) || trim((string) $record['id']) === '') {
-            throw new Exception('Security clip id is required');
-        }
-        $stmt = $db->prepare('INSERT INTO security_clips (id, mode, startedAt, endedAt, durationSec, blobMime, blobBase64)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE
-                mode = VALUES(mode),
-                startedAt = VALUES(startedAt),
-                endedAt = VALUES(endedAt),
-                durationSec = VALUES(durationSec),
-                blobMime = VALUES(blobMime),
-                blobBase64 = VALUES(blobBase64)');
-        $stmt->execute([
-            (string) $record['id'],
-            isset($record['mode']) ? $record['mode'] : 'Motion',
-            isset($record['startedAt']) && is_numeric($record['startedAt']) ? (int) $record['startedAt'] : null,
-            isset($record['endedAt']) && is_numeric($record['endedAt']) ? (int) $record['endedAt'] : null,
-            isset($record['durationSec']) ? (string) $record['durationSec'] : '',
-            isset($record['blobMime']) ? $record['blobMime'] : 'video/webm',
-            isset($record['blobBase64']) ? $record['blobBase64'] : ''
-        ]);
-        return true;
-    }
-
-    if ($store === 'system_config') {
-        if (!isset($record['key'])) {
-            throw new Exception('Config key is required');
-        }
-        $value = isset($record['value']) ? $record['value'] : '';
-        if ($record['key'] === 'weekend_days' && is_array($value)) {
-            $value = json_encode($value);
-        }
-        $stmt = $db->prepare('INSERT INTO system_config (cfg_key, cfg_val) VALUES (?, ?) ON DUPLICATE KEY UPDATE cfg_val = VALUES(cfg_val)');
-        $stmt->execute([(string) $record['key'], is_scalar($value) ? (string) $value : json_encode($value)]);
-        return true;
-    }
-
-    throw new Exception('Unsupported store: ' . $store);
-}
-
-function delete_store_record(PDO $db, $store, $key)
-{
-    if ($store === 'employees') {
-        if ($key === 'all') {
-            $db->exec('DELETE FROM employees');
-            return;
-        }
-        $stmt = $db->prepare('DELETE FROM employees WHERE id = ?');
-        $stmt->execute([(string) $key]);
-        return;
-    }
-    if ($store === 'attendance_logs') {
-        if ($key === 'all') {
-            $db->exec('DELETE FROM attendance_logs');
-            return;
-        }
-        $stmt = $db->prepare('DELETE FROM attendance_logs WHERE id = ?');
-        $stmt->execute([(int) $key]);
-        return;
-    }
-    if ($store === 'departments') {
-        if ($key === 'all') {
-            $db->exec('DELETE FROM departments');
-            return;
-        }
-        $stmt = $db->prepare('DELETE FROM departments WHERE name = ?');
-        $stmt->execute([(string) $key]);
-        return;
-    }
-    if ($store === 'holidays') {
-        if ($key === 'all') {
-            $db->exec('DELETE FROM holidays');
-            return;
-        }
-        $stmt = $db->prepare('DELETE FROM holidays WHERE date = ?');
-        $stmt->execute([(string) $key]);
-        return;
-    }
-    if ($store === 'leave_requests') {
-        if ($key === 'all') {
-            $db->exec('DELETE FROM leave_requests');
-            return;
-        }
-        $stmt = $db->prepare('DELETE FROM leave_requests WHERE id = ?');
-        $stmt->execute([(int) $key]);
-        return;
-    }
-    if ($store === 'shift_policies') {
-        if ($key === 'all') {
-            $db->exec('DELETE FROM shift_policies');
-            return;
-        }
-        if (is_numeric($key)) {
-            $stmt = $db->prepare('DELETE FROM shift_policies WHERE id = ?');
-            $stmt->execute([(int) $key]);
-        } else {
-            $stmt = $db->prepare('DELETE FROM shift_policies WHERE department = ?');
-            $stmt->execute([(string) $key]);
-        }
-        return;
-    }
-    if ($store === 'audit_logs') {
-        if ($key === 'all') {
-            $db->exec('DELETE FROM audit_logs');
-            return;
-        }
-        $stmt = $db->prepare('DELETE FROM audit_logs WHERE id = ?');
-        $stmt->execute([(int) $key]);
-        return;
-    }
-    if ($store === 'security_clips') {
-        if ($key === 'all') {
-            $db->exec('DELETE FROM security_clips');
-            return;
-        }
-        $stmt = $db->prepare('DELETE FROM security_clips WHERE id = ?');
-        $stmt->execute([(string) $key]);
-        return;
-    }
-    if ($store === 'system_config') {
-        if ($key === 'all') {
-            $db->exec('DELETE FROM system_config');
-            return;
-        }
-        $stmt = $db->prepare('DELETE FROM system_config WHERE cfg_key = ?');
-        $stmt->execute([(string) $key]);
-        return;
-    }
-    throw new Exception('Unsupported store: ' . $store);
-}
-
 try {
     $pdo = new PDO('mysql:host=' . DB_HOST, DB_USER, DB_PASS);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->exec('CREATE DATABASE IF NOT EXISTS `' . DB_NAME . '` CHARACTER SET utf8 COLLATE utf8_general_ci');
 } catch (PDOException $e) {
     if (isset($_GET['action'])) {
-        respond_json(['error' => 'Database connection failed: ' . $e->getMessage()], 500);
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);
+        exit;
     }
 }
-
 $db = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASS);
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
 $db->exec('CREATE TABLE IF NOT EXISTS system_config (
     cfg_key VARCHAR(100) PRIMARY KEY,
     cfg_val TEXT
 ) ENGINE=InnoDB');
-
 $db->exec('CREATE TABLE IF NOT EXISTS departments (
     name VARCHAR(100) PRIMARY KEY
 ) ENGINE=InnoDB');
-
 $db->exec('CREATE TABLE IF NOT EXISTS holidays (
     date DATE PRIMARY KEY,
     name VARCHAR(100)
 ) ENGINE=InnoDB');
-
 $db->exec('CREATE TABLE IF NOT EXISTS employees (
     id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(100),
-    descriptor LONGTEXT,
+    descriptor TEXT,
     department VARCHAR(100),
     role VARCHAR(100),
     email VARCHAR(100),
@@ -535,7 +40,6 @@ $db->exec('CREATE TABLE IF NOT EXISTS employees (
     status VARCHAR(20),
     joined BIGINT
 ) ENGINE=InnoDB');
-
 $db->exec('CREATE TABLE IF NOT EXISTS attendance_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     empId VARCHAR(50),
@@ -548,154 +52,240 @@ $db->exec('CREATE TABLE IF NOT EXISTS attendance_logs (
     type VARCHAR(20),
     status VARCHAR(20)
 ) ENGINE=InnoDB');
-
-$db->exec('CREATE TABLE IF NOT EXISTS leave_requests (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    empId VARCHAR(50),
-    name VARCHAR(100),
-    department VARCHAR(100),
-    type VARCHAR(40),
-    dateFrom VARCHAR(20),
-    dateTo VARCHAR(20),
-    status VARCHAR(20),
-    reason TEXT,
-    createdAt BIGINT
-) ENGINE=InnoDB');
-
-$db->exec('CREATE TABLE IF NOT EXISTS shift_policies (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    department VARCHAR(100),
-    name VARCHAR(100),
-    shiftStartTime VARCHAR(20),
-    customSettingsEnabled TINYINT(1) DEFAULT 0,
-    shiftGraceMinutes INT NULL,
-    minimumSessionMinutes INT NULL,
-    checkoutGapHours DECIMAL(6,2) NULL,
-    logoutCutoffEnabled TINYINT(1) NULL,
-    logoutCutoffTime VARCHAR(20) NULL,
-    weekendDaysJson TEXT NULL
-) ENGINE=InnoDB');
-
-$db->exec('CREATE TABLE IF NOT EXISTS audit_logs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    timestamp BIGINT,
-    action VARCHAR(120),
-    detail LONGTEXT
-) ENGINE=InnoDB');
-
-$db->exec('CREATE TABLE IF NOT EXISTS security_clips (
-    id VARCHAR(100) PRIMARY KEY,
-    mode VARCHAR(30),
-    startedAt BIGINT,
-    endedAt BIGINT,
-    durationSec VARCHAR(20),
-    blobMime VARCHAR(120),
-    blobBase64 LONGTEXT
-) ENGINE=InnoDB');
-
-ensure_column($db, 'employees', 'shiftStartTime', '`shiftStartTime` VARCHAR(20) NULL');
-ensure_column($db, 'employees', 'shiftGraceMinutes', '`shiftGraceMinutes` INT NULL');
-ensure_column($db, 'employees', 'assignedShiftId', '`assignedShiftId` INT NULL');
-ensure_column($db, 'employees', 'deletedAt', '`deletedAt` BIGINT NULL');
-ensure_column($db, 'attendance_logs', 'sessionMinutes', '`sessionMinutes` INT NULL');
-ensure_column($db, 'attendance_logs', 'checkoutCompliance', '`checkoutCompliance` VARCHAR(30) NULL');
-
+$stmt = $db->prepare("SELECT COUNT(*) FROM system_config WHERE cfg_key = 'master_password'");
+$stmt->execute();
+if ($stmt->fetchColumn() == 0) {
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('master_password', 'admin1234')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('liveness_level', 'none')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('theme_color', 'indigo')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('theme_mode', 'light')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('shift_start_time', '09:00')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('shift_grace_minutes', '15')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('checkout_gap_hours', '2')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('logout_cutoff_enabled', '0')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('logout_cutoff_time', '15:00')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('motion_tracking_enabled', '0')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('motion_aggressiveness', '3')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('motion_auto_download', '0')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('motion_idle_seconds', '2')")->execute();
+    $db->prepare("INSERT INTO system_config (cfg_key, cfg_val) VALUES ('weekend_days', '[0, 6]')")->execute();
+    $defaults = ['Administration', 'Engineering', 'Sales', 'Marketing', 'Human Resources', 'Finance', 'Operations'];
+    foreach ($defaults as $d) {
+        $db->prepare('INSERT IGNORE INTO departments (name) VALUES (?)')->execute([$d]);
+    }
+}
 $requiredConfigDefaults = [
-    'master_password' => 'admin1234',
     'liveness_level' => 'none',
     'theme_color' => 'indigo',
     'theme_mode' => 'light',
     'shift_start_time' => '09:00',
     'shift_grace_minutes' => '15',
-    'minimum_session_minutes' => '480',
     'checkout_gap_hours' => '2',
-    'logout_cutoff_enabled' => '1',
+    'logout_cutoff_enabled' => '0',
     'logout_cutoff_time' => '15:00',
-    'kiosk_shift_lock_enabled' => '0',
-    'kiosk_shift_lock_extension_hours' => '2',
     'motion_tracking_enabled' => '0',
     'motion_aggressiveness' => '3',
     'motion_auto_download' => '0',
     'motion_idle_seconds' => '2',
-    'weekend_days' => '[0,6]'
+    'weekend_days' => '[0, 6]'
 ];
-
 $cfgInsertStmt = $db->prepare('INSERT IGNORE INTO system_config (cfg_key, cfg_val) VALUES (?, ?)');
 foreach ($requiredConfigDefaults as $cfgKey => $cfgVal) {
     $cfgInsertStmt->execute([$cfgKey, $cfgVal]);
 }
-
-$defaults = ['Administration', 'Engineering', 'Sales', 'Marketing', 'Human Resources', 'Finance', 'Operations'];
-foreach ($defaults as $d) {
-    $db->prepare('INSERT IGNORE INTO departments (name) VALUES (?)')->execute([$d]);
-}
-
 if (isset($_GET['action'])) {
+    header('Content-Type: application/json');
     $action = $_GET['action'];
-    try {
-        if ($action === 'verify_login') {
-            $data = read_json_body();
-            $pass = isset($data['password']) ? $data['password'] : '';
-            $stmt = $db->prepare("SELECT cfg_val FROM system_config WHERE cfg_key = 'master_password'");
-            $stmt->execute();
-            $real = $stmt->fetchColumn();
-            if ($pass === $real) {
-                $_SESSION['admin_authenticated'] = true;
-                respond_json(['success' => true]);
+    if ($action === 'get_config') {
+        $stmt = $db->query('SELECT * FROM system_config');
+        $config = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $config[$row['cfg_key']] = $row['cfg_val'];
+        }
+        echo json_encode($config);
+        exit;
+    }
+    if ($action === 'save_config') {
+        $data = json_decode(file_get_contents('php://input'), true);
+        if ($data) {
+            foreach ($data as $key => $val) {
+                if ($key === 'weekend_days' && is_array($val)) {
+                    $val = json_encode($val);
+                }
+                $stmt = $db->prepare('INSERT INTO system_config (cfg_key, cfg_val) VALUES (?, ?) ON DUPLICATE KEY UPDATE cfg_val = ?');
+                $stmt->execute([$key, $val, $val]);
             }
-            respond_json(['success' => false], 401);
+            echo json_encode(['success' => true]);
         }
-
-        if ($action === 'check_session') {
-            respond_json(['authenticated' => isset($_SESSION['admin_authenticated'])]);
+        exit;
+    }
+    if ($action === 'verify_login') {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $pass = isset($data['password']) ? $data['password'] : '';
+        $stmt = $db->prepare("SELECT cfg_val FROM system_config WHERE cfg_key = 'master_password'");
+        $stmt->execute();
+        $real = $stmt->fetchColumn();
+        if ($pass === $real) {
+            $_SESSION['admin_authenticated'] = true;
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false]);
         }
-
-        if ($action === 'logout') {
-            unset($_SESSION['admin_authenticated']);
-            respond_json(['success' => true]);
+        exit;
+    }
+    if ($action === 'check_session') {
+        echo json_encode(['authenticated' => isset($_SESSION['admin_authenticated'])]);
+        exit;
+    }
+    if ($action === 'logout') {
+        unset($_SESSION['admin_authenticated']);
+        echo json_encode(['success' => true]);
+        exit;
+    }
+    if ($action === 'get_employees') {
+        $stmt = $db->query('SELECT * FROM employees');
+        $emps = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($emps as &$emp) {
+            $emp['descriptor'] = json_decode($emp['descriptor'], true);
+            $emp['joined'] = (int) $emp['joined'];
         }
-
-        if ($action === 'get_config') {
-            respond_json(read_config_map($db));
+        echo json_encode($emps);
+        exit;
+    }
+    if ($action === 'save_employee') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
         }
-
-        if ($action === 'save_config') {
-            $data = read_json_body();
-            foreach ($data as $key => $value) {
-                upsert_store_record($db, 'system_config', ['key' => $key, 'value' => $value]);
-            }
-            respond_json(['success' => true]);
+        $data = json_decode(file_get_contents('php://input'), true);
+        if ($data) {
+            $stmt = $db->prepare('INSERT INTO employees (id, name, descriptor, department, role, email, phone, status, joined) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) 
+                ON DUPLICATE KEY UPDATE name = ?, descriptor = ?, department = ?, role = ?, email = ?, phone = ?, status = ?');
+            $desc = json_encode($data['descriptor']);
+            $stmt->execute([
+                $data['id'], $data['name'], $desc, $data['department'], $data['role'], $data['email'], $data['phone'], $data['status'], $data['joined'],
+                $data['name'], $desc, $data['department'], $data['role'], $data['email'], $data['phone'], $data['status']
+            ]);
+            echo json_encode(['success' => true]);
         }
-
-        if ($action === 'db_get_all') {
-            $store = isset($_GET['store']) ? $_GET['store'] : '';
-            respond_json(get_store_records($db, $store));
+        exit;
+    }
+    if ($action === 'delete_employee') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
         }
-
-        if ($action === 'db_upsert') {
-            $payload = read_json_body();
-            $store = isset($payload['store']) ? $payload['store'] : '';
-            $record = isset($payload['record']) && is_array($payload['record']) ? $payload['record'] : [];
-            $result = upsert_store_record($db, $store, $record);
-            respond_json(['success' => true, 'result' => $result]);
+        $id = isset($_GET['id']) ? $_GET['id'] : '';
+        $stmt = $db->prepare('DELETE FROM employees WHERE id = ?');
+        $stmt->execute([$id]);
+        echo json_encode(['success' => true]);
+        exit;
+    }
+    if ($action === 'get_logs') {
+        $stmt = $db->query('SELECT * FROM attendance_logs');
+        $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($logs as &$log) {
+            $log['id'] = (int) $log['id'];
+            $log['timestamp'] = (int) $log['timestamp'];
         }
-
-        if ($action === 'db_delete') {
-            $payload = read_json_body();
-            $store = isset($payload['store']) ? $payload['store'] : '';
-            $key = isset($payload['key']) ? $payload['key'] : null;
-            delete_store_record($db, $store, $key);
-            respond_json(['success' => true]);
+        echo json_encode($logs);
+        exit;
+    }
+    if ($action === 'save_log') {
+        $data = json_decode(file_get_contents('php://input'), true);
+        if ($data) {
+            $stmt = $db->prepare('INSERT INTO attendance_logs (empId, name, department, role, timestamp, dateString, timeString, type, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt->execute([
+                $data['empId'], $data['name'], $data['department'], $data['role'], $data['timestamp'], $data['dateString'], $data['timeString'], $data['type'], $data['status']
+            ]);
+            echo json_encode(['success' => true]);
         }
-
-        if ($action === 'db_clear_store') {
-            $payload = read_json_body();
-            $store = isset($payload['store']) ? $payload['store'] : '';
-            delete_store_record($db, $store, 'all');
-            respond_json(['success' => true]);
+        exit;
+    }
+    if ($action === 'update_log') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
         }
-    } catch (Exception $e) {
-        respond_json(['error' => $e->getMessage()], 500);
+        $data = json_decode(file_get_contents('php://input'), true);
+        if ($data && isset($data['id'])) {
+            $stmt = $db->prepare('UPDATE attendance_logs SET empId = ?, name = ?, department = ?, role = ?, timestamp = ?, dateString = ?, timeString = ?, type = ?, status = ? WHERE id = ?');
+            $stmt->execute([
+                $data['empId'], $data['name'], $data['department'], $data['role'], $data['timestamp'], $data['dateString'], $data['timeString'], $data['type'], $data['status'], $data['id']
+            ]);
+            echo json_encode(['success' => true]);
+        }
+        exit;
+    }
+    if ($action === 'delete_log') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
+        }
+        $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+        $stmt = $db->prepare('DELETE FROM attendance_logs WHERE id = ?');
+        $stmt->execute([$id]);
+        echo json_encode(['success' => true]);
+        exit;
+    }
+    if ($action === 'get_departments') {
+        $stmt = $db->query('SELECT * FROM departments');
+        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        exit;
+    }
+    if ($action === 'save_department') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
+        }
+        $data = json_decode(file_get_contents('php://input'), true);
+        if ($data && isset($data['name'])) {
+            $stmt = $db->prepare('INSERT IGNORE INTO departments (name) VALUES (?)');
+            $stmt->execute([$data['name']]);
+            echo json_encode(['success' => true]);
+        }
+        exit;
+    }
+    if ($action === 'delete_department') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
+        }
+        $name = isset($_GET['name']) ? $_GET['name'] : '';
+        $stmt = $db->prepare('DELETE FROM departments WHERE name = ?');
+        $stmt->execute([$name]);
+        echo json_encode(['success' => true]);
+        exit;
+    }
+    if ($action === 'get_holidays') {
+        $stmt = $db->query('SELECT * FROM holidays');
+        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        exit;
+    }
+    if ($action === 'save_holiday') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
+        }
+        $data = json_decode(file_get_contents('php://input'), true);
+        if ($data && isset($data['date']) && isset($data['name'])) {
+            $stmt = $db->prepare('INSERT IGNORE INTO holidays (date, name) VALUES (?, ?)');
+            $stmt->execute([$data['date'], $data['name']]);
+            echo json_encode(['success' => true]);
+        }
+        exit;
+    }
+    if ($action === 'delete_holiday') {
+        if (!isset($_SESSION['admin_authenticated'])) {
+            echo json_encode(['error' => 'Unauthorized access']);
+            exit;
+        }
+        $date = isset($_GET['date']) ? $_GET['date'] : '';
+        $stmt = $db->prepare('DELETE FROM holidays WHERE date = ?');
+        $stmt->execute([$date]);
+        echo json_encode(['success' => true]);
+        exit;
     }
 }
 ?>
@@ -3590,6 +3180,7 @@ if (isset($_GET['action'])) {
             manualRecordStopBtn: document.getElementById('btn-manual-record-stop'),
             wakeLockToggleBtn: document.getElementById('btn-wakelock-toggle')
         };
+        let indexedDatabasePointer = null;
         let applicationFaceMatcherRuntime = null;
         let precompiledProfilesRegistry = [];
         let precompiledEmployeesList = [];
@@ -4191,85 +3782,99 @@ if (isset($_GET['action'])) {
             printWindow.focus();
             printWindow.print();
         }
-        async function backendRequest(action, method = "GET", payload = null, queryParams = null) {
-            const url = new URL("index.php", window.location.href);
-            url.searchParams.set("action", action);
-            if (queryParams && typeof queryParams === "object") {
-                Object.entries(queryParams).forEach(([k, v]) => {
-                    url.searchParams.set(k, String(v));
-                });
-            }
-            const options = { method, credentials: "same-origin" };
-            if (payload !== null) {
-                options.headers = { "Content-Type": "application/json" };
-                options.body = JSON.stringify(payload);
-            }
-            const res = await fetch(url.toString(), options);
-            let data = null;
-            try {
-                data = await res.json();
-            } catch (_err) {
-                data = null;
-            }
-            if (!res.ok) {
-                const message = data && data.error ? data.error : `Request failed: ${action}`;
-                throw new Error(message);
-            }
-            if (data && data.error) {
-                throw new Error(data.error);
-            }
-            return data;
-        }
-        function blobToBase64(blob) {
+        function initializeDatabaseCoreSubsystems() {
             return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    const result = typeof reader.result === "string" ? reader.result : "";
-                    const commaIndex = result.indexOf(",");
-                    resolve(commaIndex >= 0 ? result.substring(commaIndex + 1) : result);
+                const openRequest = indexedDB.open("EnterpriseFaceKioskCoreDB", 7);
+                openRequest.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains("employees")) {
+                        db.createObjectStore("employees", { keyPath: "id" });
+                    }
+                    if (!db.objectStoreNames.contains("attendance_logs")) {
+                        db.createObjectStore("attendance_logs", { keyPath: "id", autoIncrement: true });
+                    }
+                    if (!db.objectStoreNames.contains("system_config")) {
+                        db.createObjectStore("system_config", { keyPath: "key" });
+                    }
+                    if (!db.objectStoreNames.contains("departments")) {
+                        db.createObjectStore("departments", { keyPath: "name" });
+                    }
+                    if (!db.objectStoreNames.contains("holidays")) {
+                        db.createObjectStore("holidays", { keyPath: "date" });
+                    }
+                    if (!db.objectStoreNames.contains("leave_requests")) {
+                        db.createObjectStore("leave_requests", { keyPath: "id", autoIncrement: true });
+                    }
+                    if (db.objectStoreNames.contains("shift_policies")) {
+                        const transaction = e.target.transaction;
+                        const oldStore = transaction.objectStore("shift_policies");
+                        const cursorReq = oldStore.openCursor();
+                        const oldRecords = [];
+                        cursorReq.onsuccess = (event) => {
+                            const cursor = event.target.result;
+                            if (cursor) {
+                                oldRecords.push(cursor.value);
+                                cursor.continue();
+                            } else {
+                                db.deleteObjectStore("shift_policies");
+                                const newStore = db.createObjectStore("shift_policies", { keyPath: "id", autoIncrement: true });
+                                oldRecords.forEach(rec => {
+                                    newStore.add({
+                                        department: rec.department,
+                                        name: "Default Shift",
+                                        shiftStartTime: rec.shiftStartTime || "09:00",
+                                        shiftGraceMinutes: Number.isFinite(parseInt(rec.shiftGraceMinutes, 10)) ? parseInt(rec.shiftGraceMinutes, 10) : 15,
+                                        customSettingsEnabled: false
+                                    });
+                                });
+                            }
+                        };
+                    } else {
+                        db.createObjectStore("shift_policies", { keyPath: "id", autoIncrement: true });
+                    }
+                    if (!db.objectStoreNames.contains("security_clips")) {
+                        db.createObjectStore("security_clips", { keyPath: "id" });
+                    }
+                    if (!db.objectStoreNames.contains("audit_logs")) {
+                        db.createObjectStore("audit_logs", { keyPath: "id", autoIncrement: true });
+                    }
                 };
-                reader.onerror = () => reject(new Error("Failed to encode media blob"));
-                reader.readAsDataURL(blob);
+                openRequest.onsuccess = (e) => { indexedDatabasePointer = e.target.result; resolve(); };
+                openRequest.onerror = (e) => reject(e.target.error);
             });
         }
-        function base64ToBlob(base64, mimeType = "video/webm") {
-            if (!base64) return new Blob([], { type: mimeType });
-            const binary = atob(base64);
-            const bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) {
-                bytes[i] = binary.charCodeAt(i);
-            }
-            return new Blob([bytes], { type: mimeType || "video/webm" });
+        function writeDatabaseRecord(storeName, valueObject) {
+            return new Promise((resolve, reject) => {
+                const txn = indexedDatabasePointer.transaction(storeName, "readwrite");
+                txn.objectStore(storeName).put(valueObject);
+                txn.oncomplete = () => resolve();
+                txn.onerror = () => reject(txn.error || new Error(`Failed to write to ${storeName}`));
+                txn.onabort = () => reject(txn.error || new Error(`Write aborted for ${storeName}`));
+            });
         }
-        async function initializeDatabaseCoreSubsystems() {
-            await backendRequest("db_get_all", "GET", null, { store: "system_config" });
+        function deleteDatabaseRecord(storeName, keyId) {
+            return new Promise((resolve, reject) => {
+                const txn = indexedDatabasePointer.transaction(storeName, "readwrite");
+                txn.objectStore(storeName).delete(keyId);
+                txn.oncomplete = () => resolve();
+                txn.onerror = () => reject(txn.error || new Error(`Failed to delete from ${storeName}`));
+                txn.onabort = () => reject(txn.error || new Error(`Delete aborted for ${storeName}`));
+            });
         }
-        async function writeDatabaseRecord(storeName, valueObject) {
-            const record = { ...valueObject };
-            if (storeName === "security_clips" && record.blob instanceof Blob) {
-                record.blobMime = record.blob.type || "video/webm";
-                record.blobBase64 = await blobToBase64(record.blob);
-                delete record.blob;
-            }
-            const result = await backendRequest("db_upsert", "POST", { store: storeName, record });
-            return result && Object.prototype.hasOwnProperty.call(result, "result") ? result.result : null;
+        function readAllDatabaseRecords(storeName) {
+            return new Promise((resolve, reject) => {
+                const txn = indexedDatabasePointer.transaction(storeName, "readonly");
+                const req = txn.objectStore(storeName).getAll();
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => reject(req.error || new Error(`Failed to read from ${storeName}`));
+            });
         }
-        async function deleteDatabaseRecord(storeName, keyId) {
-            await backendRequest("db_delete", "POST", { store: storeName, key: keyId });
-        }
-        async function readAllDatabaseRecords(storeName) {
-            const rows = await backendRequest("db_get_all", "GET", null, { store: storeName });
-            if (storeName === "security_clips") {
-                return (rows || []).map(row => ({
-                    ...row,
-                    blob: base64ToBlob(row.blobBase64, row.blobMime || "video/webm")
-                }));
-            }
-            return rows || [];
-        }
-        async function readConfigKey(key) {
-            const cfg = await backendRequest("get_config");
-            return Object.prototype.hasOwnProperty.call(cfg, key) ? cfg[key] : null;
+        function readConfigKey(key) {
+            return new Promise((resolve) => {
+                const txn = indexedDatabasePointer.transaction("system_config", "readonly");
+                const req = txn.objectStore("system_config").get(key);
+                req.onsuccess = () => resolve(req.result ? req.result.value : null);
+            });
         }
         async function seedDatabaseDefaults() {
             const checkPass = await readConfigKey("master_password");
@@ -4699,13 +4304,17 @@ if (isset($_GET['action'])) {
         }
         async function clearAllMovementClips() {
             if (!confirm("Are you sure you want to clear all movement clips from local database?")) return;
-            await clearIndexedDbObjectStore("security_clips");
-            motionClipRecords.forEach(c => {
-                if (c.url) URL.revokeObjectURL(c.url);
-            });
-            motionClipRecords = [];
-            renderMovementClipsList();
-            triggerToast("All movement clips cleared", "success");
+            const txn = indexedDatabasePointer.transaction("security_clips", "readwrite");
+            const store = txn.objectStore("security_clips");
+            store.clear();
+            txn.oncomplete = () => {
+                motionClipRecords.forEach(c => {
+                    if (c.url) URL.revokeObjectURL(c.url);
+                });
+                motionClipRecords = [];
+                renderMovementClipsList();
+                triggerToast("All movement clips cleared", "success");
+            };
         }
         async function startManualContinuousRecording(enforcePassword = true) {
             if (enforcePassword) {
@@ -5063,8 +4672,18 @@ if (isset($_GET['action'])) {
             };
             reader.readAsText(targetFile);
         }
-        async function clearIndexedDbObjectStore(storeName) {
-            await backendRequest("db_clear_store", "POST", { store: storeName });
+        function clearIndexedDbObjectStore(storeName) {
+            return new Promise((resolve, reject) => {
+                if (!indexedDatabasePointer || !indexedDatabasePointer.objectStoreNames.contains(storeName)) {
+                    resolve();
+                    return;
+                }
+                const txn = indexedDatabasePointer.transaction(storeName, "readwrite");
+                txn.objectStore(storeName).clear();
+                txn.oncomplete = () => resolve();
+                txn.onerror = () => reject(txn.error || new Error(`Failed to clear store: ${storeName}`));
+                txn.onabort = () => reject(txn.error || new Error(`Clear aborted for store: ${storeName}`));
+            });
         }
         async function clearDatastoreStoresForSeed(includeSystemConfig = false) {
             const stores = [
@@ -5264,10 +4883,18 @@ if (isset($_GET['action'])) {
         }
         async function purgeSystemLocalMemoryStore() {
             if (confirm("Danger: Wiping all local records and logs. Continue?")) {
-                const storesToClear = ["employees", "attendance_logs", "holidays", "leave_requests", "shift_policies", "audit_logs", "security_clips"];
-                for (const storeName of storesToClear) {
-                    await clearIndexedDbObjectStore(storeName);
-                }
+                const txnEmps = indexedDatabasePointer.transaction("employees", "readwrite");
+                txnEmps.objectStore("employees").clear();
+                const txnLogs = indexedDatabasePointer.transaction("attendance_logs", "readwrite");
+                txnLogs.objectStore("attendance_logs").clear();
+                const txnHols = indexedDatabasePointer.transaction("holidays", "readwrite");
+                txnHols.objectStore("holidays").clear();
+                const txnLeaves = indexedDatabasePointer.transaction("leave_requests", "readwrite");
+                txnLeaves.objectStore("leave_requests").clear();
+                const txnShift = indexedDatabasePointer.transaction("shift_policies", "readwrite");
+                txnShift.objectStore("shift_policies").clear();
+                const txnAudit = indexedDatabasePointer.transaction("audit_logs", "readwrite");
+                txnAudit.objectStore("audit_logs").clear();
                 precompiledEmployeesList = [];
                 precompiledProfilesRegistry = [];
                 applicationFaceMatcherRuntime = null;
