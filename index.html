@@ -183,6 +183,49 @@
             .status-container {
                 order: 2;
             }
+            .camera-placeholder-overlay {
+                justify-content: center;
+                padding-top: 24px;
+                padding-bottom: 24px;
+                z-index: 30;
+            }
+            #btn-placeholder-start {
+                margin-top: 4px;
+                margin-bottom: 6px;
+                position: relative;
+                z-index: 31;
+            }
+            .camera-controls-bar {
+                left: 50%;
+                bottom: 8px;
+                transform: translateX(-50%);
+                width: calc(100% - 16px);
+                max-width: calc(100% - 16px);
+                border-radius: 12px;
+                gap: 4px;
+                padding: 4px;
+                flex-wrap: nowrap;
+                justify-content: flex-start;
+                align-items: center;
+                overflow-x: auto;
+                overflow-y: hidden;
+                -webkit-overflow-scrolling: touch;
+            }
+            #kiosk-camera-select.control-btn {
+                width: 118px !important;
+                min-width: 118px;
+                max-width: 118px !important;
+            }
+            .camera-controls-bar .control-btn {
+                padding: 5px 8px;
+                flex: 0 0 auto;
+                white-space: nowrap;
+                font-size: 10px;
+            }
+            .camera-controls-bar .control-btn svg {
+                width: 10px;
+                height: 10px;
+            }
         }
 
         nav {
@@ -1424,7 +1467,7 @@
                                 <span>Start Webcam</span>
                             </button>
                         </div>
-                        <div class="camera-controls-bar">
+                        <div class="camera-controls-bar" style="display:none;">
                             <select id="kiosk-camera-select" class="control-btn"
                                 style="max-width: 120px; text-overflow: ellipsis; border: 1px solid var(--border); background: var(--panel);"
                                 onchange="restartCameraStream('kiosk')"></select>
@@ -1529,6 +1572,10 @@
                 </div>
                 <button class="btn btn-primary" onclick="verifyAdminCredentialGateAccess()" style="width:100%;">Verify
                     Identity Signature</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                    <button class="btn btn-secondary" onclick="loadSampleDataBundle()">Load Sample Data</button>
+                    <button class="btn btn-danger" onclick="clearDatastoreToDefaultState()">Clear To Default</button>
+                </div>
                 <div
                     style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--border); padding-top: 14px; font-size: 11px; line-height: 1.45;">
                     <div
@@ -3254,6 +3301,18 @@
     
 
     
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
 <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head><body>${summaryHtml}</body></html>`);
@@ -3478,9 +3537,11 @@
             await logAuditEvent("admin_passcode_updated");
         }
         function updateCameraControlsUI() {
+            const kioskControlsBar = document.querySelector('#view-kiosk .camera-controls-bar');
             if (isCameraActive) {
                 ui.placeholder.style.opacity = '0';
                 ui.placeholder.style.pointerEvents = 'none';
+                if (kioskControlsBar) kioskControlsBar.style.display = 'flex';
                 ui.btnStart.disabled = !isCameraPaused;
                 ui.btnPause.disabled = isCameraPaused;
                 ui.btnStop.disabled = false;
@@ -3491,6 +3552,7 @@
             } else {
                 ui.placeholder.style.opacity = '1';
                 ui.placeholder.style.pointerEvents = 'auto';
+                if (kioskControlsBar) kioskControlsBar.style.display = 'none';
                 ui.btnStart.disabled = false;
                 ui.btnPause.disabled = true;
                 ui.btnStop.disabled = true;
@@ -4134,6 +4196,215 @@
                 }
             };
             reader.readAsText(targetFile);
+        }
+        function clearIndexedDbObjectStore(storeName) {
+            return new Promise((resolve, reject) => {
+                if (!indexedDatabasePointer || !indexedDatabasePointer.objectStoreNames.contains(storeName)) {
+                    resolve();
+                    return;
+                }
+                const txn = indexedDatabasePointer.transaction(storeName, "readwrite");
+                txn.objectStore(storeName).clear();
+                txn.oncomplete = () => resolve();
+                txn.onerror = () => reject(txn.error || new Error(`Failed to clear store: ${storeName}`));
+                txn.onabort = () => reject(txn.error || new Error(`Clear aborted for store: ${storeName}`));
+            });
+        }
+        async function clearDatastoreStoresForSeed(includeSystemConfig = false) {
+            const stores = [
+                "employees",
+                "attendance_logs",
+                "departments",
+                "holidays",
+                "leave_requests",
+                "shift_policies",
+                "security_clips",
+                "audit_logs"
+            ];
+            if (includeSystemConfig) {
+                stores.push("system_config");
+            }
+            for (const storeName of stores) {
+                await clearIndexedDbObjectStore(storeName);
+            }
+        }
+        function buildSampleDateByIndex(index, hour = 9, minute = 0) {
+            const dt = new Date();
+            dt.setHours(0, 0, 0, 0);
+            dt.setDate(dt.getDate() - (index % 4));
+            dt.setHours(hour, minute, 0, 0);
+            return dt;
+        }
+        function buildSampleDescriptor(seedIndex) {
+            const descriptor = [];
+            let seed = ((seedIndex + 1) * 2654435761) >>> 0;
+            for (let i = 0; i < 128; i++) {
+                seed = (seed * 1664525 + 1013904223) >>> 0;
+                descriptor.push((seed / 4294967295) * 2 - 1);
+            }
+            return descriptor;
+        }
+        async function refreshDashboardAfterSeed() {
+            motionClipRecords.forEach(clip => {
+                if (clip && clip.url) URL.revokeObjectURL(clip.url);
+            });
+            motionClipRecords = [];
+            precompiledEmployeesList = [];
+            precompiledProfilesRegistry = [];
+            applicationFaceMatcherRuntime = null;
+            latestFaceDetections = [];
+            await rebuildComputationalMatchingGraph();
+            await loadAttendanceLedgingTicker();
+            await renderAdministrativeEmployeeDirectoryTable();
+            populateManualOverrideDropdown();
+            populateLeaveRequestDropdown();
+            await renderLeaveRequests();
+            await renderDepartmentShiftPolicies();
+            await renderAuditTrail();
+            renderMovementClipsList();
+            suggestNextEmployeeId();
+            await syncActiveFiltersList();
+            await renderAnalyticsDashboard();
+        }
+        async function loadSampleDataBundle() {
+            const ok = await requireAdminPassword("load sample data");
+            if (!ok) return;
+            const proceed = confirm("Load 20 sample records for core modules? This will replace current local data.");
+            if (!proceed) return;
+            try {
+                await clearDatastoreStoresForSeed(true);
+                await seedDatabaseDefaults();
+                const sampleDepartments = Array.from({ length: 20 }, (_, idx) => `Sample Department ${String(idx + 1).padStart(2, "0")}`);
+                await clearIndexedDbObjectStore("departments");
+                for (const deptName of sampleDepartments) {
+                    await writeDatabaseRecord("departments", { name: deptName });
+                }
+                const roleCatalog = ["Engineer", "Supervisor", "Sales Associate", "Analyst", "Coordinator"];
+                const employees = [];
+                for (let i = 0; i < 20; i++) {
+                    const joinedAt = buildSampleDateByIndex(i, 9 + (i % 3), (i * 7) % 60).getTime();
+                    const employee = {
+                        id: `EMP-S${String(i + 1).padStart(3, "0")}`,
+                        name: `Sample Employee ${String(i + 1).padStart(2, "0")}`,
+                        descriptor: buildSampleDescriptor(i),
+                        department: sampleDepartments[i % sampleDepartments.length],
+                        role: roleCatalog[i % roleCatalog.length],
+                        email: `sample.employee${String(i + 1).padStart(2, "0")}@example.com`,
+                        phone: `+155500${String(i + 1).padStart(4, "0")}`,
+                        status: "Active",
+                        shiftStartTime: null,
+                        shiftGraceMinutes: null,
+                        assignedShiftId: null,
+                        joined: joinedAt
+                    };
+                    employees.push(employee);
+                    await writeDatabaseRecord("employees", employee);
+                }
+                for (let i = 0; i < 10; i++) {
+                    const emp = employees[i];
+                    const checkInAt = buildSampleDateByIndex(i, 8 + (i % 3), (i * 5) % 50);
+                    const checkOutAt = new Date(checkInAt.getTime() + (7 * 60 + 30 + (i % 6) * 10) * 60000);
+                    await writeDatabaseRecord("attendance_logs", {
+                        empId: emp.id,
+                        name: emp.name,
+                        department: emp.department,
+                        role: emp.role,
+                        timestamp: checkInAt.getTime(),
+                        dateString: toIsoDate(checkInAt),
+                        timeString: getTimeFromDate(checkInAt),
+                        type: "Check-In",
+                        status: i % 4 === 0 ? "Late" : "On-Time",
+                        sessionMinutes: null,
+                        checkoutCompliance: "-"
+                    });
+                    const sessionMinutes = Math.max(60, Math.round((checkOutAt.getTime() - checkInAt.getTime()) / 60000));
+                    await writeDatabaseRecord("attendance_logs", {
+                        empId: emp.id,
+                        name: emp.name,
+                        department: emp.department,
+                        role: emp.role,
+                        timestamp: checkOutAt.getTime(),
+                        dateString: toIsoDate(checkOutAt),
+                        timeString: getTimeFromDate(checkOutAt),
+                        type: "Check-Out",
+                        status: "-",
+                        sessionMinutes: sessionMinutes,
+                        checkoutCompliance: sessionMinutes >= 480 ? "Compliant" : "Short-Session"
+                    });
+                }
+                for (let i = 0; i < 20; i++) {
+                    const emp = employees[i];
+                    const fromDate = toIsoDate(buildSampleDateByIndex(i, 0, 0));
+                    const toDate = toIsoDate(buildSampleDateByIndex(i + 1, 0, 0));
+                    await writeDatabaseRecord("leave_requests", {
+                        empId: emp.id,
+                        name: emp.name,
+                        department: emp.department,
+                        type: i % 3 === 0 ? "Permission" : "Leave",
+                        dateFrom: fromDate,
+                        dateTo: fromDate <= toDate ? toDate : fromDate,
+                        reason: `Sample leave note ${String(i + 1).padStart(2, "0")}`,
+                        status: i % 3 === 0 ? "Approved" : i % 3 === 1 ? "Pending" : "Rejected",
+                        createdAt: buildSampleDateByIndex(i, 10 + (i % 4), (i * 11) % 60).getTime()
+                    });
+                }
+                for (let i = 0; i < 20; i++) {
+                    await writeDatabaseRecord("shift_policies", {
+                        department: sampleDepartments[i],
+                        name: `Shift ${String(i + 1).padStart(2, "0")}`,
+                        shiftStartTime: `${String(8 + (i % 4)).padStart(2, "0")}:00`,
+                        shiftGraceMinutes: 10 + (i % 6) * 5,
+                        customSettingsEnabled: true,
+                        minimumSessionMinutes: 420 + (i % 5) * 15,
+                        checkoutGapHours: 1.5 + (i % 3) * 0.5,
+                        logoutCutoffEnabled: true,
+                        logoutCutoffTime: `${String(15 + (i % 3)).padStart(2, "0")}:00`,
+                        weekendDays: [0, 6]
+                    });
+                }
+                await clearIndexedDbObjectStore("holidays");
+                for (let i = 0; i < 4; i++) {
+                    const dateVal = toIsoDate(buildSampleDateByIndex(i, 0, 0));
+                    await writeDatabaseRecord("holidays", { date: dateVal, name: `Sample Holiday D-${i}` });
+                }
+                for (let i = 0; i < 20; i++) {
+                    const stamp = buildSampleDateByIndex(i, 11 + (i % 6), (i * 9) % 60).getTime();
+                    await writeDatabaseRecord("audit_logs", {
+                        timestamp: stamp,
+                        action: "sample_data_seeded_event",
+                        detail: toAuditDetailString({
+                            batch: "sample-seed",
+                            reference: String(i + 1).padStart(2, "0"),
+                            date: toIsoDate(new Date(stamp))
+                        })
+                    });
+                }
+                await refreshDashboardAfterSeed();
+                triggerToast("Sample dataset loaded: 20 records per core module", "success");
+                AudioEngine.play('success');
+            } catch (err) {
+                console.error(err);
+                triggerToast("Failed to load sample data", "error");
+                AudioEngine.play('error');
+            }
+        }
+        async function clearDatastoreToDefaultState() {
+            const ok = await requireAdminPassword("clear sample data and restore default state");
+            if (!ok) return;
+            const proceed = confirm("Clear all local data and restore default admin setup only?");
+            if (!proceed) return;
+            try {
+                await clearDatastoreStoresForSeed(true);
+                await seedDatabaseDefaults();
+                await refreshDashboardAfterSeed();
+                ui.banner.innerText = "Default datastore restored.";
+                triggerToast("Local datastore reset to default state", "success");
+                AudioEngine.play('success');
+            } catch (err) {
+                console.error(err);
+                triggerToast("Default reset failed", "error");
+                AudioEngine.play('error');
+            }
         }
         async function purgeSystemLocalMemoryStore() {
             if (confirm("Danger: Wiping all local records and logs. Continue?")) {
@@ -6654,6 +6925,12 @@
         window.onload = compileApplicationCoreSubsystems;
     </script>
     
+
+
+
+
+
+
 
 
 
