@@ -1680,7 +1680,188 @@
                 align-items: center;
             }
         }
+        .lightbox-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .lightbox-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .lightbox-content {
+            background: var(--panel);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            position: relative;
+            transform: translateY(30px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+        .lightbox-overlay.show .lightbox-content {
+            transform: translateY(0) scale(1);
+        }
+        .lightbox-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .lightbox-close-btn:hover {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.2);
+            transform: rotate(90deg);
+        }
+        .lightbox-close-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        .lightbox-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .lightbox-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 2px solid var(--panel);
+            outline: 2px solid var(--primary-glow);
+        }
+        .lightbox-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .lightbox-title-area {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .lightbox-title-area h2 {
+            font-size: 24px;
+            border-bottom: none;
+            padding-bottom: 0;
+            margin: 0;
+            color: var(--text);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+        }
+        .lightbox-emp-id {
+            font-family: monospace;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+        .lightbox-status-badge {
+            display: inline-flex;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            width: fit-content;
+        }
+        .lightbox-status-active {
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        .lightbox-status-suspended {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+        .lightbox-status-deleted {
+            background: var(--muted);
+            color: #fff;
+            border: 1px solid var(--muted);
+        }
+        .lightbox-details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .lightbox-details-grid .detail-group {
+            background: color-mix(in srgb, var(--bg) 60%, transparent 40%);
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+        .lightbox-details-grid .detail-group:hover {
+            background: var(--bg);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-color: color-mix(in srgb, var(--primary) 30%, var(--border));
+        }
+        .lightbox-details-grid .detail-group label {
+            font-size: 10px;
+            color: var(--muted-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 800;
+        }
+        .lightbox-details-grid .detail-group .detail-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            word-break: break-word;
+        }
+        @media (max-width: 640px) {
+            .lightbox-details-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .lightbox-content {
+                padding: 24px;
+                margin: 16px;
+                border-radius: 20px;
+                max-height: calc(100vh - 32px);
+                overflow-y: auto;
+            }
+        }
     </style>
+<link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 
 <body>
@@ -2560,6 +2741,11 @@
                             </div>
                             <button class="btn btn-secondary" onclick="updateAdministrativeSystemPassword()">Update
                                 Passcode Key</button>
+                            <div class="input-group" style="margin-top: 10px;">
+                                <label>Admin Auto Logout (Minutes)</label>
+                                <input type="number" id="settings-admin-auto-logout" value="30" min="1" step="1">
+                            </div>
+                            <button class="btn btn-secondary" onclick="updateAdminAutoLogoutSettings()">Save Logout Settings</button>
                         </div>
                         <div class="card">
                             <h2>Corporate Calendars & Divisions</h2>
@@ -2992,7 +3178,8 @@
                     reverseButtons: true
                 });
                 if (!result.isConfirmed) return false;
-                if ((result.value || "") !== String(realPass)) {
+                const hashedInput = await hashPassword(result.value || "");
+                if (hashedInput !== String(realPass)) {
                     triggerToast("Invalid admin password", "error");
                     AudioEngine.play('error');
                     return false;
@@ -3000,7 +3187,8 @@
                 return true;
             }
             const entered = prompt(`Admin password required to ${actionLabel}:`) || "";
-            if (entered !== String(realPass)) {
+            const hashedEntered = await hashPassword(entered);
+            if (hashedEntered !== String(realPass)) {
                 triggerToast("Invalid admin password", "error");
                 AudioEngine.play('error');
                 return false;
@@ -3143,6 +3331,9 @@
         let monitorWarningShown = false;
         let dashboardResizeTimer = null;
         let currentPrimaryView = "kiosk";
+        let adminAutoLogoutMinutes = 30;
+        let lastAdminActivityTimestamp = Date.now();
+        let lastAdminAreaOpenedTimestamp = Date.now();
         let currentAdminSubTab = "reports";
         const SESSION_STATE_STORAGE_KEY = "aura_session_state_v1";
         let empPage = 1;
@@ -3732,9 +3923,59 @@
     
 
     
-<link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head><body>${summaryHtml}</body></html>`);
+
+    
+
+    
+
+    
+    <div id="employee-profile-lightbox" class="lightbox-overlay" onclick="closeEmployeeProfileLightbox(event)">
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <button class="lightbox-close-btn" onclick="closeEmployeeProfileLightbox(event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="lightbox-header">
+                <div class="lightbox-avatar">
+                    <img id="lightbox-emp-img" src="" alt="Employee Avatar">
+                </div>
+                <div class="lightbox-title-area">
+                    <div class="lightbox-emp-id" id="lightbox-emp-id">#EMP000</div>
+                    <h2 id="lightbox-emp-name">Employee Name</h2>
+                    <div id="lightbox-emp-status" class="lightbox-status-badge">Active</div>
+                </div>
+            </div>
+            <div class="lightbox-details-grid">
+                <div class="detail-group">
+                    <label>Department</label>
+                    <div id="lightbox-emp-dept" class="detail-value">Engineering</div>
+                </div>
+                <div class="detail-group">
+                    <label>Role</label>
+                    <div id="lightbox-emp-role" class="detail-value">Software Engineer</div>
+                </div>
+                <div class="detail-group">
+                    <label>Email</label>
+                    <div id="lightbox-emp-email" class="detail-value">email@company.com</div>
+                </div>
+                <div class="detail-group">
+                    <label>Phone</label>
+                    <div id="lightbox-emp-phone" class="detail-value">+1 234 567 890</div>
+                </div>
+                <div class="detail-group">
+                    <label>Shift Info</label>
+                    <div id="lightbox-emp-shift" class="detail-value">09:00 (+15m grace)</div>
+                </div>
+                <div class="detail-group">
+                    <label>Joined Date</label>
+                    <div id="lightbox-emp-joined" class="detail-value">01/01/2023</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body></html>`);
             printWindow.document.close();
             printWindow.focus();
             printWindow.print();
@@ -3833,10 +4074,20 @@
                 req.onsuccess = () => resolve(req.result ? req.result.value : null);
             });
         }
+        async function hashPassword(password) {
+            const msgUint8 = new TextEncoder().encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
         async function seedDatabaseDefaults() {
             const checkPass = await readConfigKey("master_password");
             if (!checkPass) {
-                await writeDatabaseRecord("system_config", { key: "master_password", value: "admin1234" });
+                const hashedPass = await hashPassword("admin1234");
+                await writeDatabaseRecord("system_config", { key: "master_password", value: hashedPass });
+            } else if (checkPass.length !== 64) {
+                const hashedPass = await hashPassword(checkPass);
+                await writeDatabaseRecord("system_config", { key: "master_password", value: hashedPass });
             }
             const checkLiveness = await readConfigKey("liveness_level");
             if (!checkLiveness) {
@@ -3849,6 +4100,10 @@
             const checkMode = await readConfigKey("theme_mode");
             if (!checkMode) {
                 await writeDatabaseRecord("system_config", { key: "theme_mode", value: "light" });
+            }
+            const checkAutoLogout = await readConfigKey("admin_auto_logout_minutes");
+            if (!checkAutoLogout) {
+                await writeDatabaseRecord("system_config", { key: "admin_auto_logout_minutes", value: 30 });
             }
             const depts = await readAllDatabaseRecords("departments");
             if (depts.length === 0) {
@@ -3917,8 +4172,9 @@
         }
         async function verifyAdminCredentialGateAccess() {
             const inputString = ui.passInput.value;
+            const hashedInput = await hashPassword(inputString);
             const correctPasswordString = await readConfigKey("master_password");
-            if (inputString === correctPasswordString) {
+            if (hashedInput === correctPasswordString) {
                 isDashboardAuthenticatedState = true;
                 updateAuthButtonsVisibility();
                 currentPrimaryView = "admin";
@@ -3957,12 +4213,51 @@
                 triggerToast("Passcode must be 4+ characters", "error");
                 return;
             }
-            await writeDatabaseRecord("system_config", { key: "master_password", value: targetString });
+            const hashedTarget = await hashPassword(targetString);
+            await writeDatabaseRecord("system_config", { key: "master_password", value: hashedTarget });
             ui.newPassInput.value = "";
             triggerToast("Admin Passcode Updated", "success");
             AudioEngine.play('success');
             await logAuditEvent("admin_passcode_updated");
         }
+        async function updateAdminAutoLogoutSettings() {
+            const el = document.getElementById('settings-admin-auto-logout');
+            const val = parseInt(el.value, 10);
+            if (isNaN(val) || val < 1) {
+                triggerToast("Invalid timeout value", "error");
+                return;
+            }
+            adminAutoLogoutMinutes = val;
+            await writeDatabaseRecord("system_config", { key: "admin_auto_logout_minutes", value: val });
+            triggerToast("Auto Logout Settings Updated", "success");
+            await logAuditEvent("admin_auto_logout_updated");
+        }
+        function resetAdminIdleTimer() {
+            if (isDashboardAuthenticatedState) {
+                lastAdminActivityTimestamp = Date.now();
+            }
+        }
+        window.addEventListener('mousemove', resetAdminIdleTimer);
+        window.addEventListener('keydown', resetAdminIdleTimer);
+        window.addEventListener('touchstart', resetAdminIdleTimer);
+        window.addEventListener('click', resetAdminIdleTimer);
+
+        setInterval(() => {
+            if (isDashboardAuthenticatedState) {
+                const now = Date.now();
+                const timeoutMs = adminAutoLogoutMinutes * 60 * 1000;
+                if (currentPrimaryView === "admin") {
+                    lastAdminAreaOpenedTimestamp = now;
+                }
+                const isIdle = (now - lastAdminActivityTimestamp) > timeoutMs;
+                const isAwayFromAdmin = (currentPrimaryView !== "admin") && ((now - lastAdminAreaOpenedTimestamp) > timeoutMs);
+
+                if (isIdle || isAwayFromAdmin) {
+                    logoutAdminGate();
+                    triggerToast("Logged out due to inactivity", "warning");
+                }
+            }
+        }, 10000);
         function updateCameraControlsUI() {
             const kioskControlsBar = document.querySelector('#view-kiosk .camera-controls-bar');
             if (isCameraActive) {
@@ -4901,6 +5196,11 @@
                     minimumSessionMinutes = parseInt(savedMinimumSession, 10);
                     document.getElementById('settings-min-session-minutes').value = savedMinimumSession;
                 }
+                const savedAutoLogout = await readConfigKey("admin_auto_logout_minutes");
+                if (savedAutoLogout) {
+                    adminAutoLogoutMinutes = parseInt(savedAutoLogout, 10);
+                    document.getElementById('settings-admin-auto-logout').value = savedAutoLogout;
+                }
                 const savedGapHours = await readConfigKey("checkout_gap_hours");
                 if (savedGapHours) {
                     checkoutGapHours = parseFloat(savedGapHours);
@@ -5762,6 +6062,51 @@
                 if (window.Swal) window.Swal.close();
             }
         }
+        async function viewEmployeeProfile(empId) {
+            const records = await readAllDatabaseRecords("employees");
+            const emp = records.find(e => e.id === empId);
+            if (!emp) return;
+
+            document.getElementById('lightbox-emp-img').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name)}&size=256&background=random&color=fff&bold=true`;
+            document.getElementById('lightbox-emp-name').innerText = emp.name;
+            document.getElementById('lightbox-emp-id').innerText = emp.id;
+
+            const statusBadge = document.getElementById('lightbox-emp-status');
+            statusBadge.className = 'lightbox-status-badge'; 
+            if (emp.deletedAt) {
+                statusBadge.innerText = 'Deleted';
+                statusBadge.classList.add('lightbox-status-deleted');
+            } else if (emp.status === "Banned") {
+                statusBadge.innerText = 'Suspended';
+                statusBadge.classList.add('lightbox-status-suspended');
+            } else {
+                statusBadge.innerText = 'Active';
+                statusBadge.classList.add('lightbox-status-active');
+            }
+
+            document.getElementById('lightbox-emp-dept').innerText = emp.department || 'N/A';
+            document.getElementById('lightbox-emp-role').innerText = emp.role || 'N/A';
+            document.getElementById('lightbox-emp-email').innerText = emp.email || 'N/A';
+            document.getElementById('lightbox-emp-phone').innerText = emp.phone || 'N/A';
+            
+            const shiftText = emp.shiftStartTime ? `${emp.shiftStartTime} (+${Number.isFinite(parseInt(emp.shiftGraceMinutes, 10)) ? emp.shiftGraceMinutes : shiftGraceMinutes}m)` : "Dept/Global Default";
+            document.getElementById('lightbox-emp-shift').innerText = shiftText;
+            
+            document.getElementById('lightbox-emp-joined').innerText = emp.joined ? new Date(emp.joined).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : "-";
+
+            const lightbox = document.getElementById('employee-profile-lightbox');
+            lightbox.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEmployeeProfileLightbox(event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            const lightbox = document.getElementById('employee-profile-lightbox');
+            lightbox.classList.remove('show');
+            document.body.style.overflow = '';
+        }
         async function renderAdministrativeEmployeeDirectoryTable() {
             if (!isDashboardAuthenticatedState) return;
             destroyDataTableIfActive("#employee-directory-table");
@@ -5813,9 +6158,12 @@
                 }
                 let actionButtons = '';
                 if (employee.deletedAt) {
-                    actionButtons = `<button class="btn btn-primary" style="padding:4px 8px; font-size:11px; border-radius:4px;" onclick="restoreEmployeeProfile('${employee.id}')">Restore</button>`;
+                    actionButtons = `
+                        <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px; border-radius:4px; margin-right:4px;" onclick="viewEmployeeProfile('${employee.id}')">View</button>
+                        <button class="btn btn-primary" style="padding:4px 8px; font-size:11px; border-radius:4px;" onclick="restoreEmployeeProfile('${employee.id}')">Restore</button>`;
                 } else {
                     actionButtons = `
+                        <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px; border-radius:4px;" onclick="viewEmployeeProfile('${employee.id}')">View</button>
                         <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px; border-radius:4px;" onclick="startEditEmployee('${employee.id}')">Edit</button>
                         <button class="btn" style="padding:4px 8px; font-size:11px; border-radius:4px; background:${isBanned ? 'var(--success-bg)' : 'var(--warning-bg)'}; color:${isBanned ? 'var(--success)' : 'var(--warning)'}; border:1px solid ${isBanned ? 'var(--success)' : 'var(--warning)'};" onclick="toggleBanEmployee('${employee.id}')">${isBanned ? 'Activate' : 'Suspend'}</button>
                         <button class="btn btn-danger" style="padding:4px 8px; font-size:11px; border-radius: 4px;" onclick="removeProfileTemplateRecord('${employee.id}')">Delete</button>
@@ -7428,6 +7776,55 @@
 
 
 
+
+
+
+    <div id="employee-profile-lightbox" class="lightbox-overlay" onclick="closeEmployeeProfileLightbox(event)">
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <button class="lightbox-close-btn" onclick="closeEmployeeProfileLightbox(event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="lightbox-header">
+                <div class="lightbox-avatar">
+                    <img id="lightbox-emp-img" src="" alt="Employee Avatar">
+                </div>
+                <div class="lightbox-title-area">
+                    <div class="lightbox-emp-id" id="lightbox-emp-id">#EMP000</div>
+                    <h2 id="lightbox-emp-name">Employee Name</h2>
+                    <div id="lightbox-emp-status" class="lightbox-status-badge">Active</div>
+                </div>
+            </div>
+            <div class="lightbox-details-grid">
+                <div class="detail-group">
+                    <label>Department</label>
+                    <div id="lightbox-emp-dept" class="detail-value">Engineering</div>
+                </div>
+                <div class="detail-group">
+                    <label>Role</label>
+                    <div id="lightbox-emp-role" class="detail-value">Software Engineer</div>
+                </div>
+                <div class="detail-group">
+                    <label>Email</label>
+                    <div id="lightbox-emp-email" class="detail-value">email@company.com</div>
+                </div>
+                <div class="detail-group">
+                    <label>Phone</label>
+                    <div id="lightbox-emp-phone" class="detail-value">+1 234 567 890</div>
+                </div>
+                <div class="detail-group">
+                    <label>Shift Info</label>
+                    <div id="lightbox-emp-shift" class="detail-value">09:00 (+15m grace)</div>
+                </div>
+                <div class="detail-group">
+                    <label>Joined Date</label>
+                    <div id="lightbox-emp-joined" class="detail-value">01/01/2023</div>
+                </div>
+            </div>
+        </div>
+    </div>
 <script type="module" src="./pwa-register.js"></script>
 </body>
 

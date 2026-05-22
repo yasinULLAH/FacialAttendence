@@ -77,11 +77,15 @@ if (workbox) {
     },
     {
         "url": "index.html",
-        "revision": "77f38050cff22e74674e8d72ac0995fd"
+        "revision": "6126d4b447bb5dbd6d135c1290f91970"
     },
     {
         "url": "index.php",
-        "revision": "84d31c02267467166958e7879cbfdf43"
+        "revision": "58858eba7138db7d7109149ca5d0df68"
+    },
+    {
+        "url": "index.php.before_mysql_fix.bak",
+        "revision": "e9f94b3d093b554e2bd8ab04777848de"
     },
     {
         "url": "manifest.json",
@@ -93,7 +97,7 @@ if (workbox) {
     },
     {
         "url": "offline.html",
-        "revision": "7c964fa6bf170b3a101af7271efefa53"
+        "revision": "b12b49ed911aa82a7d4430205f5dfdef"
     },
     {
         "url": "pwa-register.js",
@@ -109,7 +113,15 @@ if (workbox) {
     },
     {
         "url": "sw.js",
-        "revision": "5d12857ac804580f3a99776fed70a611"
+        "revision": "78ab956ef47e7e5b87fa0e9375099a00"
+    },
+    {
+        "url": "_phpserver_err.log",
+        "revision": "30ce6158c7221ac16152a678bb43f639"
+    },
+    {
+        "url": "_phpserver_out.log",
+        "revision": "d41d8cd98f00b204e9800998ecf8427e"
     }
 ]);
 

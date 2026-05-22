@@ -4184,6 +4184,12 @@ if (isset($_GET['action'])) {
                 ${comprehensiveReportRows.length > 200 ? `<p style="font-size:11px;">Showing first 200 rows in print preview. Use DataTable PDF/Excel/CSV for full exports.</p>` : ''}
             `;
             printWindow.document.write(`<html><head><title>Comprehensive Report</title>
+
+    
+
+    
+
+    
 <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head><body>${summaryHtml}</body></html>`);
@@ -7818,6 +7824,9 @@ if (isset($_GET['action'])) {
         });
         window.onload = compileApplicationCoreSubsystems;
     </script>
+
+
+
 <script type="module" src="./pwa-register.js"></script>
 </body>
 </html>
